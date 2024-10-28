@@ -4,3 +4,4 @@ capierre_binary
 build/
 dist/
 *.spec
+.pytest_cache

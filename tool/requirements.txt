@@ -30,6 +30,7 @@ defusedxml==0.7.1
 distro==1.7.0
 distro-info==1.1+ubuntu0.2
 easygui==0.98.3
+exceptiongroup==1.2.2
 fonttools==4.29.1
 fs==2.4.12
 gast==0.5.2
@@ -39,6 +40,7 @@ hyperlink==21.0.0
 idna==3.3
 importlib-metadata==4.6.4
 incremental==21.3.0
+iniconfig==2.0.0
 intervaltree==3.1.0
 jeepney==0.7.1
 Jinja2==3.0.3
@@ -69,6 +71,7 @@ packaging==24.1
 paramiko==3.5.0
 pcodedmp==1.2.6
 Pillow==9.0.1
+pluggy==1.5.0
 plumbum==1.9.0
 ply==3.11
 psutil==6.0.0
@@ -95,6 +98,7 @@ pyqtgraph==0.12.4
 pyrsistent==0.18.1
 pyserial==3.5
 PySocks==1.7.1
+pytest==8.3.3
 python-apt==2.4.0+ubuntu4
 python-dateutil==2.9.0.post0
 python-magic==0.4.24
@@ -115,6 +119,7 @@ sortedcontainers==2.4.0
 soupsieve==2.3.1
 sympy==1.9
 systemd-python==234
+tomli==2.0.2
 Twisted==22.1.0
 ubuntu-pro-client==8001
 ufoLib2==0.13.1

@@ -54,13 +54,10 @@ class CapierreParsing():
             return (False, 1)
         if sys.argv[1] in ['--help', '-h']:
             self.print_help()
-            return (True, 0)
+            return (False, 0)
         if len(sys.argv) < 3:
             msg_error(f'Usage: {self.name} <file> <sentence>')
             return (False, 1)
-        if (sys.argv[1] in ['--help', '-h']):
-            self.print_help()
-            return (False, 0)
         if (sys.argv[1] in ['--version', '-v']):
             print(f'{self.name} v{self.version}')
             return (False, 0)
