@@ -1,3 +1,6 @@
 __pycache__
 *.pyc
 capierre_binary
+build/
+dist/
+*.spec

@@ -49,7 +49,13 @@ class CapierreParsing():
             raise e
 
     def check_args(self: object) -> tuple:
-        if len(sys.argv) < 3 and sys.argv[1] not in ['--help', '-h']:
+        if len(sys.argv) < 2:
+            msg_error(f'Usage: {self.name} <file> <sentence>')
+            return (False, 1)
+        if sys.argv[1] in ['--help', '-h']:
+            self.print_help()
+            return (True, 0)
+        if len(sys.argv) < 3:
             msg_error(f'Usage: {self.name} <file> <sentence>')
             return (False, 1)
         if (sys.argv[1] in ['--help', '-h']):
