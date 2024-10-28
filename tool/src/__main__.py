@@ -1,22 +1,23 @@
 import sys
 from utils.messages import msg_success, msg_error, msg_warning, msg_info
+from capierre.compiling_code import compile_code
 
-class Capierre():
-    def __init__(self):
+class CapierreParsing():
+    def __init__(self: object) -> None:
         self.name = 'Capierre'
         self.version = '1.0.0'
         self.file = None
         self.type_file = None
         self.sentence = None
 
-    def print_help(self):
+    def print_help(self: object) -> None:
         print(f'Usage: {self.name} <file> <sentence>')
         print(f'Options:')
         print(f'  -h, --help     Show this help message and exit')
         print(f'  -v, --version  Show version of the tool')
 
     # https://stackoverflow.com/a/61065546/23570806
-    def check_file(self):  
+    def check_file(self: object) -> bool:  
         magic_numbers = {
             'png': bytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
             'elf': bytes([0x7F, 0x45, 0x4C, 0x46]),
@@ -45,7 +46,7 @@ class Capierre():
         except Exception as e:
             raise e
 
-    def check_args(self):
+    def check_args(self: object) -> tuple:
         if len(sys.argv) < 3 and sys.argv[1] not in ['--help', '-h']:
             msg_error(f'Usage: {self.name} <file> <sentence>')
             return (False, 1)
@@ -61,11 +62,11 @@ class Capierre():
         return (True, 0)
 
 def main():
-    tool = Capierre()
-    statement, exit_status = tool.check_args()
+    capierre = CapierreParsing()
+    statement, exit_status = capierre.check_args()
     if (statement == False):
         sys.exit(exit_status)
-    print(tool.__dict__)
+    compile_code(capierre.file, capierre.sentence)
 
 if __name__ == '__main__':
     main()
