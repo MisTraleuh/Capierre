@@ -30,4 +30,5 @@ jobs:
       - name: Tests Fonctionnels
         working-directory: ./tool
         run: |
+          chmod +x launch.sh
           ./launch.sh "fonctionnel"
