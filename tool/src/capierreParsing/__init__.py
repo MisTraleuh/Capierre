@@ -5,6 +5,9 @@ from capierre.__init__ import Capierre
 import os
 
 class CapierreParsing():
+    """
+    This class is responsible for parsing the arguments
+    """
     def __init__(self: object) -> None:
         self.name = 'Capierre'
         self.version = '1.0.0'
@@ -12,14 +15,21 @@ class CapierreParsing():
         self.type_file = None
         self.sentence = None
 
+    """
+    This function prints the help message
+    """
     def print_help(self: object) -> None:
         print(f'Usage: {self.name} <file> <sentence>')
         print(f'Options:')
         print(f'  -h, --help     Show this help message and exit')
         print(f'  -v, --version  Show version of the tool')
 
-    # https://stackoverflow.com/a/61065546/23570806
+    """
+    This function checks if the file is supported
+    @return bool - True if the file is supported, False otherwise
+    """
     def check_file(self: object) -> bool:  
+        # https://stackoverflow.com/a/61065546/23570806
         magic_numbers = {
             'png': bytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
             'elf': bytes([0x7F, 0x45, 0x4C, 0x46]),
@@ -48,7 +58,11 @@ class CapierreParsing():
         except Exception as e:
             raise e
 
-    def check_args(self: object) -> tuple:
+    """
+    This function checks the arguments
+    @return tuple[bool, int] - A tuple with a boolean and an integer
+    """
+    def check_args(self: object) -> tuple[bool, int]:
         if len(sys.argv) < 2:
             msg_error(f'Usage: {self.name} <file> <sentence>')
             return (False, 1)

@@ -11,12 +11,12 @@ if [ "$CURRENT_DIR" != "$EXPECTED_DIR" ]; then
     exit 1
 fi
 
-if [ "$1" == "fonctionnal" ]; then
-    pytest tests/fonctionnal/*.py
+if [ "$1" == "fonctionnel" ]; then
+    pytest tests/fonctionnel/*.py
 elif [ "$1" == "unitaire" ]; then
     pytest tests/test_unit.py
 else
     echo "Aucune action effectuée."
-    echo "Utilisez 'fonctionnal' comme argument pour lancer le test."
+    echo "Utilisez 'fonctionnel' comme argument pour lancer le test."
     echo "Utilisez 'unitaire' comme argument pour lancer le test."
 fi

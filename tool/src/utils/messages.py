@@ -1,13 +1,29 @@
 from utils.color import Color
 
-def msg_success(message):
+"""
+This function prints a success message
+@param message: str - The message to print
+"""
+def msg_success(message: str) -> None:
     print(f'{Color["GREEN"]}[+] {message}{Color["ENDC"]}')
 
-def msg_error(message):
+"""
+This function prints an error message
+@param message: str - The message to print
+"""
+def msg_error(message: str) -> None:
     print(f'{Color["RED"]}[-] {message}{Color["ENDC"]}')
-    
-def msg_warning(message):
+
+"""
+This function prints a warning message
+@param message: str - The message to print
+""" 
+def msg_warning(message: str) -> None:
     print(f'{Color["YELLOW"]}[!] {message}{Color["ENDC"]}')
-    
-def msg_info(message):
+
+"""
+This function prints an info message
+@param message: str - The message to print
+""" 
+def msg_info(message: str) -> None:
     print(f'{Color["BLUE"]}[i] {message}{Color["ENDC"]}')
