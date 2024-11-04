@@ -7,7 +7,11 @@ def main():
     statement, exit_status = capierreParsing.check_args()
     if (statement == False):
         sys.exit(exit_status)
-    capierreObject = Capierre(capierreParsing.file, capierreParsing.type_file, capierreParsing.sentence)
+    capierreObject = Capierre(capierreParsing.file_to_hide,
+                              capierreParsing.type_file,
+                              capierreParsing.sentence,
+                              capierreParsing.binary_file
+                              )
     capierreObject.hide_information()
 
 if __name__ == '__main__':
