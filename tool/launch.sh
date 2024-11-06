@@ -7,8 +7,6 @@ BINARY_PATH="./dist/capierre_binary"
 
 echo "Dossier courant : $CURRENT_DIR"
 
-ls -la -R
-
 if [ "$CURRENT_DIR" != "$EXPECTED_DIR" ]; then
     echo "Erreur : Ce script doit être exécuté depuis le dossier 'Capierre/tool'"
     exit 1
