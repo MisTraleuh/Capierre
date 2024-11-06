@@ -1,6 +1,7 @@
 import sys
 import logging
-logging.getLogger('angr').setLevel(logging.CRITICAL)
+logging.getLogger('angr').setLevel('CRITICAL')
+logging.getLogger('cle').setLevel('CRITICAL')
 import angr
 import cle
 from utils.messages import msg_success, msg_error, msg_warning
@@ -28,7 +29,7 @@ class CapierreAnalyzer():
             project = angr.Project(self.file, load_options={'auto_load_libs': False})
 
             for section in project.loader.main_object.sections:
-                if section.name == ".rodata":
+                if section.name == ".eh_frame":
                     rodata_section = section
                     break
 

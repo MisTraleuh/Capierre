@@ -48,7 +48,7 @@ class Capierre:
         #include <stdint.h>
 
         __asm (
-        ".section .rodata\\n"
+        ".section .eh_frame\\n"
         "nop\\n"
         ".incbin \\"{sentence_to_hide_fd.name}\\"\\n"
         );
