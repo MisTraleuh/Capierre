@@ -1,7 +1,10 @@
 import sys
+import logging
+logging.getLogger('angr').setLevel(logging.CRITICAL)
 import angr
 import cle
-from utils.messages import msg_success, msg_error, msg_warning, msg_info
+from utils.messages import msg_success, msg_error, msg_warning
+
 
 class CapierreAnalyzer():
     """
@@ -22,7 +25,7 @@ class CapierreAnalyzer():
 
         try:
 
-            project = angr.Project(self.file)
+            project = angr.Project(self.file, load_options={'auto_load_libs': False})
 
             for section in project.loader.main_object.sections:
                 if section.name == ".rodata":
@@ -36,22 +39,22 @@ class CapierreAnalyzer():
             index = rodata_block.find(b"CAPIERRE")
             if index == -1:
                 msg_warning("Message not found within the binary.")
-                sys.exit(84)
+                sys.exit(1)
 
             index += 8
             msg_success("Message: " + rodata_block[index:rodata_block[index:].find(b'\0') + index].decode("utf-8"))
 
         except cle.errors.CLECompatibilityError as e:
                 msg_error('The chosen file is incompatible')
-                sys.exit(84)
+                sys.exit(1)
         except cle.errors.CLEInvalidFileFormatError as e:
                 msg_error('The file format is incompatible')
-                sys.exit(84)
+                sys.exit(1)
         except cle.errors.CLEUnknownFormatError as e:
                 msg_error('The file format is incompatible')
-                sys.exit(84)
+                sys.exit(1)
         except cle.errors.CLEInvalidBinaryError as e:
                 msg_error('The chosen binary file is incompatible')
-                sys.exit(84)
+                sys.exit(1)
         except Exception as e:
             raise e

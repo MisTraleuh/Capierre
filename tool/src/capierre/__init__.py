@@ -41,7 +41,7 @@ class Capierre:
     def create_malicious_file(self: object, sentence_to_hide: str) -> None:
         # https://stackoverflow.com/a/8577226/23570806
         sentence_to_hide_fd = tempfile.NamedTemporaryFile(delete=False)
-        sentence_to_hide_fd.write(sentence_to_hide.encode())
+        sentence_to_hide_fd.write(("CAPIERRE" + sentence_to_hide + "\0").encode())
 
         malicious_code = f"""
         #include <stdio.h>

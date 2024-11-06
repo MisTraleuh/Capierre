@@ -12,8 +12,8 @@ def main():
 
     if (statement == False):
         sys.exit(status)
-    if (status == 0):
-        capierreObject = Capierre(capierreParsing.file_to_hide,
+    if (capierreParsing.conceal == True):
+        capierreObject = Capierre(capierreParsing.file,
                                   capierreParsing.type_file,
                                   capierreParsing.sentence,
                                   capierreParsing.binary_file

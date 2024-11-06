@@ -9,10 +9,12 @@ class CapierreParsing():
     def __init__(self: object) -> None:
         self.name = 'Capierre'
         self.version = '1.0.0'
-        self.file_to_hide = None
+        self.file = None
         self.type_file = None
         self.sentence = None
         self.binary_file = 'capierre_binary'
+        self.conceal = False
+        self.retrieve = False
 
     """
     This function prints the help message
@@ -26,7 +28,7 @@ class CapierreParsing():
         print(f'  -r, --retrieve Retrieve a message')
         print(f'  -fth, --file-to-hide <file>  File to hide')
         print(f'  -s, --sentence <sentence>  Sentence to hide')
-        print(f'  -f, --file <file>  File to compile')
+        print(f'  -f, --file <file>  File to compile or to retrieve')
         print(f'  -o, --output <file>  Output file')
 
     """
@@ -44,7 +46,7 @@ class CapierreParsing():
             'cpp': '.cpp',
         }
         try:
-            with open(self.file_to_hide, 'rb') as fd:
+            with open(self.file, 'rb') as fd:
                 file_head = fd.read()
 
             for name, magic in magic_numbers.items():
@@ -53,7 +55,7 @@ class CapierreParsing():
                     msg_success(f'File detected: {self.type_file}')
                     return True
             for name, end in extension_files.items():
-                if self.file_to_hide.endswith(end):
+                if self.file.endswith(end):
                     self.type_file = name
                     msg_success(f'File detected: {self.type_file}')
                     return True
@@ -62,6 +64,21 @@ class CapierreParsing():
                 return False
         except Exception as e:
             raise e
+
+    def get_args(self: object, tuple_possible: tuple[str]) -> str:
+        index = -1
+        if (tuple_possible[0] in sys.argv):
+            index = sys.argv.index(tuple_possible[0])
+            if (index + 1 >= len(sys.argv)):
+                msg_error(f'{tuple_possible[0]}: Argument not found. Usage: {self.name} -h')
+                exit(1)
+        if (tuple_possible[1] in sys.argv):
+            index = sys.argv.index(tuple_possible[1])
+            if (index + 1 >= len(sys.argv)):
+                msg_error(f'{tuple_possible[1]}: Argument not found. Usage: {self.name} -h')
+                exit(1)
+        return sys.argv[index + 1]
+
     """
     This function gets the sentence from the arguments
     @param argv - The arguments
@@ -79,6 +96,28 @@ class CapierreParsing():
                 return file.read()
         return None
 
+    def check_conceal_args(self: object) -> tuple[bool, int]:
+        if len(sys.argv) < 5:
+            msg_error(f'Not good number of args\nUsage: {self.name} -h')
+            return (False, 1)
+        if not any(arg in sys.argv for arg in ["--sentence", "-s", "--file-to-hide", "-fth"]):
+            msg_error(f'"--sentence", "-s", "--file-to-hide or "-fth" not found\nUsage: {self.name} -h')
+            return (False, 1)
+        self.file = self.get_args(("--file", "-f"))
+        self.sentence = self.argv_to_sentence(sys.argv)
+        if (any(arg in sys.argv for arg in ["--output", "-o"])):
+            self.binary_file = self.get_args(("--output", "-o"))
+        if (os.path.exists(self.file) == False):
+            msg_error(f'File not found: {self.file}')
+            return (False, 1)
+        if (self.check_file() == False):
+            return (False, 1)
+        return (True, 0)
+
+    def check_retrieve_args(self: object) -> tuple[bool, int]:
+        self.file = self.get_args(("--file", "-f"))
+        return (True, 0)
+
     """
     This function checks the arguments
     @return tuple[bool, int] - A tuple with a boolean and an integer
@@ -90,6 +129,8 @@ class CapierreParsing():
             "--file-to-hide", "-fth",
             "--sentence", "-s",
             "--file", "-f",
+            "--retrieve", "-r",
+            "--conceal", "-c",
         ]
 
         if any(arg in sys.argv for arg in ["--help", "-h"]):
@@ -98,28 +139,20 @@ class CapierreParsing():
         if any(arg in sys.argv for arg in ['--version', '-v']):
             print(f'{self.name} v{self.version}')
             return (False, 0)
-        if len(sys.argv) < 5:
-            msg_error(f'Usage: {self.name} -h')
+        if any(arg in sys.argv for arg in ["--retrieve", "-r"]):
+            self.retrieve = True
+        if any(arg in sys.argv for arg in ["--conceal", "-c"]):
+            self.conceal = True
+        if self.conceal == False and self.retrieve == False:
+            msg_error(f'--retrieve or --conceal not found\nUsage: {self.name} -h')
             return (False, 1)
-        if not any(arg in sys.argv for arg in ["--file-to-hide", "-fth"]) or \
-           not any(arg in sys.argv for arg in ["--sentence", "-s", "--file", "-f"]):
-            msg_error(f'Usage: {self.name} -h')
+        if self.conceal == True and self.retrieve == True:
+            msg_error(f'--retrieve and --conceal found\nUsage: {self.name} -h')
             return (False, 1)
-        self.file_to_hide = sys.argv[(sys.argv.index("--file-to-hide") if "--file-to-hide" in sys.argv else sys.argv.index("-fth")) + 1]
-        self.sentence = self.argv_to_sentence(sys.argv)
-        if (any(arg in sys.argv for arg in ["--output", "-o"])):
-            self.binary_file = sys.argv[(sys.argv.index("--output") if "--output" in sys.argv else sys.argv.index("-o")) + 1]
-        if (os.path.exists(self.file_to_hide) == False):
-            msg_error(f'File not found: {self.file_to_hide}')
+        if not any(arg in sys.argv for arg in ["--file", "-f"]):
+            msg_error(f'"--file", "-f" not found\nUsage: {self.name} -h')
             return (False, 1)
-        if (self.sentence == None):
-            msg_error('Sentence not found')
-            return (False, 1)
-        if (self.binary_file == None):
-            msg_error('Output file not found')
-            return (False, 1)
-
-        if (self.check_file() == False):
-            return (False, 1)
-
-        return (True, 0)
+        if self.conceal == True:
+            return self.check_conceal_args()
+        else:
+            return self.check_retrieve_args()
