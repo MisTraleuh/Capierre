@@ -4,6 +4,9 @@ import os
 BINARY_PATH = "../dist/capierre_binary"
 BINARY_FILE_NAME = 'capierre_binary'
 
+"""
+ERROR TESTS
+"""
 def test_no_arguments():
     result = subprocess.run(
         [BINARY_PATH],
@@ -12,7 +15,7 @@ def test_no_arguments():
         text=True
     )
     assert result.returncode == 1
-    expected_output = "[-] Usage: Capierre <option> [file] [sentence]\n"
+    expected_output = "[-] Usage: Capierre -h\n"
     assert result.stdout == expected_output
 
 def test_help_argument():
@@ -35,8 +38,8 @@ def test_hidding_a_hello_world_c_file():
         text=True
     )
     assert result.returncode == 0
-    expected_output = f"[+] File detected: c\n[i] Hidden sentence: {sentence_to_hide}\n[+] Code compiled successfully\n"
-    assert result.stdout == expected_output
+    expected_output_capierre_tool = f"[+] File detected: c\n[i] Hidden sentence: {sentence_to_hide}\n[+] Code compiled successfully\n"
+    assert result.stdout == expected_output_capierre_tool
     result = subprocess.run(
         ['./capierre_binary'],
         stdout=subprocess.PIPE,
@@ -44,7 +47,8 @@ def test_hidding_a_hello_world_c_file():
         text=True
     )
     assert result.returncode == 0
-    expected_output = f"Hello World!"
+    expected_output_launch_c_file = f"Hello, World! C file\n"
+    assert result.stdout == expected_output_launch_c_file
 
     strings_process = subprocess.Popen(
         ['strings', 'capierre_binary'],
@@ -54,7 +58,7 @@ def test_hidding_a_hello_world_c_file():
     )
 
     grep_process = subprocess.Popen(
-        ['grep', expected_output],
+        ['grep', sentence_to_hide],
         stdin=strings_process.stdout,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -64,7 +68,52 @@ def test_hidding_a_hello_world_c_file():
     strings_process.stdout.close()
     output, error = grep_process.communicate()
 
-    expected_output = "Hello World!\n"
-    assert output == expected_output
+    expected_output_find_the_sentence_hide = sentence_to_hide + "\n"
+    assert output == expected_output_find_the_sentence_hide
     os.remove(BINARY_FILE_NAME)
-    
+
+def test_hidding_a_special_sentence_cpp_file():
+    sentence_to_hide = "This is a very special sentence +-*!@#$%^&*()_+^^^^<<>> 1234567890 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ ' \"````"
+    result = subprocess.run(
+        [BINARY_PATH,
+            '--file-to-hide', 'tests/main.cpp',
+            '--sentence', sentence_to_hide],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    assert result.returncode == 0
+    expected_output_capierre_tool = f"[+] File detected: cpp\n[i] Hidden sentence: {sentence_to_hide}\n[+] Code compiled successfully\n"
+    assert result.stdout == expected_output_capierre_tool
+    result = subprocess.run(
+        ['./capierre_binary'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    assert result.returncode == 0
+    expected_output_launch_c_file = f"Hello, World! C++ file\n"
+    assert result.stdout == expected_output_launch_c_file
+
+    strings_process = subprocess.Popen(
+        ['strings', 'capierre_binary'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+
+    grep_process = subprocess.Popen(
+        # https://stackoverflow.com/questions/12387685/grep-for-special-characters-in-unix
+        ['grep', '-F', sentence_to_hide],
+        stdin=strings_process.stdout,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+
+    strings_process.stdout.close()
+    output, error = grep_process.communicate()
+
+    expected_output_find_the_sentence_hide = sentence_to_hide + "\n"
+    assert output == expected_output_find_the_sentence_hide
+    os.remove(BINARY_FILE_NAME)

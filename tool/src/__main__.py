@@ -12,9 +12,12 @@ def main():
 
     if (statement == False):
         sys.exit(status)
-
     if (status == 0):
-        capierreObject = Capierre(capierreParsing.file, capierreParsing.type_file, capierreParsing.sentence)
+        capierreObject = Capierre(capierreParsing.file_to_hide,
+                                  capierreParsing.type_file,
+                                  capierreParsing.sentence,
+                                  capierreParsing.binary_file
+                                  )
         capierreObject.hide_information()
     else:
         capierreAnalyzer = CapierreAnalyzer(capierreParsing.file)
