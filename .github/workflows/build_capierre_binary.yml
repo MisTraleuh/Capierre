@@ -25,7 +25,12 @@ jobs:
         working-directory: ./tool
         run: |
           pip3 install -r requirements.txt
-          pyinstaller --onefile --name capierre_binary src/__main__.py
+          pyinstaller \
+            --collect-all z3        \
+            --collect-all pyvex     \
+            --collect-all angr      \
+            --collect-all unicorn   \
+            --onefile --name capierre_binary src/__main__.py
 
       - name: Tests Fonctionnels
         working-directory: ./tool

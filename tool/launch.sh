@@ -3,11 +3,19 @@
 # https://stackoverflow.com/a/1744678/23570806
 CURRENT_DIR="${PWD##*/}"
 EXPECTED_DIR="tool"
+BINARY_PATH="./dist/capierre_binary"
 
 echo "Dossier courant : $CURRENT_DIR"
 
+ls -la -R
+
 if [ "$CURRENT_DIR" != "$EXPECTED_DIR" ]; then
     echo "Erreur : Ce script doit être exécuté depuis le dossier 'Capierre/tool'"
+    exit 1
+fi
+
+if [ ! -f "$BINARY_PATH" ]; then
+    echo "Erreur : Le fichier ./dist/capierre est introuvable."
     exit 1
 fi
 
