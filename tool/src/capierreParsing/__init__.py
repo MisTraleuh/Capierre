@@ -13,6 +13,7 @@ class CapierreParsing():
         self.type_file = None
         self.sentence = None
         self.binary_file = 'capierre_binary'
+        self.output_file_retreive = None
         self.conceal = False
         self.retrieve = False
 
@@ -116,6 +117,8 @@ class CapierreParsing():
 
     def check_retrieve_args(self: object) -> tuple[bool, int]:
         self.file = self.get_args(("--file", "-f"))
+        if (any(arg in sys.argv for arg in ["--output", "-o"])):
+            self.output_file_retreive = self.get_args(("--output", "-o"))
         return (True, 0)
 
     """
