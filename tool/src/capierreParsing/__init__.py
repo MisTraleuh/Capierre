@@ -22,6 +22,8 @@ class CapierreParsing():
         print(f'Options:')
         print(f'  -h, --help     Show this help message and exit')
         print(f'  -v, --version  Show version of the tool')
+        print(f'  -c, --conceal  Hide a message')
+        print(f'  -r, --retrieve Retrieve a message')
         print(f'  -fth, --file-to-hide <file>  File to hide')
         print(f'  -s, --sentence <sentence>  Sentence to hide')
         print(f'  -f, --file <file>  File to compile')
@@ -116,6 +118,8 @@ class CapierreParsing():
         if (self.binary_file == None):
             msg_error('Output file not found')
             return (False, 1)
+
         if (self.check_file() == False):
             return (False, 1)
+
         return (True, 0)

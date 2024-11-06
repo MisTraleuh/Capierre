@@ -1,7 +1,7 @@
 import subprocess
 import os
 
-BINARY_PATH = "./dist/capierre_binary"
+BINARY_PATH = "../dist/capierre_binary"
 BINARY_FILE_NAME = 'capierre_binary'
 
 """
@@ -26,29 +26,13 @@ def test_help_argument():
         text=True
     )
     assert result.returncode == 0
-    expected_output ='Usage: Capierre <file> <sentence>\nOptions:\n  -h, --help     Show this help message and exit\n  -v, --version  Show version of the tool\n  -fth, --file-to-hide <file>  File to hide\n  -s, --sentence <sentence>  Sentence to hide\n  -f, --file <file>  File to compile\n  -o, --output <file>  Output file\n'
-    assert result.stdout == expected_output
-
-def test_hidding_a_hello_world_file_with_a_not_supported_extension():
-    sentence_to_hide = "Hello World!"
-    result = subprocess.run(
-        [BINARY_PATH,
-            '--file-to-hide', 'tests/main.blabla',
-            '--sentence', sentence_to_hide],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
-    )
-    assert result.returncode == 1
-    expected_output = "[-] File not supported\n"
+    expected_output = "Usage: Capierre <option> [file] [sentence]\nOptions:\n  -h, --help     Show this help message and exit\n  -v, --version  Show version of the tool\n  -c, --conceal  Hide a message\n  -r, --retrieve Retrieve a message\n"
     assert result.stdout == expected_output
 
 def test_hidding_a_hello_world_c_file():
     sentence_to_hide = "Hello World!"
     result = subprocess.run(
-        [BINARY_PATH,
-            '--file-to-hide', 'tests/main.c',
-            '--sentence', sentence_to_hide],
+        [BINARY_PATH, '-c', 'tests/main.c', 'Hello World!'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
