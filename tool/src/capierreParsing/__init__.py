@@ -87,8 +87,8 @@ class CapierreParsing():
     def argv_to_sentence(self: object, argv: object) -> object:
         if (any(arg in argv for arg in ["--sentence", "-s"])):
             return argv[(argv.index("--sentence") if "--sentence" in argv else argv.index("-s")) + 1]
-        if (any(arg in argv for arg in ["--file", "-f"])):
-            file_index = argv[(argv.index("--file") if "--file" in argv else argv.index("-f")) + 1]
+        if (any(arg in argv for arg in ["--file-to-hide", "-fth"])):
+            file_index = self.get_args(("--file-to-hide", "-fth"))
             if (os.path.exists(file_index) == False):
                 msg_error(f'File not found: {file_index}')
                 exit(1)
