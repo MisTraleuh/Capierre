@@ -11,8 +11,9 @@ class CapierreAnalyzer():
     """
     This class is responsible for analyzing the file.
     """
-    def __init__(self: object, file: str) -> None:
-        self.file = file
+    def __init__(self: object, file: str, output_file_retreive: str = None) -> None:
+        self.file: str = file
+        self.output_file_retreive: str = output_file_retreive
 
     """
     This function will read a binary and retrieve the hidden message.
@@ -36,14 +37,20 @@ class CapierreAnalyzer():
             with open(self.file, 'rb') as binary:
                 rodata_block = binary.read()[rodata_section.offset:rodata_section.offset + rodata_section.memsize]
             binary.close()
-
             index = rodata_block.find(b"CAPIERRE")
             if index == -1:
                 msg_warning("Message not found within the binary.")
                 sys.exit(1)
 
             index += 8
-            msg_success("Message: " + rodata_block[index:rodata_block[index:].find(b'\0') + index].decode("utf-8"))
+            if (self.output_file_retreive != None):
+                with open(self.output_file_retreive, 'wb') as file:
+                    data = rodata_block[index:rodata_block[index:].find(b'\0') + index]
+                    file.write(data)
+                file.close()
+                msg_success(f"Message retrieved and saved in {self.output_file_retreive}")
+            else:
+                msg_success("Message: " + rodata_block[index:rodata_block[index:].find(b'\0') + index].decode("utf-8"))
 
         except cle.errors.CLECompatibilityError as e:
                 msg_error('The chosen file is incompatible')

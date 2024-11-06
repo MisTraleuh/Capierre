@@ -38,10 +38,13 @@ class Capierre:
     @param sentence_to_hide: str - The sentence to hide
     @return Tuple[str, str] - The path of the malicious file and the path of the sentence to hide
     """
-    def create_malicious_file(self: object, sentence_to_hide: str) -> None:
+    def create_malicious_file(self: object, sentence_to_hide: str | bytes) -> tuple[str, str]:
         # https://stackoverflow.com/a/8577226/23570806
         sentence_to_hide_fd = tempfile.NamedTemporaryFile(delete=False)
-        sentence_to_hide_fd.write(("CAPIERRE" + str(sentence_to_hide) + "\0").encode())
+        if type(sentence_to_hide) == str:
+            sentence_to_hide_fd.write(("CAPIERRE" + sentence_to_hide + "\0").encode())
+        else:
+            sentence_to_hide_fd.write(b"CAPIERRE" + sentence_to_hide + b"\0")
 
         malicious_code = f"""
         #include <stdio.h>
