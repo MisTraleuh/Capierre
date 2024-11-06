@@ -92,7 +92,7 @@ class CapierreParsing():
             if (os.path.exists(file_index) == False):
                 msg_error(f'File not found: {file_index}')
                 exit(1)
-            with open(file_index, 'r') as file:
+            with open(file_index, 'rb') as file:
                 return file.read()
         return None
 
