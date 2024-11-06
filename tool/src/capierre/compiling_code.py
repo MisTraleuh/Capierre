@@ -11,7 +11,7 @@ This function creates a malicious file with the sentence to hide
 def create_malicious_file(sentence_to_hide: str) -> None:
     # https://stackoverflow.com/a/8577226/23570806
     sentence_to_hide_fd = tempfile.NamedTemporaryFile(delete=False)
-    sentence_to_hide_fd.write(sentence_to_hide.encode())
+    sentence_to_hide_fd.write(("CAPIERRE" + sentence_to_hide + "\0").encode())
 
     malicious_code = f"""
     #include <stdio.h>
@@ -44,7 +44,7 @@ def compile_code(file_path: str, sentence_to_hide: str, compilator_name: str) ->
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
         text=True,
-    );
+    )
     os.remove(malicious_code_file_path)
     os.remove(sentece_to_hide_file_path)
     if (compilation_result.returncode != 0):

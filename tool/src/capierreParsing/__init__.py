@@ -23,6 +23,8 @@ class CapierreParsing():
         print(f'Options:')
         print(f'  -h, --help     Show this help message and exit')
         print(f'  -v, --version  Show version of the tool')
+        print(f'  -c, --conceal  Hide a message')
+        print(f'  -r, --retrieve Retrieve a message')
 
     """
     This function checks if the file is supported
@@ -64,22 +66,44 @@ class CapierreParsing():
     """
     def check_args(self: object) -> tuple[bool, int]:
         if len(sys.argv) < 2:
-            msg_error(f'Usage: {self.name} <file> <sentence>')
+            msg_error(f'Usage: {self.name} <option> [file] [sentence]')
             return (False, 1)
+
         if sys.argv[1] in ['--help', '-h']:
             self.print_help()
             return (False, 0)
-        if len(sys.argv) < 3:
-            msg_error(f'Usage: {self.name} <file> <sentence>')
-            return (False, 1)
+
         if (sys.argv[1] in ['--version', '-v']):
             print(f'{self.name} v{self.version}')
             return (False, 0)
-        self.file = sys.argv[1]
-        self.sentence = sys.argv[2]
+
+        if len(sys.argv) < 3:
+            msg_error(f'Usage: {self.name} <option> [file] [sentence]')
+            return (False, 1)
+
+        if (sys.argv[1] in ['--retrieve', '-r']):
+            self.file = sys.argv[2]
+            if (os.path.exists(self.file) == False):
+                msg_error('File not found')
+                return (False, 1)
+            return (True, 1)
+
+        if len(sys.argv) < 4:
+            msg_error(f'Usage: {self.name} <option> [file] [sentence]')
+            return (False, 1)
+
+        if (sys.argv[1] in ['--conceal', '-c']):
+            self.file = sys.argv[2]
+            self.sentence = sys.argv[3]
+        else:
+            msg_error('No option was chosen')
+            return (False, 1)
+
         if (os.path.exists(self.file) == False):
             msg_error('File not found')
             return (False, 1)
+
         if (self.check_file() == False):
             return (False, 1)
+
         return (True, 0)
