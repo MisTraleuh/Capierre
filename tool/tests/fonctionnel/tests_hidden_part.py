@@ -82,7 +82,7 @@ def test_hidding_a_hello_world_c_file():
     strings_process.stdout.close()
     output, error = grep_process.communicate()
 
-    expected_output_find_the_sentence_hide = MAGIC_WORD + sentence_to_hide + "\n"
+    expected_output_find_the_sentence_hide = f"{MAGIC_NUMBER_START}{sentence_to_hide}{MAGIC_NUMBER_END}\n"
     assert output == expected_output_find_the_sentence_hide
     os.remove(BINARY_FILE_NAME)
 
@@ -128,7 +128,7 @@ def test_hidding_a_special_sentence_cpp_file():
     strings_process.stdout.close()
     output, error = grep_process.communicate()
 
-    expected_output_find_the_sentence_hide = MAGIC_WORD + sentence_to_hide + "\n"
+    expected_output_find_the_sentence_hide = f"{MAGIC_NUMBER_START}{sentence_to_hide}{MAGIC_NUMBER_END}\n"
     assert output == expected_output_find_the_sentence_hide
     os.remove(BINARY_FILE_NAME)
 
@@ -176,6 +176,6 @@ def test_hidding_a_file_in_c_file():
     strings_process.stdout.close()
     output, error = grep_process.communicate()
 
-    expected_output_find_the_sentence_hide = MAGIC_WORD + sentence_to_hide + "\n"
+    expected_output_find_the_sentence_hide = f"{MAGIC_NUMBER_START}{sentence_to_hide}{MAGIC_NUMBER_END}\n"
     assert output == expected_output_find_the_sentence_hide
     os.remove(BINARY_FILE_NAME)

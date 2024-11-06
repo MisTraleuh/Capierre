@@ -3,6 +3,7 @@ from utils.messages import msg_success, msg_error, msg_info
 import subprocess
 import os
 import tempfile
+from capierreMagic import CapierreMagic
 
 class Capierre:
     """
@@ -35,16 +36,18 @@ class Capierre:
 
     """
     This function creates a malicious file with the sentence to hide
-    @param sentence_to_hide: str - The sentence to hide
+    @param sentence_to_hide: str | bytes - The sentence to hide
     @return Tuple[str, str] - The path of the malicious file and the path of the sentence to hide
     """
     def create_malicious_file(self: object, sentence_to_hide: str | bytes) -> tuple[str, str]:
+        capierre_magic: object = CapierreMagic()
+        data: bytes = sentence_to_hide
+
         # https://stackoverflow.com/a/8577226/23570806
         sentence_to_hide_fd = tempfile.NamedTemporaryFile(delete=False)
         if type(sentence_to_hide) == str:
-            sentence_to_hide_fd.write(("CAPIERRE" + sentence_to_hide + "\0").encode())
-        else:
-            sentence_to_hide_fd.write(b"CAPIERRE" + sentence_to_hide + b"\0")
+            data = data.encode()
+        sentence_to_hide_fd.write(capierre_magic.MAGIC_NUMBER_START + data + capierre_magic.MAGIC_NUMBER_END)
 
         malicious_code = f"""
         #include <stdio.h>
@@ -69,8 +72,11 @@ class Capierre:
     @param type_file: str - The type of file to compile
     @return None
     """
-    def compile_code(self: object, file_path: str, sentence_to_hide: str, compilator_name: str) -> None:
-        msg_info(f"Hidden sentence: {sentence_to_hide}")
+    def compile_code(self: object, file_path: str, sentence_to_hide: str | bytes, compilator_name: str) -> None:
+        info_message: str | bytes = sentence_to_hide
+        if type(sentence_to_hide) == bytes:
+            info_message = info_message.decode()
+        msg_info(f'Hidden sentence: {info_message}')
         (malicious_code_file_path, sentece_to_hide_file_path) = self.create_malicious_file(sentence_to_hide)
         compilation_result = subprocess.run(
             [compilator_name, file_path, malicious_code_file_path, '-o', self.binary_file],
