@@ -20,6 +20,7 @@ RUN /app/venv/bin/pyinstaller   \
         --collect-all pyvex     \
         --collect-all angr      \
         --collect-all unicorn   \
+        --collect-all cle       \
         --onefile --name capierre_binary /app/src/__main__.py
 
 CMD ["bash"]

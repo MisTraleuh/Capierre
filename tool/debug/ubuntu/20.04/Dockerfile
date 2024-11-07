@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 
 RUN apt-get update && apt-get install -y \
     python3 \
@@ -20,6 +20,7 @@ RUN /app/venv/bin/pyinstaller   \
         --collect-all pyvex     \
         --collect-all angr      \
         --collect-all unicorn   \
+        --collect-all cle       \
         --onefile --name capierre_binary /app/src/__main__.py
 
 CMD ["bash"]
