@@ -13,6 +13,7 @@ class CapierreParsing():
         self.type_file = None
         self.sentence = None
         self.binary_file = 'capierre_binary'
+        self.output_file_retreive = None
         self.conceal = False
         self.retrieve = False
 
@@ -87,12 +88,12 @@ class CapierreParsing():
     def argv_to_sentence(self: object, argv: object) -> object:
         if (any(arg in argv for arg in ["--sentence", "-s"])):
             return argv[(argv.index("--sentence") if "--sentence" in argv else argv.index("-s")) + 1]
-        if (any(arg in argv for arg in ["--file", "-f"])):
-            file_index = argv[(argv.index("--file") if "--file" in argv else argv.index("-f")) + 1]
+        if (any(arg in argv for arg in ["--file-to-hide", "-fth"])):
+            file_index = self.get_args(("--file-to-hide", "-fth"))
             if (os.path.exists(file_index) == False):
                 msg_error(f'File not found: {file_index}')
                 exit(1)
-            with open(file_index, 'r') as file:
+            with open(file_index, 'rb') as file:
                 return file.read()
         return None
 
@@ -116,6 +117,8 @@ class CapierreParsing():
 
     def check_retrieve_args(self: object) -> tuple[bool, int]:
         self.file = self.get_args(("--file", "-f"))
+        if (any(arg in sys.argv for arg in ["--output", "-o"])):
+            self.output_file_retreive = self.get_args(("--output", "-o"))
         return (True, 0)
 
     """

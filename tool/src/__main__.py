@@ -20,7 +20,7 @@ def main():
                                   )
         capierreObject.hide_information()
     else:
-        capierreAnalyzer = CapierreAnalyzer(capierreParsing.file)
+        capierreAnalyzer = CapierreAnalyzer(capierreParsing.file, capierreParsing.output_file_retreive)
         capierreAnalyzer.retrieve_message_from_binary()
 
 if __name__ == '__main__':
