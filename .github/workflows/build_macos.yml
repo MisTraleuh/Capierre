@@ -1,0 +1,44 @@
+name: Build Capierre Binary MacOS v.10.15, v.11.0 & v.12
+
+on:
+  push:
+    branches:
+      - main 
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-10.15, macos-11.0, macos-12]
+        python-version: [3.8, 3.9, 3.10, 3.11, 3.12]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies & Build binary
+        working-directory: ./tool
+        run: |
+          pip3 install -r requirements.txt
+          pyinstaller \
+            --collect-all z3        \
+            --collect-all pyvex     \
+            --collect-all angr      \
+            --collect-all unicorn   \
+            --onefile --name capierre_binary src/__main__.py
+
+      - name: Tests Fonctionnels
+        working-directory: ./tool
+        run: |
+          chmod +x launch_tests.sh
+          ./launch_tests.sh "fonctionnel"
