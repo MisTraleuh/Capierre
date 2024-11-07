@@ -20,7 +20,9 @@ if not exist "%BINARY_PATH%" (
 )
 
 if "%1"=="fonctionnel" (
-    pytest tests\fonctionnel\*.py
+    for %%f in (tests\fonctionnel\*.py) do (
+        pytest %%f
+    )
 ) else if "%1"=="unitaire" (
     pytest tests\test_unit.py
 ) else (
