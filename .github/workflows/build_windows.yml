@@ -51,6 +51,13 @@ jobs:
             --collect-all cle       `
             --onefile --name capierre_binary src/__main__.py
 
+      - name: Binary Test
+        working-directory: ./tool
+        run: |
+          ./dist/capierre_binary.exe --help
+          ./dist/capierre_binary.exe --version
+          ./dist/capierre_binary.exe --conceal --file ./tests/src/main.cpp --file-to-hide ./tests/src/HIDDEN_FILE
+
       - name: Tests Fonctionnels
         working-directory: ./tool
         run: |
