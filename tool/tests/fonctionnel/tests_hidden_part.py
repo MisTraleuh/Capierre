@@ -49,17 +49,7 @@ def test_hidding_a_hello_world_c_file():
     expected_output_launch_c_file = f"Hello, World! C file\n"
     assert result.stdout == expected_output_launch_c_file
 
-    strings_process = subprocess_popen(
-        ['strings', BINARY_FILE_NAME],
-    )
-
-    grep_process = subprocess_popen(
-        ['grep', sentence_to_hide],
-        stdin=strings_process.stdout,
-    )
-
-    strings_process.stdout.close()
-    output, error = grep_process.communicate()
+    output, error = search_hidden_text(BINARY_FILE_NAME, sentence_to_hide)
 
     expected_output_find_the_sentence_hide = f"{MAGIC_NUMBER_START}{sentence_to_hide}{MAGIC_NUMBER_END}\n"
     assert output == expected_output_find_the_sentence_hide
@@ -82,18 +72,7 @@ def test_hidding_a_special_sentence_cpp_file():
     expected_output_launch_c_file = f"Hello, World! C++ file\n"
     assert result.stdout == expected_output_launch_c_file
 
-    strings_process = subprocess_popen(
-        ['strings', BINARY_FILE_NAME],
-    )
-
-    grep_process = subprocess_popen(
-        # https://stackoverflow.com/questions/12387685/grep-for-special-characters-in-unix
-        ['grep', '-F', sentence_to_hide],
-        stdin=strings_process.stdout,
-    )
-
-    strings_process.stdout.close()
-    output, error = grep_process.communicate()
+    output, error = search_hidden_text(BINARY_FILE_NAME, sentence_to_hide)
 
     expected_output_find_the_sentence_hide = f"{MAGIC_NUMBER_START}{sentence_to_hide}{MAGIC_NUMBER_END}\n"
     assert output == expected_output_find_the_sentence_hide
@@ -118,18 +97,7 @@ def test_hidding_a_file_in_c_file():
     expected_output_launch_c_file = f"Hello, World! C++ file\n"
     assert result.stdout == expected_output_launch_c_file
 
-    strings_process = subprocess_popen(
-        ['strings', BINARY_FILE_NAME],
-    )
-
-    grep_process = subprocess_popen(
-        # https://stackoverflow.com/questions/12387685/grep-for-special-characters-in-unix
-        ['grep', '-F', sentence_to_hide],
-        stdin=strings_process.stdout,
-    )
-
-    strings_process.stdout.close()
-    output, error = grep_process.communicate()
+    output, error = search_hidden_text(BINARY_FILE_NAME, sentence_to_hide)
 
     expected_output_find_the_sentence_hide = f"{MAGIC_NUMBER_START}{sentence_to_hide}{MAGIC_NUMBER_END}\n"
     assert output == expected_output_find_the_sentence_hide

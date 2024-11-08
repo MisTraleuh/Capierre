@@ -1,3 +1,4 @@
+from __future__ import annotations
 import sys
 from utils.messages import msg_success, msg_error
 import os
