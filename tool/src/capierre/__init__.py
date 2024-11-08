@@ -48,6 +48,8 @@ class Capierre:
         if type(sentence_to_hide) == str:
             data = data.encode()
         sentence_to_hide_fd.write(capierre_magic.MAGIC_NUMBER_START + data + capierre_magic.MAGIC_NUMBER_END)
+        if (os.name == 'nt'):
+            sentence_to_hide_fd.name = sentence_to_hide_fd.name.replace('\\', '/')
 
         malicious_code = f"""
         #include <stdio.h>
