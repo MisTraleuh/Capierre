@@ -27,6 +27,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Setup C/C++ Compiler
+        id: setup-compiler
+        uses: rlalik/setup-cpp-compiler@master
+        with:
+          compiler: gcc-latest
+
+      - name: Verify GCC Installation
+        run: |
+          gcc --version
+          g++ --version
+
       - name: Install dependencies & Build binary
         working-directory: ./tool
         run: |
