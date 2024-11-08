@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="icon">
+    <file>icon/cog-64.ico</file>
+    <file>icon/logout-64.ico</file>
+    <file>icon/trophy-3-64.ico</file>
+    <file>icon/menu-4-64.ico</file>
+    <file>icon/magnifying-glass-3-64.ico</file>
+    <file>icon/eye-3-64.ico</file>
+    <file>icon/favicon-64.png</file>
+  </qresource>
+</RCC>
