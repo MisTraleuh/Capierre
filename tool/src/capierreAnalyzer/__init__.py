@@ -6,6 +6,7 @@ logging.getLogger('cle').setLevel('CRITICAL')
 import angr
 import os
 import cle
+import platform
 from utils.messages import msg_success, msg_error, msg_warning
 from capierreMagic import CapierreMagic
 
@@ -29,11 +30,14 @@ class CapierreAnalyzer():
         project: object = None
         rodata_section: object = None
         section_target: str = ''
-
-        if (os.name == 'nt'):
-                section_target = '.eh_fram'
-        elif (os.name == 'posix'):
-                section_target = '.eh_frame'
+        os_type: str = platform.system()
+             
+        if (os_type == 'Windows'):
+            section_target = '.eh_fram'
+        elif (os_type == 'Linux'):
+            section_target = '.eh_frame'
+        elif (os_type == 'Darwin'):
+             section_target = '__eh_frame'
         else:
             msg_error('OS not supported')
             sys.exit(1)
@@ -67,9 +71,6 @@ class CapierreAnalyzer():
 
         except cle.errors.CLECompatibilityError as e:
                 msg_error('The chosen file is incompatible')
-                sys.exit(1)
-        except cle.errors.CLEInvalidFileFormatError as e:
-                msg_error('The file format is incompatible')
                 sys.exit(1)
         except cle.errors.CLEUnknownFormatError as e:
                 msg_error('The file format is incompatible')

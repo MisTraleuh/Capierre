@@ -4,6 +4,8 @@ from utils.messages import msg_success, msg_error, msg_info
 import subprocess
 import os
 import tempfile
+import platform
+import struct
 from capierreMagic import CapierreMagic
 
 class Capierre:
@@ -44,19 +46,23 @@ class Capierre:
         capierre_magic: object = CapierreMagic()
         data: bytes = sentence_to_hide
         section: str = ''
+        length: str = ''
+        os_type: str = platform.system()
 
         # https://stackoverflow.com/a/8577226/23570806
         sentence_to_hide_fd = tempfile.NamedTemporaryFile(delete=False)
         if type(sentence_to_hide) == str:
             data = data.encode()
-        sentence_to_hide_fd.write(capierre_magic.MAGIC_NUMBER_START + data + capierre_magic.MAGIC_NUMBER_END)
-        if (os.name == 'nt'):
-            sentence_to_hide_fd.name = sentence_to_hide_fd.name.replace('\\', '/')
 
-        if (os.name == 'nt'):
-                section = '.eh_fram'
-        elif (os.name == 'posix'):
-                section = '.eh_frame'
+        length = struct.pack('<i', len(capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START + data + capierre_magic.MAGIC_NUMBER_END))
+        sentence_to_hide_fd.write(length + capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START + data + capierre_magic.MAGIC_NUMBER_END)
+        if (os_type == 'Windows'):
+            sentence_to_hide_fd.name = sentence_to_hide_fd.name.replace('\\', '/')
+            section = '.eh_fram'
+        elif (os_type == 'Linux'):
+            section = '.eh_frame'
+        elif (os_type == 'Darwin'):
+            section = '__TEXT,__eh_frame'
         else:
             msg_error('OS not supported')
             sys.exit(1)
@@ -67,7 +73,6 @@ class Capierre:
 
         __asm (
         ".section {section}\\n"
-        "nop\\n"
         ".incbin \\"{sentence_to_hide_fd.name}\\"\\n"
         );
         """
