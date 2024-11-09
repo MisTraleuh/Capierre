@@ -4,6 +4,7 @@ import logging
 logging.getLogger('angr').setLevel('CRITICAL')
 logging.getLogger('cle').setLevel('CRITICAL')
 import angr
+import os
 import cle
 from utils.messages import msg_success, msg_error, msg_warning
 from capierreMagic import CapierreMagic
@@ -27,13 +28,22 @@ class CapierreAnalyzer():
         rodata_block: bytes = []
         project: object = None
         rodata_section: object = None
+        section_target: str = ''
+
+        if (os.name == 'nt'):
+                section_target = '.eh_fram'
+        elif (os.name == 'posix'):
+                section_target = '.eh_frame'
+        else:
+            msg_error('OS not supported')
+            sys.exit(1)
 
         try:
 
             project = angr.Project(self.file, load_options={'auto_load_libs': False})
 
             for section in project.loader.main_object.sections:
-                if section.name == ".eh_frame":
+                if section.name == section_target:
                     rodata_section = section
                     break
 

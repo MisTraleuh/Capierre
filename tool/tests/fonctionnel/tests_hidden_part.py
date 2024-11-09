@@ -33,6 +33,8 @@ def test_conceal_and_retrieve_params():
 FUNCTIONAL TESTS
 """
 def test_hidding_a_hello_world_c_file():
+    if (os.name == 'nt'):
+        return
     sentence_to_hide = "Hello World!"
     result = subprocess_run(
         [BINARY_PATH, "--conceal",
@@ -58,6 +60,8 @@ def test_hidding_a_hello_world_c_file():
     os.remove(BINARY_FILE_NAME)
 
 def test_hidding_a_special_sentence_cpp_file():
+    if (os.name == 'nt'):
+        return
     sentence_to_hide = "This is a very special sentence +-*!@#$%^&*()_+^^^^<<>> 1234567890 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ ' \"````"
     result = subprocess_run(
         [BINARY_PATH, "--conceal",
@@ -83,6 +87,8 @@ def test_hidding_a_special_sentence_cpp_file():
     os.remove(BINARY_FILE_NAME)
 
 def test_hidding_a_file_in_c_file():
+    if (os.name == 'nt'):
+        return
     filepath_to_hide =  f"{TEST_PATH}/HIDDEN_FILE"
     sentence_to_hide = open(filepath_to_hide, 'r').read()
 

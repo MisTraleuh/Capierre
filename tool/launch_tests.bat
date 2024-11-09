@@ -20,9 +20,15 @@ if not exist "%BINARY_PATH%" (
 )
 
 if "%1"=="fonctionnel" (
+    setlocal enabledelayedexpansion
+    
+    set "files="
     for %%f in (tests\fonctionnel\*.py) do (
-        pytest %%f
+        set "files=!files! %%f"
     )
+    
+    echo Execution de : pytest !files!
+    call pytest !files!
 ) else if "%1"=="unitaire" (
     pytest tests\test_unit.py
 ) else (

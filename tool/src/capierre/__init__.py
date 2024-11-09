@@ -43,6 +43,7 @@ class Capierre:
     def create_malicious_file(self: object, sentence_to_hide: str | bytes) -> tuple[str, str]:
         capierre_magic: object = CapierreMagic()
         data: bytes = sentence_to_hide
+        section: str = ''
 
         # https://stackoverflow.com/a/8577226/23570806
         sentence_to_hide_fd = tempfile.NamedTemporaryFile(delete=False)
@@ -52,12 +53,20 @@ class Capierre:
         if (os.name == 'nt'):
             sentence_to_hide_fd.name = sentence_to_hide_fd.name.replace('\\', '/')
 
+        if (os.name == 'nt'):
+                section = '.eh_fram'
+        elif (os.name == 'posix'):
+                section = '.eh_frame'
+        else:
+            msg_error('OS not supported')
+            sys.exit(1)
+
         malicious_code = f"""
         #include <stdio.h>
         #include <stdint.h>
 
         __asm (
-        ".section .eh_frame\\n"
+        ".section {section}\\n"
         "nop\\n"
         ".incbin \\"{sentence_to_hide_fd.name}\\"\\n"
         );
@@ -92,4 +101,3 @@ class Capierre:
         if (compilation_result.returncode != 0):
             raise Exception(compilation_result.stderr.strip())
         msg_success('Code compiled successfully')
-

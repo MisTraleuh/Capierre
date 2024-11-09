@@ -4,7 +4,7 @@ import subprocess
 
 BINARY_PATH = f"{os.getcwd()}/dist/capierre_binary"
 TEST_PATH = f"{os.getcwd()}/tests/src"
-BINARY_FILE_NAME = f"{os.getcwd()}/capierre_binary"
+BINARY_FILE_NAME = f"{os.getcwd()}/capierre_binary" + (".exe" if os.name == 'nt' else "")
 MAGIC_NUMBER_START = "CAPIERRE"
 MAGIC_NUMBER_END = "EERIPAC"
 MAGIC_NUMBER_START_LEN = len(MAGIC_NUMBER_START)
