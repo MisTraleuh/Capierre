@@ -1,5 +1,6 @@
 from utils.messages import msg_error
 from Crypto.Cipher import AES
+from hashlib import sha256
 
 class CapierreCipher:
     """
@@ -34,12 +35,11 @@ class CapierreCipher:
 
         @return Returns `True` if successful, `False` otherwire (with error messages printed out) (`bool`).
         """
-        password_length = len(password)
+        password_hash = sha256(password).digest()
 
-        if password_length != 32:
-            password += b'\0' * (32 - password_length)
         try:
-            cipher = AES.new(password, mode="MODE_CBC")
+            cipher = AES.new(password_hash, mode="MODE_CBC")
+
             if decrypt:
                 self.output = cipher.decrypt(self.input)
             else:
