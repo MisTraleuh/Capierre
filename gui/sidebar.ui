@@ -20,17 +20,39 @@
       <layout class="QVBoxLayout" name="verticalLayout_5">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="minimumSize">
+            <size>
+             <width>50</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap resource="resource.qrc">:/icon/icon/favicon-64.png</pixmap>
+           </property>
+          </widget>
+         </item>
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <property name="spacing">
             <number>0</number>
            </property>
+           <property name="sizeConstraint">
+            <enum>QLayout::SetDefaultConstraint</enum>
+           </property>
            <item>
             <widget class="QLabel" name="label_3">
              <property name="minimumSize">
               <size>
-               <width>25</width>
-               <height>25</height>
+               <width>0</width>
+               <height>0</height>
               </size>
              </property>
              <property name="text">
@@ -42,8 +64,8 @@
             <widget class="QLabel" name="label_5">
              <property name="minimumSize">
               <size>
-               <width>25</width>
-               <height>25</height>
+               <width>0</width>
+               <height>0</height>
               </size>
              </property>
              <property name="text">
@@ -58,28 +80,6 @@
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="QPushButton" name="show_btn_2">
-           <property name="minimumSize">
-            <size>
-             <width>50</width>
-             <height>50</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Show</string>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>25</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="checkable">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QPushButton" name="retrieve_btn_2">
            <property name="minimumSize">
             <size>
@@ -89,6 +89,10 @@
            </property>
            <property name="text">
             <string>Retrieve</string>
+           </property>
+           <property name="icon">
+            <iconset resource="resource.qrc">
+             <normaloff>:/icon/icon/magnifying-glass-3-64.ico</normaloff>:/icon/icon/magnifying-glass-3-64.ico</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -121,6 +125,10 @@
            <property name="text">
             <string>Hide</string>
            </property>
+           <property name="icon">
+            <iconset resource="resource.qrc">
+             <normaloff>:/icon/icon/eye-3-64.ico</normaloff>:/icon/icon/eye-3-64.ico</iconset>
+           </property>
            <property name="iconSize">
             <size>
              <width>25</width>
@@ -148,6 +156,10 @@
            </property>
            <property name="text">
             <string>Challenges</string>
+           </property>
+           <property name="icon">
+            <iconset resource="resource.qrc">
+             <normaloff>:/icon/icon/trophy-3-64.ico</normaloff>:/icon/icon/trophy-3-64.ico</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -189,6 +201,10 @@
          <property name="text">
           <string>Exit</string>
          </property>
+         <property name="icon">
+          <iconset resource="resource.qrc">
+           <normaloff>:/icon/icon/logout-64.ico</normaloff>:/icon/icon/logout-64.ico</iconset>
+         </property>
          <property name="iconSize">
           <size>
            <width>25</width>
@@ -209,6 +225,32 @@
        <item>
         <widget class="QWidget" name="header_bar" native="true">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QPushButton" name="show_btn_1">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="resource.qrc">
+              <normaloff>:/icon/icon/menu-4-64.ico</normaloff>:/icon/icon/menu-4-64.ico</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>25</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QLabel" name="description">
             <property name="text">
@@ -255,7 +297,7 @@
        <item>
         <widget class="QStackedWidget" name="stackedWidget">
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="retrieve_page">
           <layout class="QGridLayout" name="gridLayout_4">
@@ -291,7 +333,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Retrieve Page</string>
+              <string>Hide Page</string>
              </property>
              <property name="scaledContents">
               <bool>false</bool>
@@ -355,32 +397,6 @@
        </item>
        <item>
         <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QPushButton" name="show_btn_1">
-           <property name="minimumSize">
-            <size>
-             <width>50</width>
-             <height>50</height>
-            </size>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="resource.qrc">
-             <normaloff>:/icon/icon/menu-4-64.ico</normaloff>:/icon/icon/menu-4-64.ico</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>25</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="checkable">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
          <item>
           <widget class="QPushButton" name="retrieve_btn_1">
            <property name="minimumSize">
@@ -527,11 +543,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>59</x>
-     <y>136</y>
+     <y>80</y>
     </hint>
     <hint type="destinationlabel">
      <x>139</x>
-     <y>155</y>
+     <y>99</y>
     </hint>
    </hints>
   </connection>
@@ -543,11 +559,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>63</x>
-     <y>199</y>
+     <y>143</y>
     </hint>
     <hint type="destinationlabel">
      <x>175</x>
-     <y>193</y>
+     <y>137</y>
     </hint>
    </hints>
   </connection>
@@ -559,11 +575,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>244</x>
-     <y>257</y>
+     <y>201</y>
     </hint>
     <hint type="destinationlabel">
      <x>66</x>
-     <y>263</y>
+     <y>207</y>
     </hint>
    </hints>
   </connection>
@@ -575,11 +591,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>144</x>
-     <y>198</y>
+     <y>142</y>
     </hint>
     <hint type="destinationlabel">
      <x>60</x>
-     <y>197</y>
+     <y>141</y>
     </hint>
    </hints>
   </connection>
@@ -591,27 +607,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>122</x>
-     <y>138</y>
+     <y>82</y>
     </hint>
     <hint type="destinationlabel">
      <x>62</x>
-     <y>143</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>show_btn_1</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>sidebar_full</receiver>
-   <slot>setHidden(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>62</x>
-     <y>102</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>135</x>
-     <y>300</y>
+     <y>87</y>
     </hint>
    </hints>
   </connection>
@@ -623,59 +623,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>67</x>
-     <y>260</y>
+     <y>204</y>
     </hint>
     <hint type="destinationlabel">
      <x>143</x>
-     <y>267</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>show_btn_2</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>sidebar_full</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>162</x>
-     <y>105</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>261</x>
-     <y>314</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>show_btn_2</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>show_btn_1</receiver>
-   <slot>setChecked(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>174</x>
-     <y>114</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>71</x>
-     <y>103</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>show_btn_1</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>show_btn_2</receiver>
-   <slot>setChecked(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>34</x>
-     <y>96</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>131</x>
-     <y>106</y>
+     <y>211</y>
     </hint>
    </hints>
   </connection>
@@ -708,6 +660,38 @@
     <hint type="destinationlabel">
      <x>84</x>
      <y>984</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>show_btn_1</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>sidebar_full</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>402</x>
+     <y>59</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>243</x>
+     <y>360</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>show_btn_1</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>sidebar_icon</receiver>
+   <slot>setHidden(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>374</x>
+     <y>52</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>50</x>
+     <y>332</y>
     </hint>
    </hints>
   </connection>
