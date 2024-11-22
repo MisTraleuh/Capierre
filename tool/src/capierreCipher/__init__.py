@@ -4,36 +4,21 @@ from hashlib import sha256
 
 class CapierreCipher:
     """
-    This class is the cypher module that provides encryption/decryption.
+    This class is the cipher module that provides encryption/decryption.
     At its core, it uses AES 256 CBC encryption method (that can be changed).
     """
 
-    # TODO: Used for performance, attributes must be added here before declaration.
-    __slots__ = (
-        "input",
-        "output"
-    )
-
-    def __init__(self, input: bytes) -> None:
+    def cipher(self, input: bytes, password: bytes, *, decrypt: bool) -> bytes:
         """
-        The constructor accepts one argument: `input` (`bytes`).
-        In order to perform encryption or decryption, you need to call the `cipher` method of the object.
-
-        @param input: The input bytes to be ciphered (`bytes`).
-        """
-        self.input: bytes = input
-        self.output: bytes = b''
-
-    def cipher(self, password: bytes, *, decrypt: bool) -> bool:
-        """
-        This method encrypt or decrypt the content of the `input` attribute and store the result in the `output` attribute.
+        This method encrypt or decrypt the content of the `input` and returns the ciphered message.
         If `decrypt` is True, then the cipher will attempt to decrypt `input`.
-        The `password` must be a sequence of bytes and will need to be 32 bytes long, filled with zero's otherwise.
+        This function can raise 
 
+        @param input: Message input (`bytes`).
         @param password: Password input (`bytes`).
         @param decrypt: Enable decryption mode if `True` (`bool`).
 
-        @return Returns `True` if successful, `False` otherwire (with error messages printed out) (`bool`).
+        @return Returns the encrypted/decrypted message.
         """
         password_hash = sha256(password).digest()
 
@@ -41,10 +26,8 @@ class CapierreCipher:
             cipher = AES.new(password_hash, mode="MODE_CBC")
 
             if decrypt:
-                self.output = cipher.decrypt(self.input)
-            else:
-                self.output = cipher.encrypt(self.input)
+                return cipher.decrypt(input)
+            return cipher.encrypt(input)
         except Exception as e:
             msg_error(f"Cipher error: {e}")
-            return False
-        return True
+            raise e
