@@ -35,6 +35,10 @@ class MainWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+
+    with open('style.qss', 'r') as style_files:
+        style_str = style_files.read()
+    app.setStyleSheet(style_str)
     window = MainWindow()
     window.show()
     sys.exit(app.exec())

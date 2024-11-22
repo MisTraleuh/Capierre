@@ -1,0 +1,79 @@
+#MainWindow {
+    background-color: #282c34;
+    border: 1px solid rgb(44, 49, 58);
+}
+
+#sidebar_icon {
+    background-color: rgb(33, 37, 43);
+}
+
+#sidebar_full {
+    background-color: rgb(33, 37, 43);
+}
+
+.QLabel {
+	color: rgb(210, 210, 210);
+}
+
+#sidebar_full .QPushButton {
+    background-position: left center;
+    background-repeat: no-repeat;
+	color:	rgb(210, 210, 210);
+	border: none;
+	border-left: 22px solid transparent;
+	background-color:transparent;
+	text-align: left;
+}
+
+#sidebar_icon .QPushButton {
+    background-position: left center;
+    background-repeat: no-repeat;
+	color:	rgb(210, 210, 210);
+	border: none;
+	border-left: 22px solid transparent;
+	background-color:transparent;
+	text-align: left;
+}
+
+
+#sidebar_full .QPushButton:hover {
+	background-color: rgb(40, 44, 52);
+}
+
+#sidebar_full .QPushButton:pressed {	
+	background-color: rgb(189, 147, 249);
+	color: rgb(255, 255, 255);
+}
+
+#sidebar_icon .QPushButton:hover {
+	background-color: rgb(40, 44, 52);
+}
+
+#sidebar_icon .QPushButton:pressed {	
+	background-color: rgb(189, 147, 249);
+	color: rgb(255, 255, 255);
+}
+
+#header_bar {
+    background-color: rgb(33, 37, 43);
+}
+
+#header_bar .QPushButton {
+    background-position: left center;
+    background-repeat: no-repeat;
+	border: none;
+	border-left: 22px solid transparent;
+	background-color:transparent;
+	text-align: left;
+}
+
+#header_bar .QPushButton:hover {
+	background-color: rgb(40, 44, 52);
+}
+
+#header_bar .QPushButton:pressed {	
+	background-color: rgb(189, 147, 249);
+	color: rgb(255, 255, 255);
+}
+
+
