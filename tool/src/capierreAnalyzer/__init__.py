@@ -28,7 +28,7 @@ class CapierreAnalyzer():
         rodata_block: bytes = []
         project: object = None
         rodata_section: object = None
-        section_target: str = capierre_magic.SECTION
+        section_target: str = capierre_magic.SECTION_RETRIEVE
 
         try:
 

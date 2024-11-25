@@ -45,7 +45,7 @@ class Capierre:
     def create_malicious_file(self: object, sentence_to_hide: str | bytes) -> tuple[str, str]:
         capierre_magic: object = CapierreMagic()
         data: bytes = sentence_to_hide
-        section: str = capierre_magic.SECTION
+        section: str = capierre_magic.SECTION_HIDE
         sentence_to_hide_length_sereal: str = ''
 
         # https://stackoverflow.com/a/8577226/23570806
@@ -100,7 +100,7 @@ class Capierre:
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
             text=True,
-        );
+        )
         os.remove(malicious_code_file_path)
         os.remove(sentece_to_hide_file_path)
         if (compilation_result.returncode != 0):
