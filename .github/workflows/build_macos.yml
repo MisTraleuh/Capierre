@@ -44,7 +44,7 @@ jobs:
       - name: Install dependencies & Build binary
         working-directory: ./tool
         run: |
-          sudo apt-get install qtbase5-dev
+          brew install qt5
           pip3 install -r requirements.txt
           pyinstaller \
             --collect-all z3        \
