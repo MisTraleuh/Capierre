@@ -14,6 +14,14 @@ fi
 
 if [ ! -f "$BINARY_PATH" ]; then
     echo "Erreur : Le fichier ./dist/capierre est introuvable."
+    pip3 install -r requirements.txt
+    pyinstaller \
+        --collect-all z3        \
+        --collect-all pyvex     \
+        --collect-all angr      \
+        --collect-all unicorn   \
+        --collect-all cle       \
+        --onefile --name capierre_binary src/__main__.py
     exit 1
 fi
 
