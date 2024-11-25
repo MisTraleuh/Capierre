@@ -36,6 +36,8 @@ jobs:
 
       - name: Verify GCC Installation
         run: |
+          ln -sf /usr/local/bin/gcc-14 /usr/local/bin/gcc
+          ln -sf /usr/local/bin/g++-14 /usr/local/bin/g++
           gcc --version
           g++ --version
   
