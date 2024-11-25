@@ -14,7 +14,7 @@ class CapierreMagic():
     This function chooses the section to hide the information
     @return str - The section to hide the information | CAN BE None
     """
-    def choose_section(self, section: str) -> str | None:
+    def choose_section(self) -> str | None:
         os_type: str = platform.system()
         section: str = ''
 
