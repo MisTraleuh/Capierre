@@ -1,4 +1,4 @@
-name: Build Capierre Binary Ubuntu v.20.04 & v.22.04
+name: Capierre All Tests
 
 on:
   push:
@@ -10,13 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
-        python-version: [3.8, 3.9, 3.10.x, 3.11, 3.12]
-      fail-fast: false
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -25,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.x'
 
       - name: Install dependencies & Build binary
         working-directory: ./tool
@@ -36,11 +30,10 @@ jobs:
             --collect-all pyvex     \
             --collect-all angr      \
             --collect-all unicorn   \
-            --collect-all cle       \
             --onefile --name capierre_binary src/__main__.py
 
       - name: Tests Fonctionnels
         working-directory: ./tool
         run: |
-          chmod +x launch_tests.sh
-          ./launch_tests.sh "fonctionnel"
+          chmod +x launch.sh
+          ./launch.sh "fonctionnel"
