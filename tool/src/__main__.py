@@ -1,3 +1,4 @@
+from __future__ import annotations
 import sys
 from capierre.__init__ import Capierre
 from capierreParsing.__init__ import CapierreParsing
