@@ -33,7 +33,7 @@ class CapierreParsing:
         print(f"  -r, --retrieve Retrieve a message")
         print(f"  -fth, --file-to-hide <file>  File to hide")
         print(f"  -s, --sentence <sentence>  Sentence to hide")
-        print(f"  -p, --password <pass>  Password for encryption")
+        print(f"  -p, --password <password>  Password for encryption")
         print(f"  -f, --file <file>  File to compile or to retrieve")
         print(f"  -o, --output <file>  Output file")
 
@@ -92,6 +92,19 @@ class CapierreParsing:
                 exit(1)
         return sys.argv[index + 1]
 
+    def argv_to_password(self: CapierreParsing, argv: list[str]) -> str:
+        """
+        This function gets the password from the arguments
+        @param args - The arguments
+        @return str - The password
+        """
+        if any(arg in argv for arg in ["--password", "-p"]):
+            return argv[
+                (argv.index("--password") if "--password" in argv else argv.index("-p"))
+                + 1
+            ]
+        return str()
+
     def argv_to_sentence(self: CapierreParsing, argv: list[str]) -> str:
         """
         This function gets the sentence from the arguments
@@ -127,6 +140,7 @@ class CapierreParsing:
 
         self.file = self.get_args(("--file", "-f"))
         self.sentence = self.argv_to_sentence(sys.argv)
+        self.password = self.argv_to_password(sys.argv)
 
         if any(arg in sys.argv for arg in ["--output", "-o"]):
             self.binary_file = self.get_args(("--output", "-o"))

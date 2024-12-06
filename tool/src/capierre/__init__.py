@@ -33,12 +33,12 @@ class Capierre:
         self.password = password
         self.binary_file = binary_file
 
-    def encrypt_information(self: Capierre) -> None:
+    def cipher_information(self: Capierre, *, decrypt: bool) -> None:
         if len(self.password) == 0:
             msg_error("You must supply a password.")
             return
         self.sentence = CapierreCipher.cipher(
-            self.sentence, self.password, decrypt=False
+            self.sentence, self.password, decrypt=decrypt
         )
 
     def hide_information(self: Capierre) -> None:
@@ -51,6 +51,7 @@ class Capierre:
             "cpp": "g++",
         }
 
+        self.cipher_information(decrypt=False)
         if self.type_file in extension_files:
             self.compile_code(self.file, self.sentence, extension_files[self.type_file])
         else:

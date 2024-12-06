@@ -17,10 +17,11 @@ class CapierreAnalyzer:
     """
 
     def __init__(
-        self: CapierreAnalyzer, file: str, output_file_retreive: str = ""
+            self: CapierreAnalyzer, filepath: str, output_file_retreive: str, password: str
     ) -> None:
-        self.file: str = file
-        self.output_file_retreive: str = output_file_retreive
+        self.filepath = filepath
+        self.output_file_retreive = output_file_retreive
+        self.password = password
 
     def retrieve_message_from_binary(self: CapierreAnalyzer) -> None:
         """
@@ -36,14 +37,14 @@ class CapierreAnalyzer:
 
         try:
 
-            project = angr.Project(self.file, load_options={"auto_load_libs": False})
+            project = angr.Project(self.filepath, load_options={"auto_load_libs": False})
 
             for section in project.loader.main_object.sections:
                 if section.name == section_target:
                     rodata_section = section
                     break
 
-            with open(self.file, "rb") as binary:
+            with open(self.filepath, "rb") as binary:
                 rodata_block = binary.read()[
                     rodata_section.offset : rodata_section.offset
                     + rodata_section.memsize
