@@ -1,11 +1,14 @@
 FROM ubuntu:22.04
 
 RUN apt-get update && apt-get install -y \
-    python3 \
+    python3.10 \
+    python3.10-venv \
     python3-pip \
-    python3-venv \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
+
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+RUN update-alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip 1
 
 WORKDIR /app/tool
 
@@ -20,6 +23,7 @@ RUN /app/venv/bin/pyinstaller   \
         --collect-all pyvex     \
         --collect-all angr      \
         --collect-all unicorn   \
+        --collect-all cle       \
         --onefile --name capierre_binary /app/src/__main__.py
 
 CMD ["bash"]
