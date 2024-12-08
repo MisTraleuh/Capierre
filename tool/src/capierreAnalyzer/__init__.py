@@ -1,9 +1,12 @@
+from __future__ import annotations
 import sys
 import logging
 logging.getLogger('angr').setLevel('CRITICAL')
 logging.getLogger('cle').setLevel('CRITICAL')
 import angr
+import os
 import cle
+import platform
 from utils.messages import msg_success, msg_error, msg_warning
 from capierreMagic import CapierreMagic
 
@@ -26,13 +29,25 @@ class CapierreAnalyzer():
         rodata_block: bytes = []
         project: object = None
         rodata_section: object = None
+        section_target: str = ''
+        os_type: str = platform.system()
+             
+        if (os_type == 'Windows'):
+            section_target = '.eh_fram'
+        elif (os_type == 'Linux'):
+            section_target = '.eh_frame'
+        elif (os_type == 'Darwin'):
+             section_target = '__eh_frame'
+        else:
+            msg_error('OS not supported')
+            sys.exit(1)
 
         try:
 
             project = angr.Project(self.file, load_options={'auto_load_libs': False})
 
             for section in project.loader.main_object.sections:
-                if section.name == ".eh_frame":
+                if section.name == section_target:
                     rodata_section = section
                     break
 
@@ -56,9 +71,6 @@ class CapierreAnalyzer():
 
         except cle.errors.CLECompatibilityError as e:
                 msg_error('The chosen file is incompatible')
-                sys.exit(1)
-        except cle.errors.CLEInvalidFileFormatError as e:
-                msg_error('The file format is incompatible')
                 sys.exit(1)
         except cle.errors.CLEUnknownFormatError as e:
                 msg_error('The file format is incompatible')
