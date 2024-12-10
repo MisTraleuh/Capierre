@@ -2,10 +2,12 @@
 # 🏁 Introduction
 Welcome to the dedicated page for Capierre, a steganography tool designed to embed information into binaries while ensuring their functionality remains intact. This project merges the worlds of cybersecurity, software engineering, and practical steganography into a powerful tool that works seamlessly across Windows, Ubuntu, and macOS.
 
-:::danger ❗Warning ❗ This tool is for educational and ethical purposes only. Misuse of Capierre to bypass security systems or violate privacy is strictly prohibited and against the intent of this project.
+:::danger ❗Warning ❗
+This tool is for educational and ethical purposes only. Misuse of Capierre to bypass security systems or violate privacy is strictly prohibited and against the intent of this project.
 :::
 
-:::warning 📚 Prérequis To fully understand and use this project, a basic understanding of binary file structures, programming, and operating system nuances is recommended. However, we aim to make this accessible to all levels of users by providing clear documentation and examples.
+:::warning 📚 Prérequis
+To fully understand and use this project, a basic understanding of binary file structures, programming, and operating system nuances is recommended. However, we aim to make this accessible to all levels of users by providing clear documentation and examples.
 :::
 
 After these warnings, I invite you to explore Capierre and see how it redefines the boundaries of steganography. Let's dive in!

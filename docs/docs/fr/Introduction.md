@@ -1,50 +1,50 @@
+
 # 🏁 Introduction
 
-Bienvenue sur ma page dédiée aux write-ups pour divers challenges de CTF (Capture The Flag). Ici, je partage mes expériences, mes stratégies, et mes solutions pour divers challenges de CTF, avec un accent sur l'apprentissage et le développement des compétences en cybersécurité.
+Bienvenue sur la page dédiée à **Capierre**, un outil de stéganographie conçu pour intégrer des informations dans des fichiers binaires tout en maintenant leur fonctionnalité intacte. Ce projet combine les domaines de la cybersécurité, de l'ingénierie logicielle et de la stéganographie pratique en un outil puissant, compatible avec **Windows**, **Ubuntu** et **macOS**
 
-:::danger ❗Avertissement ❗
-Ces write-ups contiennent des spoilers pour les challenges de CTF. Si vous prévoyez de participer à ces challenges, je vous recommande de résoudre les problèmes par vous-même avant de consulter ces solutions. Cela vous permettra de tirer le meilleur parti de l'expérience d'apprentissage.
+:::danger ❗Warning ❗
+Cet outil est destiné à des fins éducatives et éthiques uniquement. Toute utilisation abusive de **Capierre** pour contourner des systèmes de sécurité ou violer la vie privée est strictement interdite et contraire à l'objectif de ce projet.
 :::
 
 :::warning 📚 Prérequis
-Pour profiter pleinement de ces write-ups, il est recommandé d'avoir une connaissance de base des concepts de cybersécurité, de la programmation, et des technologies courantes. Cependant, je m'efforce d'expliquer les concepts de manière détaillée pour rendre ces solutions accessibles à un large public.
+Pour comprendre et utiliser pleinement ce projet, une connaissance de base des structures de fichiers binaires, de la programmation et des systèmes d'exploitation est recommandée. Cependant, nous nous efforçons de rendre ce projet accessible à tous les utilisateurs en fournissant une documentation claire et des exemples détaillés.
 :::
 
-Après ces avertissements, je vous invite à explorer les write-ups et à découvrir les défis et les solutions qui vous attendent. Bonne lecture et bon apprentissage !
+Après ces avertissements, je vous invite à explorer Capierre et à découvrir comment il redéfinit les limites de la stéganographie. Plongeons ensemble dans ce projet !
 
 ## 📖 Vue d'ensemble
 
-Ces write-ups sont conçus pour fournir des insights détaillés sur les méthodes et techniques utilisées dans les challenges de CTF. Mon objectif est de créer une ressource éducative pour ceux qui cherchent à améliorer leurs compétences et à comprendre les complexités des problèmes de cybersécurité.
+**Capierre** vise à fournir une solution pratique pour intégrer des informations cachées de manière sécurisée dans des fichiers binaires. Contrairement aux outils de stéganographie traditionnels, Capierre garantit que le binaire modifié reste pleinement opérationnel, en faisant un choix unique et robuste pour le stockage d'informations dissimulées.
 
-## 🤨 Pourquoi des Write-Ups?
+**Caractéristiques principales :**
+- **Compatibilité multiplateforme** : Fonctionne sur Windows, Ubuntu et macOS.
+- **Préservation de la fonctionnalité** : Assure que le binaire modifié reste fonctionnel après l'intégration des données.
+- **Facilité d'utilisation** : Propose une interface conviviale et une documentation détaillée pour aider les utilisateurs à intégrer et extraire les données cachées.
 
-Les write-ups sont plus qu'une simple solution à un problème. Ils offrent une fenêtre sur le processus de réflexion et les méthodologies appliquées pour surmonter les défis des CTF. En partageant mes expériences, je souhaite :
+## 🤨 Pourquoi Capierre ?
 
-- Encourager l'apprentissage et l'exploration dans la communauté de la cybersécurité.
-- Fournir une référence pour ceux qui sont bloqués ou cherchent à valider leurs propres approches.
-- Contribuer à la culture de partage et d'éducation dans le domaine de la cybersécurité.
+Capierre est né du besoin d'un outil de stéganographie fiable et efficace qui ne compromet pas la fonctionnalité des binaires. En partageant ce projet, je vise à :
+- **Encourager l'exploration** : Offrir un moyen innovant d'apprendre la stéganographie et la manipulation binaire.
+- **Fournir un outil pratique** : Permettre aux utilisateurs d'intégrer des informations de manière sécurisée et efficace à des fins éducatives.
+- **Favoriser les contributions communautaires** : Encourager la collaboration pour améliorer l'outil et élargir ses cas d'utilisation.
 
-## 📋 Mon Approche
+## 📋 Mon approche
 
-Dans la rédaction de ces write-ups, je m'efforce de :
+Dans le développement de Capierre, l'accent a été mis sur :
 
-- Expliquer Clair et Concis : Chaque étape est expliquée de manière détaillée pour assurer la compréhension des concepts.
-- Promouvoir l'Apprentissage Actif : Je propose des guides qui incitent à la réflexion et à l'exploration, plutôt que des solutions directes.
-- Respecter l'Éthique : Les solutions ne seront publiées qu'après la fin des compétitions pour respecter l'intégrité des challenges de CTF.
-
+- **Maintenir l'intégrité** : Garantir que la fonctionnalité des binaires reste intacte après l'intégration des données.
+- **Simplifier les concepts complexes** : Rendre la stéganographie et la manipulation binaire accessibles grâce à des outils et des guides intuitifs.
+- **Respecter des normes éthiques** : Promouvoir l'utilisation de l'outil pour l'apprentissage, les tests et des objectifs éthiques uniquement.
 
 ## ♾️ Conclusion
 
-Je suis passionné par la cybersécurité et j'espère que ces write-ups vous seront utiles dans votre parcours d'apprentissage et de découverte. N'hésitez pas à les utiliser comme un outil pour développer vos compétences, mais je vous encourage vivement à essayer de résoudre les défis par vous-même avant de consulter mes solutions. Bon apprentissage !
+Capierre est bien plus qu'un simple outil : c'est un projet éducatif conçu pour repousser les limites de ce qui est possible en matière de stéganographie. J'espère qu'il vous inspirera à explorer le monde fascinant de la manipulation binaire tout en respectant les directives éthiques. Bon apprentissage et bonnes expérimentations !
 
-## 🐞 Report de Bugs
+## 🐞 Signaler un bug
 
-Si vous trouvez des erreurs, des inexactitudes ou des fautes de frappe dans ces write-ups, n'hésitez pas à me contacter ici:
+Si vous rencontrez des bugs, des inexactitudes ou avez des suggestions pour améliorer Capierre, n'hésitez pas à me contacter via :
 
-- [Github](https://github.com/MisTraleuh)
+- [GitHub Issues](https://github.com/MisTraleuh/Capierre/issues)
 - [Discord](https://discord.com/users/474143573928050710) : `mistraleuh`
-- [Twitter](https://twitter.com/MisTraleuh_)
-
-## 💖 Soutiens
-
-Vous pouvez me soutenir en m'offrant une bière 🍺 via [Buy Me a Beer](https://buymeacoffee.com/mistrale). Votre soutien est grandement apprécié et m'encourage à continuer à créer du contenu éducatif et informatif pour la communauté de la cybersécurité.
+- [Email](mailto:mistraleuh@gmail.com)

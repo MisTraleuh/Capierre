@@ -22,9 +22,29 @@ Assurez-vous d'avoir ``Python 3.9`` ou une version supérieure installée sur vo
 
 Vérifiez que ``pip3`` est installé sur votre machine. Si ce n'est pas le cas, installez-le avec la commande suivante :
 
+<CodeGroup>
+  <CodeGroupItem title="Ubuntu">
+
 ```bash
 $ sudo apt install python3-pip
 ```
+  </CodeGroupItem>
+
+  <CodeGroupItem title="MacOs">
+
+```bash
+$ brew install python3
+```
+  </CodeGroupItem>
+
+  <CodeGroupItem title="Windows">
+
+```bash
+$ choco install python
+```
+  </CodeGroupItem>
+</CodeGroup>
+
 :::
 
 ```bash
@@ -74,7 +94,7 @@ Le GUI est le programme qui permet de visualiser les fonctionnalités de l'outil
 
 Pour plus d'informations sur chaque partie du projet, vous pouvez consulter la documentation :
 
-- [Tool](./serveur/Serveur_Documentation.md)
+- [Tool](./tool/Tool_Documentation.md)
 - [Gui](./gui/Gui_Documentation.md)
 
 ## 💖 Support

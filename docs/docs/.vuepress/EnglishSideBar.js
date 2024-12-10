@@ -9,8 +9,15 @@ export default {
           {
             children: [
               '/en/Introduction.md',
-              '/en/How_to_use.md'
+              '/en/How_to_use.md',
             ],
+          },
+          {
+            collapsible: true,
+            text: '🛠️ Tool',
+            children: [
+              '/en/tool/Tool_Documentation.md',
+            ]
           },
         ],
       },

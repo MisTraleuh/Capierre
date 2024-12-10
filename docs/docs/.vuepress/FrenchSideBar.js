@@ -12,6 +12,13 @@ export default {
               '/fr/Comment_utiliser.md'
             ],
           },
+          {
+            collapsible: true,
+            text: '🛠️ Tool',
+            children: [
+              '/fr/tool/Tool_Documentation.md',
+            ]
+          },
         ],
     },
 }

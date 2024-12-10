@@ -9,5 +9,5 @@ actions:
     - text: Voir sur GitHub
       link: https://github.com/MisTraleuh/Capierre
       type: secondary
-footer: Made with ❤️ by MisTrale
+footer: Fais avec le ❤️ par MisTrale
 ---

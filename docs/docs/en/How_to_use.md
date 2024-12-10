@@ -1,4 +1,4 @@
-# ❓ How to Use capierre ?
+# ❓ How to use capierre ?
 
 ## 📦 Installation
 
@@ -18,14 +18,36 @@ $ cd tool
 ### 🧰 Install Dependencies
 
 ::: warning
-Make sure you have Python 3.9 or higher installed on your machine. If not, you can download it from the [official website](https://www.python.org/downloads/).
+Make sure you have ``Python 3.9`` or higher installed on your machine. If not, you can download it from the [official website](https://www.python.org/downloads/).
 
-Make sure you have pip3 installed on your machine. If not, you can install it by running the following command:
+Make sure you have ``pip3`` installed on your machine. If not, you can install it by running the following command:
+
+<CodeGroup>
+  <CodeGroupItem title="Ubuntu">
 
 ```bash
 $ sudo apt install python3-pip
 ```
+  </CodeGroupItem>
+
+  <CodeGroupItem title="MacOs">
+
+```bash
+$ brew install python3
+```
+  </CodeGroupItem>
+
+  <CodeGroupItem title="Windows">
+
+```bash
+$ choco install python
+```
+  </CodeGroupItem>
+</CodeGroup>
+
 :::
+
+And then install the dependencies with the following command:
 
 ```bash
 $ pip3 install -r requirements.txt
@@ -62,6 +84,16 @@ Once that is done, we will have the following program:
 
 ```bash
 $ ./capierre --help
+Usage: Capierre <file> <sentence>
+Options:
+  -h, --help     Show this help message and exit
+  -v, --version  Show version of the tool
+  -c, --conceal  Hide a message
+  -r, --retrieve Retrieve a message
+  -fth, --file-to-hide <file>  File to hide
+  -s, --sentence <sentence>  Sentence to hide
+  -f, --file <file>  File to compile or to retrieve
+  -o, --output <file>  Output file
 ```
 
 ### 🖥 Capierre Gui
@@ -74,7 +106,7 @@ The Gui is the program that allows you to visualize the tool's functionalities i
 
 For more information on each part of the project, you can consult the documentation:
 
-- [Tool](./serveur/Serveur_Documentation.md)
+- [Tool](./tool/Tool_Documentation.md)
 - [Gui](./gui/Gui_Documentation.md)
 
 ## 💖 Support
