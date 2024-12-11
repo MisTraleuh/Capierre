@@ -26,11 +26,11 @@ class CapierreCipher:
         password_hash = sha256(bytes(password, "utf-8")).digest()
 
         try:
-            cipher = AES.new(password_hash, mode="MODE_CBC")
+            cipher = AES.new(password_hash, mode=AES.MODE_CBC)
 
             if decrypt:
-                return cipher.decrypt(b64decode(input))
-            return str(b64encode(cipher.encrypt(input)), "ascii")
+                return str(cipher.decrypt(b64decode(input)), "utf-8")
+            return str(b64encode(cipher.encrypt(bytes(input, "utf-8"))), "ascii")
         except Exception as e:
             msg_error(f"Cipher error: {e}")
             raise e
