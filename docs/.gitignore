@@ -1,0 +1,5 @@
+# Documentation stuff
+node_modules
+.cache
+.temp
+dist
