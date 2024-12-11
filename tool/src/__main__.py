@@ -23,7 +23,9 @@ def main():
         capierreObject.hide_information()
     else:
         capierreAnalyzer = CapierreAnalyzer(
-            capierreParsing.file, capierreParsing.output_file_retreive
+            capierreParsing.file,
+            capierreParsing.output_file_retreive,
+            capierreParsing.password,
         )
         capierreAnalyzer.retrieve_message_from_binary()
 

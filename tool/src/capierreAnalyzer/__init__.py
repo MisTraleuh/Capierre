@@ -6,7 +6,6 @@ logging.getLogger("angr").setLevel("CRITICAL")
 logging.getLogger("cle").setLevel("CRITICAL")
 import angr
 import cle
-import objectplatform
 from utils.messages import msg_success, msg_error, msg_warning
 from capierreMagic import CapierreMagic
 
@@ -17,7 +16,7 @@ class CapierreAnalyzer:
     """
 
     def __init__(
-            self: CapierreAnalyzer, filepath: str, output_file_retreive: str, password: str
+        self: CapierreAnalyzer, filepath: str, output_file_retreive: str, password: str
     ) -> None:
         self.filepath = filepath
         self.output_file_retreive = output_file_retreive
@@ -37,7 +36,9 @@ class CapierreAnalyzer:
 
         try:
 
-            project = angr.Project(self.filepath, load_options={"auto_load_libs": False})
+            project = angr.Project(
+                self.filepath, load_options={"auto_load_libs": False}
+            )
 
             for section in project.loader.main_object.sections:
                 if section.name == section_target:
