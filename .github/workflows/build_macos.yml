@@ -1,4 +1,4 @@
-name: Build Capierre Binary MacOS v.10.15, v.11.0 & v.12
+name: Build Capierre Binary MacOS v.13, v.14 et v.15
 
 on:
   push:
@@ -15,8 +15,8 @@ jobs:
     strategy:
       matrix:
         compiler: [gcc-14]
-        os: [macos-13, macos-14, macos-15, macos-13-xlarge, macos-14-xlarge, macos-15-xlarge]
-        python-version: [3.8, 3.9, 3.10.x, 3.11, 3.12]
+        os: [macos-13, macos-14, macos-15]
+        python-version: [3.9, 3.10.x, 3.11, 3.12]
       fail-fast: false
 
     steps:
@@ -36,20 +36,32 @@ jobs:
 
       - name: Verify GCC Installation
         run: |
+          ln -sf /usr/local/bin/gcc-14 /usr/local/bin/gcc
+          ln -sf /usr/local/bin/g++-14 /usr/local/bin/g++
           gcc --version
           g++ --version
   
       - name: Install dependencies & Build binary
         working-directory: ./tool
         run: |
-          pip3 install -r requirements.txt
-          pyinstaller \
+          brew install pyqt5
+          arch -x86_64 pip3 install -r requirements.txt
+          arch -x86_64 pyinstaller \
             --collect-all z3        \
             --collect-all pyvex     \
             --collect-all angr      \
             --collect-all unicorn   \
             --collect-all cle       \
             --onefile --name capierre_binary src/__main__.py
+
+      - name: Binary Test
+        working-directory: ./tool
+        run: |
+          uname -m
+          ./dist/capierre_binary --help
+          ./dist/capierre_binary --version
+          ./dist/capierre_binary --conceal --file ./tests/src/main.cpp --file-to-hide ./tests/src/HIDDEN_FILE
+          ./dist/capierre_binary -r --file ./capierre_binary
 
       - name: Tests Fonctionnels
         working-directory: ./tool

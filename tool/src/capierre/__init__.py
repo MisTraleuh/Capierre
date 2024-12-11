@@ -48,27 +48,25 @@ class Capierre:
         """
         capierre_magic: object = CapierreMagic()
         data: bytes = sentence_to_hide
-        section: str = ''
-        length: str = ''
-        os_type: str = platform.system()
+        section: str = capierre_magic.SECTION_HIDE
+        sentence_to_hide_length_sereal: str = ''
 
         # https://stackoverflow.com/a/8577226/23570806
-        sentence_to_hide_fd = tempfile.NamedTemporaryFile(delete=False)
-        if type(sentence_to_hide) == str:
+        sentence_to_hide_fd: list[bytes] = tempfile.NamedTemporaryFile(delete=False)
+        if (type(sentence_to_hide) == str):
             data = data.encode()
 
-        length = struct.pack('<i', len(capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START + data + capierre_magic.MAGIC_NUMBER_END))
-        sentence_to_hide_fd.write(length + capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START + data + capierre_magic.MAGIC_NUMBER_END)
-        if (os_type == 'Windows'):
+        information_to_hide: str = (capierre_magic.CIE_INFORMATION + 
+                                    capierre_magic.MAGIC_NUMBER_START +
+                                    data +
+                                    capierre_magic.MAGIC_NUMBER_END)
+
+        sentence_to_hide_length_sereal = struct.pack('<i', len(information_to_hide))
+        sentence_to_hide_fd.write(sentence_to_hide_length_sereal + information_to_hide)
+        sentence_to_hide_fd.close()
+
+        if (platform.system() == 'Windows'):
             sentence_to_hide_fd.name = sentence_to_hide_fd.name.replace('\\', '/')
-            section = '.eh_fram'
-        elif (os_type == 'Linux'):
-            section = '.eh_frame'
-        elif (os_type == 'Darwin'):
-            section = '__TEXT,__eh_frame'
-        else:
-            msg_error('OS not supported')
-            sys.exit(1)
 
         malicious_code = f"""
         #include <stdio.h>
@@ -83,6 +81,8 @@ class Capierre:
         # https://stackoverflow.com/a/65156317/23570806
         malicious_code_fd = tempfile.NamedTemporaryFile(delete=False, suffix=".c")
         malicious_code_fd.write(malicious_code.encode())
+        malicious_code_fd.close()
+
         return (malicious_code_fd.name, sentence_to_hide_fd.name)
 
     def compile_code(self: object, file_path: str, sentence_to_hide: str | bytes, compilator_name: str) -> None:
@@ -104,7 +104,7 @@ class Capierre:
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
             text=True,
-        );
+        )
         os.remove(malicious_code_file_path)
         os.remove(sentece_to_hide_file_path)
         if (compilation_result.returncode != 0):

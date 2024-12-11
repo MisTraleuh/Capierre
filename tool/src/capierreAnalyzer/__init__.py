@@ -10,7 +10,6 @@ import platform
 from utils.messages import msg_success, msg_error, msg_warning
 from capierreMagic import CapierreMagic
 
-
 class CapierreAnalyzer():
     """
     This class is responsible for analyzing the file.
@@ -29,18 +28,7 @@ class CapierreAnalyzer():
         rodata_block: bytes = []
         project: object = None
         rodata_section: object = None
-        section_target: str = ''
-        os_type: str = platform.system()
-             
-        if (os_type == 'Windows'):
-            section_target = '.eh_fram'
-        elif (os_type == 'Linux'):
-            section_target = '.eh_frame'
-        elif (os_type == 'Darwin'):
-             section_target = '__eh_frame'
-        else:
-            msg_error('OS not supported')
-            sys.exit(1)
+        section_target: str = capierre_magic.SECTION_RETRIEVE
 
         try:
 
