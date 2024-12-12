@@ -72,7 +72,6 @@ class Capierre:
 
         information_to_hide: bytes = b""
         len_new_cie: int = 0
-        rand_step: int = 0
         new_size: int = 0
         temp_information_to_hide: bytes = b""
         rand_entry: int = random.randint(4, 10)
@@ -84,14 +83,15 @@ class Capierre:
         if (type(sentence_to_hide) == str):
             data = bytearray(data.encode())
 
-        rand_step = random.randint(1, 16)
+        rand_step: int = random.randint(1, 16)
         i: int = 0
         while i < len(data):
-
 
             if (i == 0):
                 temp_information_to_hide = capierre_magic.MAGIC_NUMBER_START + data[i: i + rand_step]
             else:
+                if (len(data) < i + rand_step):
+                    rand_step = len(data) - i
                 temp_information_to_hide = data[i: i + rand_step]
 
             if entry_number == rand_entry: 
@@ -177,7 +177,7 @@ class Capierre:
             binary.write(read_bin)
             binary.close()
 
-    def compile_code(self: object, file_path: str, sentence_to_hide: str | bytes, compilator_name: str) -> None:
+    def compile_code(self: object, file_path: str, sentence_to_hide: str, compilator_name: str) -> None:
         """
         This function compiles the code with the hidden sentence.
 

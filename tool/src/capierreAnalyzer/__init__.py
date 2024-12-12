@@ -94,7 +94,7 @@ class CapierreAnalyzer:
                     f"Message retrieved and saved in {self.output_file_retreive}"
                 )
             else:
-                msg_success(f"Message: {message_retrieved.decode('utf-8')}")
+                msg_success(f"Message: {message_retrieved}")
 
         except cle.errors.CLECompatibilityError as e:
             msg_error("The chosen file is incompatible")

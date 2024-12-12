@@ -29,11 +29,11 @@ class CapierreCipher:
             cipher = AES.new(password_hash, mode=AES.MODE_CBC)
 
             if decrypt:
-                print(cipher.decrypt(b64decode(input)))
-                return str(cipher.decrypt(b64decode(input)), "utf-8")
+                return str(cipher.decrypt(b64decode(input))[16:], "utf-8")
             if len(input) & 0b1111:
                 input = input.ljust(((len(input) | 0b1111) ^ 0b1111) + 16, '\x00')
-            return str(b64encode(cipher.encrypt(bytes(input, "utf-8"))), "ascii")
+            input = '\x00' * 16 + input
+            return str(b64encode(cipher.encrypt(bytes(input, "utf-8"))), 'ascii')
         except Exception as e:
             msg_error(f"Cipher error: {e}")
             raise e
