@@ -51,12 +51,13 @@ class Capierre:
         data: bytes = sentence_to_hide
         section: str = capierre_magic.SECTION_HIDE
 
-        temp_information_to_hide: bytes = b""
         information_to_hide: bytes = b""
-        entry_number: int = 10
         len_new_cie: int = 0
         rand_step: int = 0
         new_size: int = 0
+        temp_information_to_hide: bytes = b""
+        rand_entry: int = random.randint(4, 10)
+        entry_number: int = rand_entry
 
         # https://stackoverflow.com/a/8577226/23570806
         sentence_to_hide_fd: list[bytes] = tempfile.NamedTemporaryFile(delete=False)
@@ -66,18 +67,23 @@ class Capierre:
         rand_step = random.randint(1, 16)
         for i in range(0, len(data), rand_step):
 
-            temp_information_to_hide = data[i: i + rand_step]
-            if entry_number == 10: 
+            if (i == 0):
+                temp_information_to_hide = capierre_magic.MAGIC_NUMBER_START + data[i: i + rand_step]
+            else:
+                temp_information_to_hide = data[i: i + rand_step]
+
+            if entry_number == rand_entry: 
                 len_new_cie = len(information_to_hide)
-                temp_information_to_hide    = (capierre_magic.CIE_INFORMATION + 
-                                                capierre_magic.MAGIC_NUMBER_START +
-                                                temp_information_to_hide)
+                temp_information_to_hide    = (capierre_magic.CIE_INFORMATION + temp_information_to_hide)
                 entry_number = 0
+                rand_entry = random.randint(4, 10)
             else:
                 temp_information_to_hide    = (struct.pack('<i', len(information_to_hide) - len_new_cie) +
                                                 b"\x11\x11\x11\x11\x22\x22\x22\x22" + struct.pack('bb', 4 - (rand_step & 0b11), random.randint(0, 127)) + b"\x00\x00"
                                                 + temp_information_to_hide)
 
+            if (len(data) <= i + rand_step):
+                temp_information_to_hide += capierre_magic.MAGIC_NUMBER_END
             new_size = ((len(temp_information_to_hide) | 0b11) ^ 0b11) + 4
             temp_information_to_hide = temp_information_to_hide.ljust(new_size, b'\x00')
             temp_information_to_hide = struct.pack('<i', new_size) + temp_information_to_hide
@@ -85,7 +91,7 @@ class Capierre:
             entry_number += 1
             rand_step = random.randint(1, 16)
 
-        sentence_to_hide_fd.write(information_to_hide + capierre_magic.MAGIC_NUMBER_END)
+        sentence_to_hide_fd.write(information_to_hide)
         sentence_to_hide_fd.close()
 
         if (platform.system() == 'Windows'):
@@ -135,18 +141,3 @@ class Capierre:
         if (compilation_result.returncode != 0):
             raise Exception(compilation_result.stderr.strip())
         msg_success('Code compiled successfully')
-
-    def build_asm_eh_frame(self: object, sentence_to_hide: str | bytes, section: str) -> str:
-        
-        
-        malicious_asm: str = f"""
-        #include <stdio.h>
-        #include <stdint.h>
-
-        __asm (
-        ".section {section}\\n"
-        """
-
-        malicious_asm += f""".incbin \\"{sentence_to_hide}\\"\\n"""
-
-        return malicious_asm + ");"
