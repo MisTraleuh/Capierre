@@ -30,6 +30,8 @@ class CapierreCipher:
 
             if decrypt:
                 return str(cipher.decrypt(b64decode(input)), "utf-8")
+            if len(input) & 0b1111:
+                input = input.ljust(((len(input) | 0b1111) ^ 0b1111) + 16, '\x00')
             return str(b64encode(cipher.encrypt(bytes(input, "utf-8"))), "ascii")
         except Exception as e:
             msg_error(f"Cipher error: {e}")

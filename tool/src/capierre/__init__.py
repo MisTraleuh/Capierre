@@ -146,15 +146,13 @@ class Capierre:
         if (platform.system() == 'Windows'):
             sentence_to_hide_fd.name = sentence_to_hide_fd.name.replace('\\', '/')
 
-
-
         malicious_code = f"""
         #include <stdio.h>
         #include <stdint.h>
 
         __asm (
         ".section {section}\\n"
-        ".incbin \\"{sentence_to_hide_tmpfile.name}\\"\\n"
+        ".incbin \\"{sentence_to_hide_fd.name}\\"\\n"
         );
         """
 
@@ -163,7 +161,7 @@ class Capierre:
         malicious_code_fd.write(malicious_code.encode())
         malicious_code_fd.close()
 
-        return (malicious_code_fd.name, sentence_to_hide_tmpfile.name)
+        return (malicious_code_fd.name, sentence_to_hide_fd.name)
 
     def complete_eh_frame_section(self: object) -> None:
 
