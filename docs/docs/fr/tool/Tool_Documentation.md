@@ -198,7 +198,7 @@ A la compilation de notre fichier source, le compilateur va inclure le contenu d
 **L'instruction ``__asm`` est directement prise en compte quand le compilateur compile le fichier source.**
 :::
 
-### 🗂️ Les sections dans un binaire
+### 📑 Les sections dans un binaire
 
 Si vous avez lu jusqu'ici, vous avez compris que nous avons créé une section spécifique pour cacher notre fichier temporaire. Mais comment choisir une section d'un binaire qui n'aura **jamais et aucun impact** sur le fonctionnement du binaire ?
 
@@ -252,15 +252,27 @@ class CapierreMagic():
 
 Pour être totalement transparent, au tout début de la création de l'outil, nous avons choisi une section nommée ``.rodata`` pour cacher les informations. Mais après plusieurs tests, nous avons remarqué que cette section est utilisée par le compilateur pour stocker les constantes du programme. 
 
-:::warning 🚨 Pourquoi ne pas utiliser la section ``.rodata`` ?
-Si nous utilisons la section ``.rodata`` pour cacher les informations, le compilateur va écraser les constantes du programme par les informations cachées. Ce qui va rendre le binaire non fonctionnel.
+:::warning 🚨 Pourquoi ne pas utiliser la section <code>.rodata</code> ?
+Si nous utilisons la section ``.rodata`` pour cacher les informations, nous allons avoir certains problèmes majeurs comme:
+
+- Vu que pour retrouver le message nous utilisons des magics number (comme vous l'avez vu avant [ici](#📑-les-sections-dans-un-binaire) 👀), si des personnes mettent des constantes tel comme ça:
+```c
+const char *brokeCapierre = "\x43\x41\x50\x49\x45\x52\x52\x45";
+```
+Le compilateur va alors mettre cette constante dans ``.rodata``. Et alors la valeur de cette variable va être le début de notre ``Magic Number`` soit ``CapierreMagic.MAGIC_NUMBER_START``. Ce qui va faire que notre tool, va alors pensé que c'est le début d'un message caché. Alors que ce n'est pas le cas.
+
 :::
 
 Après plusieurs recherches sur les sections sur ce site [la](https://sysblog.informatique.univ-paris-diderot.fr/2024/04/01/le-format-elf-executable-and-linkable-format/). Nous avons choisi d'utiliser la section ``.eh_frame``.
 
-:::tip 🤓 Pourquoi la section ``.eh_frame`` ?
-La section ``.eh_frame`` est une section qui est utilisée pour stocker les informations sur les exceptions. Et comme nous ne voulons pas que notre binaire soit impacté par les informations cachées, nous avons choisi cette section pour cacher les informations.
+:::tip 🤓 Pourquoi la section <code>.eh_frame</code> ?
+La section ``.eh_frame`` est une section qui est utilisée pour stocker les informations sur les exceptions. Voici les raisons pour lequelles nous avons choisi cette section:
+- Vu qu'uniquement les exeptions sont stocker, nous empêchons des possibles recidive avec l'utilisateur comme vu dans l'exemple précedent. Le binaire final ne sera impacté par les informations cachées.
+- Cette section est toujours présente dans un binaire, peu importe la plateforme utilisée. Ce qui n'est pas forcément le cas pour la section ``.note`` et/ou ``.comment``.
+- Elle a très peu d'impace sur le binaire final.
 :::
+
+Avec toutes ces informations, la section ``.eh_frame`` est la section parfaite pour cacher les informations dans un binaire.
 
 ### 📦 Fichier binaire exécutable
 
