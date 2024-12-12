@@ -1,7 +1,8 @@
 from __future__ import annotations
 import platform
 
-class CapierreMagic():
+
+class CapierreMagic:
     def __init__(self):
         self.CIE_INFORMATION = b"\x00\x00\x00\x00\x01\x7a\x52\x00\x01\x78\x10\x01\x1b"
         self.MAGIC_NUMBER_START = b"CAPIERRE"
@@ -15,16 +16,17 @@ class CapierreMagic():
     This function chooses the section to hide the information
     @return str - The section to hide the information | CAN BE None
     """
+
     def choose_section_hide(self) -> str | None:
         os_type: str = platform.system()
-        section: str = ''
+        section: str = ""
 
-        if (os_type == 'Windows'):
-            section = '.eh_fram'
-        elif (os_type == 'Linux'):
-            section = '.eh_frame'
-        elif (os_type == 'Darwin'):
-            section = '__TEXT,__eh_frame'
+        if os_type == "Windows":
+            section = ".eh_fram"
+        elif os_type == "Linux":
+            section = ".eh_frame"
+        elif os_type == "Darwin":
+            section = "__TEXT,__eh_frame"
         else:
             return None
 
@@ -32,14 +34,14 @@ class CapierreMagic():
 
     def choose_section_retrieve(self) -> str | None:
         os_type: str = platform.system()
-        section: str = ''
+        section: str = ""
 
-        if (os_type == 'Windows'):
-            section = '.eh_fram'
-        elif (os_type == 'Linux'):
-            section = '.eh_frame'
-        elif (os_type == 'Darwin'):
-            section = '__eh_frame'
+        if os_type == "Windows":
+            section = ".eh_fram"
+        elif os_type == "Linux":
+            section = ".eh_frame"
+        elif os_type == "Darwin":
+            section = "__eh_frame"
         else:
             return None
 

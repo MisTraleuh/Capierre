@@ -9,6 +9,8 @@ import struct
 import random
 import angr
 from capierreMagic import CapierreMagic
+from capierreCipher import CapierreCipher
+
 
 class CieStructure:
         def __init__(self: object, length: bytes, ext_length: bytes, cie_id: bytes, version: bytes, aug_string: bytes, eh_data: bytes, 
@@ -48,29 +50,46 @@ class Capierre:
     @param sentence: `str` - The sentence to hide
     """
 
-    def __init__(self: object, file: str, type_file: str, sentence: str, binary_file = 'capierre_binary') -> None:
+    def __init__(
+        self: Capierre,
+        file: str,
+        type_file: str,
+        sentence: str,
+        password: str,
+        binary_file="capierre_binary",
+    ) -> None:
         self.file = file
         self.type_file = type_file
         self.sentence = sentence
+        self.password = password
         self.binary_file = binary_file
 
-    def hide_information(self: object) -> None:
+    def cipher_information(self: Capierre, *, decrypt: bool) -> None:
+        if len(self.password) == 0:
+            msg_error("You must supply a password.")
+            return
+        self.sentence = CapierreCipher.cipher(
+            self.sentence, self.password, decrypt=decrypt
+        )
+
+    def hide_information(self: Capierre) -> None:
         """
         This function hides the information in the file
         @return None
         """
         extension_files = {
-            'c': 'gcc',
-            'cpp': 'g++',
+            "c": "gcc",
+            "cpp": "g++",
         }
 
+        self.cipher_information(decrypt=False)
         if self.type_file in extension_files:
             self.compile_code(self.file, self.sentence, extension_files[self.type_file])
         else:
-            msg_error('File not supported')
+            msg_error("File not supported")
             sys.exit(1)
 
-    def create_malicious_file(self: object, sentence_to_hide: str | bytes) -> tuple[str, str]:
+    def create_malicious_file(self: Capierre, sentence_to_hide: str) -> tuple[str, str]:
         """
         This function creates a malicious file with the sentence to hide.
 
@@ -135,7 +154,7 @@ class Capierre:
 
         __asm (
         ".section {section}\\n"
-        ".incbin \\"{sentence_to_hide_fd.name}\\"\\n"
+        ".incbin \\"{sentence_to_hide_tmpfile.name}\\"\\n"
         );
         """
 
@@ -144,10 +163,9 @@ class Capierre:
         malicious_code_fd.write(malicious_code.encode())
         malicious_code_fd.close()
 
-        return (malicious_code_fd.name, sentence_to_hide_fd.name)
+        return (malicious_code_fd.name, sentence_to_hide_tmpfile.name)
 
     def complete_eh_frame_section(self: object) -> None:
-
 
         capierre_magic: object = CapierreMagic()
         eh_frame_section: object = {}
@@ -195,13 +213,18 @@ class Capierre:
         @param type_file: `str` - The type of file to compile.
         @return None
         """
-        info_message: str | bytes = sentence_to_hide
-        if type(sentence_to_hide) == bytes:
-            info_message = info_message.decode()
-        msg_info(f'Hidden sentence: {info_message}')
-        (malicious_code_file_path, sentece_to_hide_file_path) = self.create_malicious_file(sentence_to_hide)
+        msg_info(f"Hidden sentence: {sentence_to_hide}")
+        (malicious_code_file_path, sentece_to_hide_file_path) = (
+            self.create_malicious_file(sentence_to_hide)
+        )
         compilation_result = subprocess.run(
-            [compilator_name, file_path, malicious_code_file_path, '-o', self.binary_file],
+            [
+                compilator_name,
+                file_path,
+                malicious_code_file_path,
+                "-o",
+                self.binary_file,
+            ],
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
             text=True,
@@ -211,4 +234,4 @@ class Capierre:
         self.complete_eh_frame_section()
         if (compilation_result.returncode != 0):
             raise Exception(compilation_result.stderr.strip())
-        msg_success('Code compiled successfully')
+        msg_success("Code compiled successfully")
