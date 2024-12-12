@@ -18,19 +18,19 @@ jobs:
         python-version: [3.9, 3.10.x, 3.11, 3.12]
       fail-fast: false
 
+      
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: |
+          pip3 install -r tool/requirements.txt
 
       - name: Install dependencies & Build binary
         working-directory: ./tool
         run: |
-          pip3 install -r requirements.txt
           pyinstaller \
             --collect-all z3        \
             --collect-all pyvex     \
