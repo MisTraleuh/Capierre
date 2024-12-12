@@ -17,6 +17,8 @@ export default {
             text: '🛠️ Tool',
             children: [
               '/fr/tool/Tool_Documentation.md',
+              '/fr/tool/Concept_de_base.md',
+              '/fr/tool/Fonctionnement_du_tool_Capierre.md',
             ]
           },
         ],
