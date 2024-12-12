@@ -29,6 +29,7 @@ class CapierreCipher:
             cipher = AES.new(password_hash, mode=AES.MODE_CBC)
 
             if decrypt:
+                print(cipher.decrypt(b64decode(input)))
                 return str(cipher.decrypt(b64decode(input)), "utf-8")
             if len(input) & 0b1111:
                 input = input.ljust(((len(input) | 0b1111) ^ 0b1111) + 16, '\x00')

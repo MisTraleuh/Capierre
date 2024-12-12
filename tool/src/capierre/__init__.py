@@ -11,36 +11,6 @@ import angr
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
 
-
-class CieStructure:
-        def __init__(self: object, length: bytes, ext_length: bytes, cie_id: bytes, version: bytes, aug_string: bytes, eh_data: bytes, 
-                    code_align: bytes, data_align: bytes, ret_addr: bytes, aug_data_length: bytes, aug_data: bytes, init_inst: bytes) -> None:
-            self.length = length
-            self.ext_length = ext_length
-            self.ID = cie_id
-            self.version = version
-            self.aug_string = aug_string
-            self.eh_data = eh_data
-            self.code_align = code_align
-            self.data_align = data_align
-            self.ret_addr = ret_addr
-            self.aug_data_length = aug_data_length
-            self.aug_data = aug_data
-            self.init_inst = init_inst
-
-class FdeStructure:
-        def __init__(self: object, length: bytes, ext_length: bytes, cie_pointer: bytes, pcbegin: bytes, 
-                        pcrange: bytes, aug_data_length: bytes, aug_data: bytes, cie_call: bytes) -> None:
-            self.length = length
-            self.ext_length = ext_length
-            self.cie_pointer = cie_pointer
-            self.pcbegin = pcbegin
-            self.pcrange = pcrange
-            self.aug_data_length = aug_data_length
-            self.aug_data = aug_data
-            self.cie_call = cie_call
-
-
 class Capierre:
     """
     This class is responsible for hiding information in files.
@@ -107,6 +77,7 @@ class Capierre:
         temp_information_to_hide: bytes = b""
         rand_entry: int = random.randint(4, 10)
         entry_number: int = rand_entry
+        i: int = 0
 
         # https://stackoverflow.com/a/8577226/23570806
         sentence_to_hide_fd: list[bytes] = tempfile.NamedTemporaryFile(delete=False)
@@ -114,7 +85,9 @@ class Capierre:
             data = bytearray(data.encode())
 
         rand_step = random.randint(1, 16)
-        for i in range(0, len(data), rand_step):
+        i: int = 0
+        while i < len(data):
+
 
             if (i == 0):
                 temp_information_to_hide = capierre_magic.MAGIC_NUMBER_START + data[i: i + rand_step]
@@ -123,21 +96,23 @@ class Capierre:
 
             if entry_number == rand_entry: 
                 len_new_cie = len(information_to_hide)
-                temp_information_to_hide    = (capierre_magic.CIE_INFORMATION + temp_information_to_hide)
+                temp_information_to_hide    = capierre_magic.CIE_INFORMATION + ((4 - (rand_step & 0b11)) & 0b11).to_bytes(1) + temp_information_to_hide + struct.pack('bb', random.randint(0, 127), random.randint(0, 127))
                 entry_number = 0
                 rand_entry = random.randint(4, 10)
             else:
                 temp_information_to_hide    = (struct.pack('<i', len(information_to_hide) + 4 - len_new_cie) +
-                                                b"\x11\x11\x11\x11" + struct.pack('bb', 4 - (rand_step & 0b11), random.randint(0, 127)) + b"\x00\x00\x00"
-                                                + temp_information_to_hide)
+                                                b"\x11\x11\x11\x11" + struct.pack('bb', (4 - (rand_step & 0b11)) & 0b11, random.randint(0, 127)) + b"\x00\x00\x00"
+                                                + temp_information_to_hide + struct.pack('bbb', random.randint(0, 127), random.randint(0, 127), random.randint(0, 127)))
 
-            if (len(data) <= i + rand_step):
-                temp_information_to_hide += capierre_magic.MAGIC_NUMBER_END
-            new_size = ((len(temp_information_to_hide) | 0b11) ^ 0b11) + 4
-            temp_information_to_hide = temp_information_to_hide.ljust(new_size, b'\x00')
+            new_size = len(temp_information_to_hide)
+            if new_size & 0b11:
+                new_size = ((new_size | 0b11) ^ 0b11) + 4
+                temp_information_to_hide = temp_information_to_hide.ljust(new_size, b'\x00')
+
             temp_information_to_hide = struct.pack('<i', new_size) + temp_information_to_hide
             information_to_hide += temp_information_to_hide
             entry_number += 1
+            i += rand_step
             rand_step = random.randint(1, 16)
 
         sentence_to_hide_fd.write(information_to_hide)
@@ -180,12 +155,12 @@ class Capierre:
             binary.seek(0)
             eh_frame_block: bytearray = read_bin[eh_frame_section.offset:eh_frame_section.offset + eh_frame_section.memsize]
 
-            index = eh_frame_block.find(capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START)
+            index = eh_frame_block.find(capierre_magic.MAGIC_NUMBER_START)
             if (index == -1):
                 msg_warning("Failure to locate compiled block")
 
             length: int = 1
-            i: int = index - 4
+            i: int = index - 5 - len(capierre_magic.CIE_INFORMATION)
             fake_addr: int = 0
             while (i < len(eh_frame_block)):
 
