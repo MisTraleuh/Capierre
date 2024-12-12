@@ -20,13 +20,14 @@ jobs:
       fail-fast: false
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: |
+          brew install pyqt5
+          arch -x86_64 pip3 install -r tool/requirements.txt
 
       - name: Setup C/C++ Compiler
         id: setup-compiler
@@ -41,11 +42,9 @@ jobs:
           gcc --version
           g++ --version
   
-      - name: Install dependencies & Build binary
+      - name: Build binary
         working-directory: ./tool
         run: |
-          brew install pyqt5
-          arch -x86_64 pip3 install -r requirements.txt
           arch -x86_64 pyinstaller \
             --collect-all z3        \
             --collect-all pyvex     \
@@ -57,7 +56,6 @@ jobs:
       - name: Binary Test
         working-directory: ./tool
         run: |
-          uname -m
           ./dist/capierre_binary --help
           ./dist/capierre_binary --version
           ./dist/capierre_binary --conceal --file ./tests/src/main.cpp --file-to-hide ./tests/src/HIDDEN_FILE
