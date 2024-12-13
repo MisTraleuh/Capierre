@@ -116,3 +116,6 @@ Dans un fichier binaire ELF, il existe plusieurs sections, dont les plus courant
 [...]
 
 Vous aurez bien compris qu'il était impossible de tous les lister ici (et encore moins dans une image 🤭), mais vous pouvez consulter la [documentation officielle](https://refspecs.linuxfoundation.org/elf/elf.pdf) pour plus d'informations sur les sections d'un fichier binaire ELF.
+:::
+
+Maintenant que nous avons compris l'idée théorique, nous allons voir comment nous pouvons intégrer des informations supplémentaires dans un binaire sans compromettre sa fonctionnalité.
