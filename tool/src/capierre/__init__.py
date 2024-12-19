@@ -96,7 +96,7 @@ class Capierre:
 
             if entry_number == rand_entry: 
                 len_new_cie = len(information_to_hide)
-                temp_information_to_hide    = capierre_magic.CIE_INFORMATION + ((4 - (rand_step & 0b11)) & 0b11).to_bytes(1) + temp_information_to_hide + struct.pack('bb', random.randint(0, 127), random.randint(0, 127))
+                temp_information_to_hide    = capierre_magic.CIE_INFORMATION + ((4 - (rand_step & 0b11)) & 0b11).to_bytes(1, 'little') + temp_information_to_hide + struct.pack('bb', random.randint(0, 127), random.randint(0, 127))
                 entry_number = 0
                 rand_entry = random.randint(4, 10)
             else:
@@ -204,7 +204,7 @@ class Capierre:
         )
         os.remove(malicious_code_file_path)
         os.remove(sentece_to_hide_file_path)
-        self.complete_eh_frame_section()
         if (compilation_result.returncode != 0):
             raise Exception(compilation_result.stderr.strip())
+        self.complete_eh_frame_section()
         msg_success("Code compiled successfully")
