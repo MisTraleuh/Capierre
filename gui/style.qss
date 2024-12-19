@@ -1,0 +1,38 @@
+#MainWindow {
+    background-color: rgb(40, 44, 52);
+    border: 1px solid rgb(44, 49, 58);
+}
+
+#sidebar_icon {
+    background-color: rgb(33, 37, 43);
+}
+
+#sidebar_full {
+    background-color: rgb(33, 37, 43);
+}
+
+#title_hide {
+	font-size: 30px;
+	font-weight: bold;
+}
+
+.QLabel {
+	color: rgb(210, 210, 210);
+}
+
+#header_bar {
+    background-color: rgb(33, 37, 43);
+}
+
+/*Button Style*/
+.QPushButton { background-color: rgba(255, 255, 255, 0); color: rgb(255, 255, 255); border: none;  border-radius: 5px; }
+#sidebar_full .QPushButton {text-align:left;}
+.QPushButton:hover { background-color: rgb(44, 49, 57); border-style: solid; border-radius: 4px; }
+.QPushButton:pressed { background-color: rgb(23, 26, 30);; border-style: solid; border-radius: 4px; }
+
+QStackedWidget > QWidget{
+	margin: 10px;
+	border-radius: 5px;
+	background-color: rgb(44, 49, 58);
+	border-bottom: 1px solid rgb(44, 49, 60);
+}
