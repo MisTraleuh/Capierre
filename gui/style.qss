@@ -1,5 +1,5 @@
 #MainWindow {
-    background-color: #282c34;
+    background-color: rgb(40, 44, 52);
     border: 1px solid rgb(44, 49, 58);
 }
 
@@ -11,69 +11,28 @@
     background-color: rgb(33, 37, 43);
 }
 
+#title_hide {
+	font-size: 30px;
+	font-weight: bold;
+}
+
 .QLabel {
 	color: rgb(210, 210, 210);
-}
-
-#sidebar_full .QPushButton {
-    background-position: left center;
-    background-repeat: no-repeat;
-	color:	rgb(210, 210, 210);
-	border: none;
-	border-left: 22px solid transparent;
-	background-color:transparent;
-	text-align: left;
-}
-
-#sidebar_icon .QPushButton {
-    background-position: left center;
-    background-repeat: no-repeat;
-	color:	rgb(210, 210, 210);
-	border: none;
-	border-left: 22px solid transparent;
-	background-color:transparent;
-	text-align: left;
-}
-
-
-#sidebar_full .QPushButton:hover {
-	background-color: rgb(40, 44, 52);
-}
-
-#sidebar_full .QPushButton:pressed {	
-	background-color: rgb(189, 147, 249);
-	color: rgb(255, 255, 255);
-}
-
-#sidebar_icon .QPushButton:hover {
-	background-color: rgb(40, 44, 52);
-}
-
-#sidebar_icon .QPushButton:pressed {	
-	background-color: rgb(189, 147, 249);
-	color: rgb(255, 255, 255);
 }
 
 #header_bar {
     background-color: rgb(33, 37, 43);
 }
 
-#header_bar .QPushButton {
-    background-position: left center;
-    background-repeat: no-repeat;
-	border: none;
-	border-left: 22px solid transparent;
-	background-color:transparent;
-	text-align: left;
+/*Button Style*/
+.QPushButton { background-color: rgba(255, 255, 255, 0); color: rgb(255, 255, 255); border: none;  border-radius: 5px; }
+#sidebar_full .QPushButton {text-align:left;}
+.QPushButton:hover { background-color: rgb(44, 49, 57); border-style: solid; border-radius: 4px; }
+.QPushButton:pressed { background-color: rgb(23, 26, 30);; border-style: solid; border-radius: 4px; }
+
+QStackedWidget > QWidget{
+	margin: 10px;
+	border-radius: 5px;
+	background-color: rgb(44, 49, 58);
+	border-bottom: 1px solid rgb(44, 49, 60);
 }
-
-#header_bar .QPushButton:hover {
-	background-color: rgb(40, 44, 52);
-}
-
-#header_bar .QPushButton:pressed {	
-	background-color: rgb(189, 147, 249);
-	color: rgb(255, 255, 255);
-}
-
-
