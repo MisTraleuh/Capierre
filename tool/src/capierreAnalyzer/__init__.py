@@ -1,9 +1,5 @@
 from __future__ import annotations
 import sys
-import logging
-
-logging.getLogger("angr").setLevel("CRITICAL")
-logging.getLogger("cle").setLevel("CRITICAL")
 import angr
 import cle
 from utils.messages import msg_success, msg_error, msg_warning
