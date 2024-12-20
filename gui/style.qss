@@ -56,3 +56,26 @@ QStackedWidget > QWidget{
 	color:  rgb(85, 170, 255);
 	border: none;
 }
+
+#open_button, #open_button_2, #confirm_btn, #confirm_btn_2 {
+	background-color: rgb(85, 170, 255);
+	color: rgb(255, 255, 255);
+	border: none;
+	border-radius: 5px;
+}
+
+
+.QLineEdit {
+	background-color: rgb(33, 37, 43);
+	border-radius: 5px;
+	border: 2px solid rgb(33, 37, 43);
+	padding-left: 10px;
+	color: rgb(255, 255, 255);
+	selection-color: rgb(255, 255, 255);
+}
+QLineEdit:hover {
+	border: 2px solid rgb(64, 71, 88);
+}
+QLineEdit:focus {
+	border: 2px solid rgb(91, 101, 124);
+}

@@ -623,7 +623,7 @@
        <item>
         <widget class="QStackedWidget" name="stackedWidget">
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="retrieve_page">
           <layout class="QGridLayout" name="gridLayout_4">
@@ -658,7 +658,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_3">
+                  <widget class="QPushButton" name="open_button_2">
                    <property name="minimumSize">
                     <size>
                      <width>100</width>
@@ -717,7 +717,7 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_2">
+                  <widget class="QPushButton" name="confirm_btn_2">
                    <property name="minimumSize">
                     <size>
                      <width>100</width>
@@ -803,7 +803,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton">
+                  <widget class="QPushButton" name="open_button">
                    <property name="minimumSize">
                     <size>
                      <width>100</width>
@@ -852,7 +852,7 @@
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_7">
                  <item>
-                  <widget class="QPushButton" name="hide_confirm_btn">
+                  <widget class="QPushButton" name="confirm_btn">
                    <property name="minimumSize">
                     <size>
                      <width>100</width>
