@@ -22,6 +22,15 @@
 
 #header_bar {
     background-color: rgb(33, 37, 43);
+	border-bottom: 5px solid rgb(44, 49, 57); /* Exemple de bordure */
+}
+
+#top_left_header_full {
+	border-bottom: 5px solid rgb(44, 49, 57); /* Exemple de bordure */
+}
+
+#top_left_header_min {
+	border-bottom: 5px solid rgb(44, 49, 57); /* Exemple de bordure */
 }
 
 /*Button Style*/
