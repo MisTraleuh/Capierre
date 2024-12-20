@@ -37,11 +37,22 @@
 .QPushButton { background-color: rgba(255, 255, 255, 0); color: rgb(255, 255, 255); border: none;  border-radius: 5px; }
 #sidebar_full .QPushButton {text-align:left;}
 .QPushButton:hover { background-color: rgb(44, 49, 57); border-style: solid; border-radius: 4px; }
-.QPushButton:pressed { background-color: rgb(23, 26, 30);; border-style: solid; border-radius: 4px; }
+.QPushButton:pressed { background-color: rgb(85, 170, 255); border-style: solid; border-radius: 4px; }
 
 QStackedWidget > QWidget{
 	margin: 10px;
 	border-radius: 5px;
 	background-color: rgb(44, 49, 58);
 	border-bottom: 1px solid rgb(44, 49, 60);
+}
+
+#title_top {
+	font-size: 18px;
+	border: none;
+}
+
+#description_2 {
+	font-size: 14px; 
+	color:  rgb(85, 170, 255);
+	border: none;
 }

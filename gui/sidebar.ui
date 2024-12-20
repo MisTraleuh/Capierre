@@ -52,7 +52,7 @@
         <widget class="QWidget" name="top_left_header_full" native="true">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <property name="spacing">
-           <number>0</number>
+           <number>10</number>
           </property>
           <property name="leftMargin">
            <number>0</number>
@@ -64,7 +64,7 @@
            <number>0</number>
           </property>
           <property name="bottomMargin">
-           <number>0</number>
+           <number>9</number>
           </property>
           <item>
            <widget class="QLabel" name="label_10">
@@ -83,6 +83,9 @@
             <property name="pixmap">
              <pixmap resource="resource.qrc">:/icon/icon/favicon-64.png</pixmap>
             </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
            </widget>
           </item>
           <item>
@@ -91,14 +94,14 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QLabel" name="label_12">
+             <widget class="QLabel" name="title_top">
               <property name="text">
                <string>PyCapierre</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_11">
+             <widget class="QLabel" name="description_2">
               <property name="text">
                <string>Modern GUI / Flat Style </string>
               </property>
@@ -314,7 +317,7 @@
            <number>0</number>
           </property>
           <property name="bottomMargin">
-           <number>0</number>
+           <number>9</number>
           </property>
           <item>
            <widget class="QLabel" name="logo_3">
@@ -330,12 +333,8 @@
             <property name="pixmap">
              <pixmap resource="resource.qrc">:/icon/icon/favicon-64.png</pixmap>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string/>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -538,7 +537,7 @@
            <number>9</number>
           </property>
           <property name="bottomMargin">
-           <number>9</number>
+           <number>19</number>
           </property>
           <item>
            <widget class="QPushButton" name="show_btn_1">
@@ -624,7 +623,7 @@
        <item>
         <widget class="QStackedWidget" name="stackedWidget">
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="retrieve_page">
           <layout class="QGridLayout" name="gridLayout_4">
