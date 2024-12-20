@@ -11,7 +11,7 @@
     background-color: rgb(33, 37, 43);
 }
 
-#title_hide {
+#title_hide, #title_retrieve {
 	font-size: 30px;
 	font-weight: bold;
 }
