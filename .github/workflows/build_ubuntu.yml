@@ -17,7 +17,6 @@ jobs:
         os: [ubuntu-20.04, ubuntu-22.04]
         python-version: [3.9, 3.10.x, 3.11, 3.12]
       fail-fast: false
-
       
     steps:
       - uses: actions/checkout@v3
@@ -38,6 +37,14 @@ jobs:
             --collect-all unicorn   \
             --collect-all cle       \
             --onefile --name capierre_binary src/__main__.py
+
+      - name: Binary Test
+        working-directory: ./tool
+        run: |
+          ./dist/capierre_binary --help
+          ./dist/capierre_binary --version
+          ./dist/capierre_binary --conceal --file ./tests/src/main.cpp --file-to-hide ./tests/src/HIDDEN_FILE
+          ./dist/capierre_binary -r --file ./capierre_binary
 
       - name: Tests Fonctionnels
         working-directory: ./tool
