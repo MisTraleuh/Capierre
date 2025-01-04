@@ -158,7 +158,6 @@ class Capierre:
             eh_frame_block: bytearray = read_bin[eh_frame_section.offset:eh_frame_section.offset + eh_frame_section.memsize]
 
             i: int = eh_frame_block.find(capierre_magic.MAGIC_NUMBER_START)
-            print(len(eh_frame_block))
             length: int = 1
             fake_addr: int = 0
 
@@ -166,7 +165,6 @@ class Capierre:
                 msg_warning("Failure to locate compiled block")
 
             eh_frame_block = eh_frame_block[:i - len(capierre_magic.CIE_INFORMATION) - 4] + encoded_message + b'\x00\x00\x00\x00'
-            print(len(eh_frame_block))
             i -= 4 + len(capierre_magic.CIE_INFORMATION)
             while (i < len(eh_frame_block)):
 
