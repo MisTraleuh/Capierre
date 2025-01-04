@@ -146,7 +146,7 @@ class Capierre:
         symbols = project.loader.main_object.symbols
 
         for section in project.loader.main_object.sections:
-            if section.name == ".eh_frame":
+            if section.name == capierre_magic.SECTION_HIDE:
                 eh_frame_section = section
                 break
 
@@ -193,6 +193,7 @@ class Capierre:
         compilation_result = subprocess.run(
             [
                 compilator_name,
+                '-fno-dwarf2-cfi-asm',
                 file_path,
                 malicious_code_file_path,
                 "-o",
