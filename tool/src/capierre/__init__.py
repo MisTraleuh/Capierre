@@ -115,7 +115,9 @@ class Capierre:
             i += rand_step
             rand_step = random.randint(1, 16)
 
-        sentence_to_hide_fd.write(b'\x00\x00\x00\x00' + capierre_magic.MAGIC_NUMBER_START + b'\x11' * (len(information_to_hide) - len(capierre_magic.MAGIC_NUMBER_START) - 4))
+        final_prep: bytes = capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START + (b'\x11' * (len(information_to_hide) - capierre_magic.MAGIC_NUMBER_START_LEN - 21)) + b'\x00\x00\x00\x00'
+        final_prep = struct.pack('<i', len(final_prep) - 8) + final_prep
+        sentence_to_hide_fd.write(final_prep)
         sentence_to_hide_fd.close()
 
         if (platform.system() == 'Windows'):
@@ -156,14 +158,16 @@ class Capierre:
             eh_frame_block: bytearray = read_bin[eh_frame_section.offset:eh_frame_section.offset + eh_frame_section.memsize]
 
             i: int = eh_frame_block.find(capierre_magic.MAGIC_NUMBER_START)
+            print(len(eh_frame_block))
             length: int = 1
             fake_addr: int = 0
 
             if (i == -1):
                 msg_warning("Failure to locate compiled block")
 
-            eh_frame_block = eh_frame_block[:i - 4] + encoded_message + b'\x00\x00\x00\x00'
-            i -= 4
+            eh_frame_block = eh_frame_block[:i - len(capierre_magic.CIE_INFORMATION) - 4] + encoded_message + b'\x00\x00\x00\x00'
+            print(len(eh_frame_block))
+            i -= 4 + len(capierre_magic.CIE_INFORMATION)
             while (i < len(eh_frame_block)):
 
                 length = int.from_bytes(eh_frame_block[i: i + 4], "little")
