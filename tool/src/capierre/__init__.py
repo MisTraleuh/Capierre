@@ -1,6 +1,6 @@
 from __future__ import annotations
 import sys
-from utils.messages import msg_success, msg_error, msg_info
+from utils.messages import msg_success, msg_error, msg_info, msg_warning
 import subprocess
 import os
 import tempfile
@@ -146,7 +146,7 @@ class Capierre:
         symbols = project.loader.main_object.symbols
 
         for section in project.loader.main_object.sections:
-            if section.name == capierre_magic.SECTION_HIDE:
+            if section.name == capierre_magic.SECTION_RETRIEVE:
                 eh_frame_section = section
                 break
 
