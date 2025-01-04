@@ -59,7 +59,7 @@ class Capierre:
             msg_error("File not supported")
             sys.exit(1)
 
-    def create_malicious_file(self: Capierre, sentence_to_hide: str) -> tuple[str, str]:
+    def create_malicious_file(self: Capierre, sentence_to_hide: str) -> tuple[str, str, bytes]:
         """
         This function creates a malicious file with the sentence to hide.
 
@@ -115,7 +115,7 @@ class Capierre:
             i += rand_step
             rand_step = random.randint(1, 16)
 
-        sentence_to_hide_fd.write(information_to_hide)
+        sentence_to_hide_fd.write(b'\x00\x00\x00\x00' + capierre_magic.MAGIC_NUMBER_START + b'\x11' * (len(information_to_hide) - len(capierre_magic.MAGIC_NUMBER_START) - 4))
         sentence_to_hide_fd.close()
 
         if (platform.system() == 'Windows'):
@@ -136,9 +136,9 @@ class Capierre:
         malicious_code_fd.write(malicious_code.encode())
         malicious_code_fd.close()
 
-        return (malicious_code_fd.name, sentence_to_hide_fd.name)
+        return (malicious_code_fd.name, sentence_to_hide_fd.name, information_to_hide)
 
-    def complete_eh_frame_section(self: object) -> None:
+    def complete_eh_frame_section(self: object, encoded_message: bytes) -> None:
 
         capierre_magic: object = CapierreMagic()
         eh_frame_section: object = {}
@@ -146,7 +146,7 @@ class Capierre:
         symbols = project.loader.main_object.symbols
 
         for section in project.loader.main_object.sections:
-            if section.name == ".eh_frame":
+            if section.name == capierre_magic.SECTION_HIDE:
                 eh_frame_section = section
                 break
 
@@ -155,13 +155,20 @@ class Capierre:
             binary.seek(0)
             eh_frame_block: bytearray = read_bin[eh_frame_section.offset:eh_frame_section.offset + eh_frame_section.memsize]
 
-            index = eh_frame_block.find(capierre_magic.MAGIC_NUMBER_START)
-            if (index == -1):
+            i: int = eh_frame_block.find(capierre_magic.MAGIC_NUMBER_START)
+            length: int = 1
+            fake_addr: int = 0
+
+            if (i == -1):
                 msg_warning("Failure to locate compiled block")
 
-            length: int = 1
-            i: int = index - 5 - len(capierre_magic.CIE_INFORMATION)
-            fake_addr: int = 0
+            print(encoded_message)
+            print('\n')
+            print(eh_frame_block)
+            print(len(eh_frame_block))
+            print('\n')
+            eh_frame_block = eh_frame_block[:i - 4] + encoded_message + b'\x00\x00\x00\x00'
+            i -= 4
             while (i < len(eh_frame_block)):
 
                 length = int.from_bytes(eh_frame_block[i: i + 4], "little")
@@ -172,6 +179,8 @@ class Capierre:
                     eh_frame_block = eh_frame_block[:i + 8] + fake_addr.to_bytes(4, byteorder="little", signed=True) + eh_frame_block[i + 12:]
                 i += length + 4
 
+            print(eh_frame_block)
+            print(len(eh_frame_block))
             read_bin = read_bin[:eh_frame_section.offset] + eh_frame_block + read_bin[eh_frame_section.offset + eh_frame_section.memsize:]
             binary.truncate(0)
             binary.write(read_bin)
@@ -187,7 +196,7 @@ class Capierre:
         @return None
         """
         msg_info(f"Hidden sentence: {sentence_to_hide}")
-        (malicious_code_file_path, sentece_to_hide_file_path) = (
+        (malicious_code_file_path, sentece_to_hide_file_path, encoded_message) = (
             self.create_malicious_file(sentence_to_hide)
         )
         compilation_result = subprocess.run(
@@ -206,5 +215,5 @@ class Capierre:
         os.remove(sentece_to_hide_file_path)
         if (compilation_result.returncode != 0):
             raise Exception(compilation_result.stderr.strip())
-        self.complete_eh_frame_section()
+        self.complete_eh_frame_section(encoded_message)
         msg_success("Code compiled successfully")
