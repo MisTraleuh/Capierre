@@ -162,11 +162,6 @@ class Capierre:
             if (i == -1):
                 msg_warning("Failure to locate compiled block")
 
-            print(encoded_message)
-            print('\n')
-            print(eh_frame_block)
-            print(len(eh_frame_block))
-            print('\n')
             eh_frame_block = eh_frame_block[:i - 4] + encoded_message + b'\x00\x00\x00\x00'
             i -= 4
             while (i < len(eh_frame_block)):
@@ -179,8 +174,6 @@ class Capierre:
                     eh_frame_block = eh_frame_block[:i + 8] + fake_addr.to_bytes(4, byteorder="little", signed=True) + eh_frame_block[i + 12:]
                 i += length + 4
 
-            print(eh_frame_block)
-            print(len(eh_frame_block))
             read_bin = read_bin[:eh_frame_section.offset] + eh_frame_block + read_bin[eh_frame_section.offset + eh_frame_section.memsize:]
             binary.truncate(0)
             binary.write(read_bin)
@@ -202,6 +195,7 @@ class Capierre:
         compilation_result = subprocess.run(
             [
                 compilator_name,
+                '-fno-dwarf2-cfi-asm',
                 file_path,
                 malicious_code_file_path,
                 "-o",
