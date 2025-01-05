@@ -116,16 +116,19 @@ class Capierre:
             rand_step = random.randint(1, 16)
 
         final_prep: bytes = b'\x18\x00\x00\x00' + capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START + b'\x00\x00\x00'
-        final_size = len(information_to_hide) - capierre_magic.MAGIC_NUMBER_START_LEN - 24
-        final_count = final_size / 20
+        final_size = len(information_to_hide) - capierre_magic.MAGIC_NUMBER_START_LEN - 20
+        final_count = final_size // 20
         final_remain = final_size % 20
         i = 0
-        while (i < final_count):
+        while (i < (final_count - 1)):
             final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
             i += 1
 
         if (final_remain != 0):
-            final_prep += struct.pack('b', 16 + final_remain) + b'\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00' + b'\x00' * final_remain
+            final_prep += struct.pack('b', 16 + final_remain) + b'\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00' + (b'\x00' * final_remain)
+        else:
+            final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
+
         sentence_to_hide_fd.write(final_prep + b'\x00\x00\x00\x00')
         sentence_to_hide_fd.close()
 
