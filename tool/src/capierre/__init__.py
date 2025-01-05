@@ -115,21 +115,24 @@ class Capierre:
             i += rand_step
             rand_step = random.randint(1, 16)
 
-        final_prep: bytes = b'\x18\x00\x00\x00' + capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START + b'\x00\x00\x00'
-        final_size = len(information_to_hide) - capierre_magic.MAGIC_NUMBER_START_LEN - 20
-        final_count = final_size // 20
-        final_remain = final_size % 20
-        i = 0
-        while (i < (final_count - 1)):
-            final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
-            i += 1
+        if (platform.system == 'Darwin'):
+            final_prep: bytes = b'\x18\x00\x00\x00' + capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START + b'\x00\x00\x00'
+            final_size = len(information_to_hide) - capierre_magic.MAGIC_NUMBER_START_LEN - 20
+            final_count = final_size // 20
+            final_remain = final_size % 20
+            i = 0
+            while (i < (final_count - 1)):
+                final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
+                i += 1
 
-        if (final_remain != 0):
-            final_prep += struct.pack('b', 16 + final_remain) + b'\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00' + (b'\x00' * final_remain)
+            if (final_remain != 0):
+                final_prep += struct.pack('b', 16 + final_remain) + b'\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00' + (b'\x00' * final_remain)
+            else:
+                final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
+
+            sentence_to_hide_fd.write(final_prep)
         else:
-            final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
-
-        sentence_to_hide_fd.write(final_prep)
+            sentence_to_hide_fd.write(information_to_hide)
         sentence_to_hide_fd.close()
 
         if (platform.system() == 'Windows'):
@@ -175,9 +178,8 @@ class Capierre:
 
             if (i == -1):
                 msg_warning("Failure to locate compiled block")
-            print(len(eh_frame_block))
-            eh_frame_block = eh_frame_block[:i - len(capierre_magic.CIE_INFORMATION) - 4] + encoded_message
-            print(len(eh_frame_block))
+            if (platform.system == 'Darwin'):
+                eh_frame_block = eh_frame_block[:i - len(capierre_magic.CIE_INFORMATION) - 4] + encoded_message
             i -= 4 + len(capierre_magic.CIE_INFORMATION)
             while (i < len(eh_frame_block)):
 
