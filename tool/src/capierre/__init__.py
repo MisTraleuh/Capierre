@@ -99,12 +99,12 @@ class Capierre:
             # This section creates fake CIEs.
             if entry_number == rand_entry: 
                 len_new_cie = len(information_to_hide)
-                temp_information_to_hide    = capierre_magic.CIE_INFORMATION + ((4 - (rand_step & 0b11)) & 0b11).to_bytes(1, 'little') + temp_information_to_hide + struct.pack('bb', random.randint(0, 127), random.randint(0, 127))
+                temp_information_to_hide = capierre_magic.CIE_INFORMATION + ((4 - (rand_step & 0b11)) & 0b11).to_bytes(1, 'little') + temp_information_to_hide + struct.pack('bb', random.randint(0, 127), random.randint(0, 127))
                 entry_number = 0
                 rand_entry = random.randint(4, 10)
             # This section creates fake FDEs with a placeholder address.
             else:
-                temp_information_to_hide    = (struct.pack('<i', len(information_to_hide) + 4 - len_new_cie) +
+                temp_information_to_hide = (struct.pack('<i', len(information_to_hide) + 4 - len_new_cie) +
                                                 b"\x11\x11\x11\x11" + struct.pack('bb', (4 - (rand_step & 0b11)) & 0b11, random.randint(0, 127)) + b"\x00\x00\x00"
                                                 + temp_information_to_hide + struct.pack('bbb', random.randint(0, 127), random.randint(0, 127), random.randint(0, 127)))
 
@@ -142,6 +142,7 @@ class Capierre:
             sentence_to_hide_fd.write(final_prep)
 
         # Otherwise, the regular Linux linker will not check anything.
+        # Because Linux's linker doesn't care about the size of the eh_frame section, the processed data can be inserted directly into the binary.
         else:
             sentence_to_hide_fd.write(information_to_hide)
 
