@@ -129,7 +129,7 @@ class Capierre:
         else:
             final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
 
-        sentence_to_hide_fd.write(final_prep + b'\x00\x00\x00\x00')
+        sentence_to_hide_fd.write(final_prep)
         sentence_to_hide_fd.close()
 
         if (platform.system() == 'Windows'):
@@ -170,13 +170,14 @@ class Capierre:
             eh_frame_block: bytearray = read_bin[eh_frame_section.offset:eh_frame_section.offset + eh_frame_section.memsize]
 
             i: int = eh_frame_block.find(capierre_magic.MAGIC_NUMBER_START)
-            length: int = 1
+            length: int = 0
             fake_addr: int = 0
 
             if (i == -1):
                 msg_warning("Failure to locate compiled block")
-
-            eh_frame_block = eh_frame_block[:i - len(capierre_magic.CIE_INFORMATION) - 4] + encoded_message + b'\x00\x00\x00\x00'
+            print(len(eh_frame_block))
+            eh_frame_block = eh_frame_block[:i - len(capierre_magic.CIE_INFORMATION) - 4] + encoded_message
+            print(len(eh_frame_block))
             i -= 4 + len(capierre_magic.CIE_INFORMATION)
             while (i < len(eh_frame_block)):
 
