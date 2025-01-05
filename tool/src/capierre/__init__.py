@@ -85,6 +85,8 @@ class Capierre:
 
         rand_step: int = random.randint(1, 16)
         i: int = 0
+
+        # This loop will create chunks out of AES encrypted content and will add them at the end of fake CIE and FDE structure sprinkled with some random data.
         while i < len(data):
 
             if (i == 0):
@@ -94,16 +96,19 @@ class Capierre:
                     rand_step = len(data) - i
                 temp_information_to_hide = data[i: i + rand_step]
 
+            # This section creates fake CIEs.
             if entry_number == rand_entry: 
                 len_new_cie = len(information_to_hide)
                 temp_information_to_hide    = capierre_magic.CIE_INFORMATION + ((4 - (rand_step & 0b11)) & 0b11).to_bytes(1, 'little') + temp_information_to_hide + struct.pack('bb', random.randint(0, 127), random.randint(0, 127))
                 entry_number = 0
                 rand_entry = random.randint(4, 10)
+            # This section creates fake FDEs with a placeholder address.
             else:
                 temp_information_to_hide    = (struct.pack('<i', len(information_to_hide) + 4 - len_new_cie) +
                                                 b"\x11\x11\x11\x11" + struct.pack('bb', (4 - (rand_step & 0b11)) & 0b11, random.randint(0, 127)) + b"\x00\x00\x00"
                                                 + temp_information_to_hide + struct.pack('bbb', random.randint(0, 127), random.randint(0, 127), random.randint(0, 127)))
 
+            # This part was added to provided alignment to 4 bytes as the eh_frame format requires.
             new_size = len(temp_information_to_hide)
             if new_size & 0b11:
                 new_size = ((new_size | 0b11) ^ 0b11) + 4
@@ -115,6 +120,10 @@ class Capierre:
             i += rand_step
             rand_step = random.randint(1, 16)
 
+        # As MacOSX's linker will throw exceptions on invalid eh_frame FDE addresses, the processed data can't be inserted into the binary directly.
+        # Since one can't add more data to the eh_frame section after the compilation ends, forcibly adding space to the end of the eh_frame section to store the processed data was the approach chosen.
+        # Prior tests showed that the linker will ignore any data that is added to this section passed the terminator and will throw exceptions on CFI sections that are too long.
+        # We chose to add the space needed to hold the data as several fake CIEs.
         if (platform.system() == 'Darwin'):
             final_prep: bytes = b'\x18\x00\x00\x00' + capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START + b'\x00\x00\x00'
             final_size = len(information_to_hide) - capierre_magic.MAGIC_NUMBER_START_LEN - 20
@@ -131,8 +140,11 @@ class Capierre:
                 final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
 
             sentence_to_hide_fd.write(final_prep)
+
+        # Otherwise, the regular Linux linker will not check anything.
         else:
             sentence_to_hide_fd.write(information_to_hide)
+
         sentence_to_hide_fd.close()
 
         if (platform.system() == 'Windows'):
@@ -167,6 +179,8 @@ class Capierre:
                 eh_frame_section = section
                 break
 
+        # To make the fake eh_frame entries more believable, the binary is opened again and its compiled symbols' 
+        # addresses are added to the FDEs by removing their placeholder values.
         with open(self.binary_file, 'r+b') as binary:
             read_bin = binary.read()
             binary.seek(0)
