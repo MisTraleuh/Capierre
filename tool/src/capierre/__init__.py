@@ -115,7 +115,7 @@ class Capierre:
             i += rand_step
             rand_step = random.randint(1, 16)
 
-        if (platform.system == 'Darwin'):
+        if (platform.system() == 'Darwin'):
             final_prep: bytes = b'\x18\x00\x00\x00' + capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START + b'\x00\x00\x00'
             final_size = len(information_to_hide) - capierre_magic.MAGIC_NUMBER_START_LEN - 20
             final_count = final_size // 20
@@ -178,7 +178,7 @@ class Capierre:
 
             if (i == -1):
                 msg_warning("Failure to locate compiled block")
-            if (platform.system == 'Darwin'):
+            if (platform.system() == 'Darwin'):
                 eh_frame_block = eh_frame_block[:i - len(capierre_magic.CIE_INFORMATION) - 4] + encoded_message
             i -= 4 + len(capierre_magic.CIE_INFORMATION)
             while (i < len(eh_frame_block)):
