@@ -61,7 +61,7 @@ class CapierreAnalyzer:
                 index : rodata_block[index:].find(capierre_magic.MAGIC_NUMBER_END)
                 + index
             ]
-            if self.output_file_retreive != None:
+            if self.output_file_retreive != '':
                 with open(self.output_file_retreive, "wb") as file:
                     file.write(message_retrieved)
                 file.close()
