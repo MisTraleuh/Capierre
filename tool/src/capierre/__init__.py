@@ -120,10 +120,12 @@ class Capierre:
             i += rand_step
             rand_step = random.randint(1, 16)
 
+        """
         # As MacOSX's linker will throw exceptions on invalid eh_frame FDE addresses, the processed data can't be inserted into the binary directly.
         # Since one can't add more data to the eh_frame section after the compilation ends, forcibly adding space to the end of the eh_frame section to store the processed data was the approach chosen.
         # Prior tests showed that the linker will ignore any data that is added to this section passed the terminator and will throw exceptions on CFI sections that are too long.
         # We chose to add the space needed to hold the data as several fake CIEs.
+        """
         if (platform.system() == 'Darwin'):
             final_prep: bytes = b'\x18\x00\x00\x00' + capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START + b'\x00\x00\x00'
             final_size = len(information_to_hide) - capierre_magic.MAGIC_NUMBER_START_LEN - 20
@@ -139,12 +141,11 @@ class Capierre:
             else:
                 final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
 
-            sentence_to_hide_fd.write(final_prep)
+            information_to_hide = final_prep
 
         # Otherwise, the regular Linux linker will not check anything.
         # Because Linux's linker doesn't care about the size of the eh_frame section, the processed data can be inserted directly into the binary.
-        else:
-            sentence_to_hide_fd.write(information_to_hide)
+        sentence_to_hide_fd.write(information_to_hide)
 
         sentence_to_hide_fd.close()
 
