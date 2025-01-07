@@ -9,7 +9,8 @@ export default {
           {
             children: [
               '/fr/Introduction.md',
-              '/fr/Comment_utiliser.md'
+              '/fr/Comment_utiliser.md',
+              '/fr/Pour_qui_quoi_comment.md',
             ],
           },
           {

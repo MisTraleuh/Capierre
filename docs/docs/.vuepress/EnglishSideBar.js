@@ -10,6 +10,7 @@ export default {
             children: [
               '/en/Introduction.md',
               '/en/How_to_use.md',
+              '/en/For_Whom_Why.md',
             ],
           },
           {
