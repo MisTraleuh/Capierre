@@ -20,7 +20,18 @@ export default {
               '/en/tool/Tool_Documentation.md',
               '/en/tool/Basic_concept.md',
               '/en/tool/Functioning_of_Capierre_tool.md',
-            ]
+            ],
+          },
+          {
+            collapsible: true,
+            text: '🖥️ Gui',
+            children: [
+              '/en/gui/Guide_GUI.md',
+              '/en/gui/Overview_GUI.md',
+              '/en/gui/Install_GUI.md',
+              '/en/gui/Usage_GUI.md',
+              '/en/gui/FAQ_GUI.md',
+            ],
           },
         ],
       },
