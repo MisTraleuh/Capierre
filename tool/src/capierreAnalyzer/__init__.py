@@ -19,7 +19,7 @@ class CapierreAnalyzer:
         self.output_file_retreive = output_file_retreive
         self.password = password
 
-    def cipher_information(self: Capierre, *, retrieved_content: str, decrypt: bool) -> str:
+    def cipher_information(self: CapierreAnalyzer, *, retrieved_content: str, decrypt: bool) -> str:
         if len(self.password) == 0:
             msg_error("You must supply a password.")
             return
@@ -36,7 +36,7 @@ class CapierreAnalyzer:
         index: int = -1
         eh_frame_block: bytes = b''
         project: object = None
-        eh_frame_section:object = None
+        eh_frame_section: object = None
         section_target: str = capierre_magic.SECTION_RETRIEVE
         encoded_string: bytes = b''
         message_retrieved: str = ''
@@ -65,7 +65,7 @@ class CapierreAnalyzer:
 
             alignment_padding: int = eh_frame_block[index - 1]
             index = index - (5 + len(capierre_magic.CIE_INFORMATION))
-            length:int = int.from_bytes(eh_frame_block[index: index + 4], "little")
+            length: int = int.from_bytes(eh_frame_block[index: index + 4], "little")
             encoded_string = encoded_string + eh_frame_block[index + 5 + len(capierre_magic.CIE_INFORMATION) + capierre_magic.MAGIC_NUMBER_START_LEN: index + length - alignment_padding + 2]
             index += length + 4
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 import sys
-from utils.messages import msg_success, msg_error, msg_info
+from utils.messages import msg_success, msg_error, msg_info, msg_warning
 import subprocess
 import os
 import tempfile
@@ -59,7 +59,7 @@ class Capierre:
             msg_error("File not supported")
             sys.exit(1)
 
-    def create_malicious_file(self: Capierre, sentence_to_hide: str) -> tuple[str, str]:
+    def create_malicious_file(self: Capierre, sentence_to_hide: str) -> tuple[str, str, bytes]:
         """
         This function creates a malicious file with the sentence to hide.
 
@@ -85,6 +85,8 @@ class Capierre:
 
         rand_step: int = random.randint(1, 16)
         i: int = 0
+
+        # This loop will create chunks out of AES encrypted content and will add them at the end of fake CIE and FDE structure sprinkled with some random data.
         while i < len(data):
 
             if (i == 0):
@@ -94,16 +96,19 @@ class Capierre:
                     rand_step = len(data) - i
                 temp_information_to_hide = data[i: i + rand_step]
 
+            # This section creates fake CIEs.
             if entry_number == rand_entry: 
                 len_new_cie = len(information_to_hide)
-                temp_information_to_hide    = capierre_magic.CIE_INFORMATION + ((4 - (rand_step & 0b11)) & 0b11).to_bytes(1, 'little') + temp_information_to_hide + struct.pack('bb', random.randint(0, 127), random.randint(0, 127))
+                temp_information_to_hide = capierre_magic.CIE_INFORMATION + ((4 - (rand_step & 0b11)) & 0b11).to_bytes(1, 'little') + temp_information_to_hide + struct.pack('bb', random.randint(0, 127), random.randint(0, 127))
                 entry_number = 0
                 rand_entry = random.randint(4, 10)
+            # This section creates fake FDEs with a placeholder address.
             else:
-                temp_information_to_hide    = (struct.pack('<i', len(information_to_hide) + 4 - len_new_cie) +
+                temp_information_to_hide = (struct.pack('<i', len(information_to_hide) + 4 - len_new_cie) +
                                                 b"\x11\x11\x11\x11" + struct.pack('bb', (4 - (rand_step & 0b11)) & 0b11, random.randint(0, 127)) + b"\x00\x00\x00"
                                                 + temp_information_to_hide + struct.pack('bbb', random.randint(0, 127), random.randint(0, 127), random.randint(0, 127)))
 
+            # This part was added to provided alignment to 4 bytes as the eh_frame format requires.
             new_size = len(temp_information_to_hide)
             if new_size & 0b11:
                 new_size = ((new_size | 0b11) ^ 0b11) + 4
@@ -115,7 +120,33 @@ class Capierre:
             i += rand_step
             rand_step = random.randint(1, 16)
 
+        """
+        # As MacOSX's linker will throw exceptions on invalid eh_frame FDE addresses, the processed data can't be inserted into the binary directly.
+        # Since one can't add more data to the eh_frame section after the compilation ends, forcibly adding space to the end of the eh_frame section to store the processed data was the approach chosen.
+        # Prior tests showed that the linker will ignore any data that is added to this section passed the terminator and will throw exceptions on CFI sections that are too long.
+        # We chose to add the space needed to hold the data as several fake CIEs.
+        """
+        if (platform.system() == 'Darwin'):
+            final_prep: bytes = b'\x18\x00\x00\x00' + capierre_magic.CIE_INFORMATION + capierre_magic.MAGIC_NUMBER_START + b'\x00\x00\x00'
+            final_size = len(information_to_hide) - capierre_magic.MAGIC_NUMBER_START_LEN - 20
+            final_count = final_size // 20
+            final_remain = final_size % 20
+            i = 0
+            while (i < (final_count - 1)):
+                final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
+                i += 1
+
+            if (final_remain != 0):
+                final_prep += struct.pack('b', 16 + final_remain) + b'\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00' + (b'\x00' * final_remain)
+            else:
+                final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
+
+            information_to_hide = final_prep
+
+        # Otherwise, the regular Linux linker will not check anything.
+        # Because Linux's linker doesn't care about the size of the eh_frame section, the processed data can be inserted directly into the binary.
         sentence_to_hide_fd.write(information_to_hide)
+
         sentence_to_hide_fd.close()
 
         if (platform.system() == 'Windows'):
@@ -136,9 +167,9 @@ class Capierre:
         malicious_code_fd.write(malicious_code.encode())
         malicious_code_fd.close()
 
-        return (malicious_code_fd.name, sentence_to_hide_fd.name)
+        return (malicious_code_fd.name, sentence_to_hide_fd.name, information_to_hide)
 
-    def complete_eh_frame_section(self: object) -> None:
+    def complete_eh_frame_section(self: object, encoded_message: bytes) -> None:
 
         capierre_magic: object = CapierreMagic()
         eh_frame_section: object = {}
@@ -146,22 +177,26 @@ class Capierre:
         symbols = project.loader.main_object.symbols
 
         for section in project.loader.main_object.sections:
-            if section.name == ".eh_frame":
+            if section.name == capierre_magic.SECTION_RETRIEVE:
                 eh_frame_section = section
                 break
 
+        # To make the fake eh_frame entries more believable, the binary is opened again and its compiled symbols' 
+        # addresses are added to the FDEs by removing their placeholder values.
         with open(self.binary_file, 'r+b') as binary:
             read_bin = binary.read()
             binary.seek(0)
             eh_frame_block: bytearray = read_bin[eh_frame_section.offset:eh_frame_section.offset + eh_frame_section.memsize]
 
-            index = eh_frame_block.find(capierre_magic.MAGIC_NUMBER_START)
-            if (index == -1):
-                msg_warning("Failure to locate compiled block")
-
-            length: int = 1
-            i: int = index - 5 - len(capierre_magic.CIE_INFORMATION)
+            i: int = eh_frame_block.find(capierre_magic.MAGIC_NUMBER_START)
+            length: int = 0
             fake_addr: int = 0
+
+            if (i == -1):
+                msg_warning("Failure to locate compiled block")
+            if (platform.system() == 'Darwin'):
+                eh_frame_block = eh_frame_block[:i - len(capierre_magic.CIE_INFORMATION) - 4] + encoded_message
+            i -= 4 + len(capierre_magic.CIE_INFORMATION)
             while (i < len(eh_frame_block)):
 
                 length = int.from_bytes(eh_frame_block[i: i + 4], "little")
@@ -187,12 +222,13 @@ class Capierre:
         @return None
         """
         msg_info(f"Hidden sentence: {sentence_to_hide}")
-        (malicious_code_file_path, sentece_to_hide_file_path) = (
+        (malicious_code_file_path, sentece_to_hide_file_path, encoded_message) = (
             self.create_malicious_file(sentence_to_hide)
         )
         compilation_result = subprocess.run(
             [
                 compilator_name,
+                '-fno-dwarf2-cfi-asm',
                 file_path,
                 malicious_code_file_path,
                 "-o",
@@ -206,5 +242,5 @@ class Capierre:
         os.remove(sentece_to_hide_file_path)
         if (compilation_result.returncode != 0):
             raise Exception(compilation_result.stderr.strip())
-        self.complete_eh_frame_section()
+        self.complete_eh_frame_section(encoded_message)
         msg_success("Code compiled successfully")
