@@ -4,7 +4,7 @@ import platform
 
 class CapierreMagic:
     def __init__(self):
-        self.CIE_INFORMATION = b"\0\0\0\0\1\0\0\0\x10"
+        self.CIE_INFORMATION = b"\x00\x00\x00\x00\x01\x7a\x52\x00\x01\x78\x10\x01\x1b"
         self.MAGIC_NUMBER_START = b"CAPIERRE"
         self.MAGIC_NUMBER_END = self.MAGIC_NUMBER_START[::-1] + (b"\0" * 4)
         self.MAGIC_NUMBER_START_LEN = len(self.MAGIC_NUMBER_START)
