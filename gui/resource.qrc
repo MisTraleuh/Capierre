@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icon">
+    <file>icon/cil-check-alt.png</file>
     <file>icon/cil-folder-open.png</file>
     <file>icon/cil-folder.png</file>
     <file>icon/cil-options-horizontal.png</file>
