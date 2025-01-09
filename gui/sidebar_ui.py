@@ -409,11 +409,11 @@ class Ui_MainWindow(object):
         box_value_file = self.lineEdit.text()
         box_value_sentence = self.lineEdit_2.text()
         box_value_password = self.lineEdit_3.text()
+        value: str = "c" if (box_value_file[-1] == 'c') else "cpp"
 
-        print(box_value_file)
         capierreObject = Capierre(
             box_value_file,
-            "c",
+            value,
             box_value_sentence,
             box_value_password,
             "result_binary.bin",
