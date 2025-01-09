@@ -11,6 +11,7 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 sys.path.append('../tool/src/')
 from capierre import Capierre
+from capierreAnalyzer import CapierreAnalyzer
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -391,16 +392,25 @@ class Ui_MainWindow(object):
     def show_info_messagebox(self): 
         msg = QtWidgets.QMessageBox() 
         msg.setIcon(QtWidgets.QMessageBox.Information) 
-        msg.setText("SUCCESS: result_binary.bin was made successfully")
+        msg.setText("SUCCESS: Binary compiled successfully.")
         msg.setWindowTitle("Information MessageBox") 
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        msg.exec_() 
+        msg.exec_()
 
-    def on_click(self):
+    def show_info_messagebox_retrieve(self): 
+        msg = QtWidgets.QMessageBox() 
+        msg.setIcon(QtWidgets.QMessageBox.Information) 
+        msg.setText("SUCCESS: Content extracted successfully.")
+        msg.setWindowTitle("Information MessageBox") 
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()
+
+    def hide_action(self):
         box_value_file = self.lineEdit.text()
         box_value_sentence = self.lineEdit_2.text()
         box_value_password = self.lineEdit_3.text()
 
+        print(box_value_file)
         capierreObject = Capierre(
             box_value_file,
             "c",
@@ -413,6 +423,20 @@ class Ui_MainWindow(object):
         self.lineEdit.setText("")
         self.lineEdit_2.setText("")
         self.lineEdit_3.setText("")
+
+    def retrieve_action(self):
+        box_value_file = self.lineEdit_4.text()
+        box_value_password = self.lineEdit_5.text()
+
+        capierreObject = CapierreAnalyzer(
+            box_value_file,
+            "MESSAGE",
+            box_value_password,
+        )
+        capierreObject.retrieve_message_from_binary()
+        self.show_info_messagebox_retrieve()
+        self.lineEdit_4.setText("")
+        self.lineEdit_5.setText("")
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -436,4 +460,6 @@ class Ui_MainWindow(object):
         self.label_7.setText(_translate("MainWindow", "Sentence"))
         self.confirm_btn.setText(_translate("MainWindow", "Confirm"))
         self.label_8.setText(_translate("MainWindow", "Challenges Page"))
+        self.confirm_btn.clicked.connect(self.hide_action)
+        self.confirm_btn_2.clicked.connect(self.retrieve_action)
 import resource_rc

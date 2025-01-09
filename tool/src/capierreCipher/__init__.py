@@ -11,7 +11,7 @@ class CapierreCipher:
     """
 
     @staticmethod
-    def cipher(input: str, password: str, *, decrypt: bool) -> str:
+    def cipher(input: bytes, password: str, *, decrypt: bool) -> str:
         """
         This method encrypt or decrypt the content of the `input` and returns the ciphered message.
         If `decrypt` is True, then the cipher will attempt to decrypt `input`.
@@ -29,11 +29,11 @@ class CapierreCipher:
             cipher = AES.new(password_hash, mode=AES.MODE_CBC)
 
             if decrypt:
-                return str(cipher.decrypt(b64decode(input))[16:], "utf-8")
-            if len(input) & 0b1111:
-                input = input.ljust(((len(input) | 0b1111) ^ 0b1111) + 16, '\x00')
-            input = '\x00' * 16 + input
-            return str(b64encode(cipher.encrypt(bytes(input, "utf-8"))), 'ascii')
+                output: bytes = cipher.decrypt(b64decode(input))[16:]
+                return str(output[:-output[-1] - 1], "utf-8")
+            padding: int = 16 - len(input) % 16
+            input = b'\x00' * 16 + input + b''.join([i.to_bytes(1, 'big') for i in range(padding)])
+            return str(b64encode(cipher.encrypt(input)), 'ascii')
         except Exception as e:
             msg_error(f"Cipher error: {e}")
             raise e

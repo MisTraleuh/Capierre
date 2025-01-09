@@ -19,7 +19,7 @@ class CapierreAnalyzer:
         self.output_file_retreive = output_file_retreive
         self.password = password
 
-    def cipher_information(self: CapierreAnalyzer, *, retrieved_content: str, decrypt: bool) -> str:
+    def cipher_information(self: CapierreAnalyzer, *, retrieved_content: bytes, decrypt: bool) -> str:
         if len(self.password) == 0:
             msg_error("You must supply a password.")
             return
@@ -81,10 +81,10 @@ class CapierreAnalyzer:
                     encoded_string = encoded_string + eh_frame_block[index + 5 + len(capierre_magic.CIE_INFORMATION): index + length - alignment_padding + 2]
                 index += length + 4
 
-            message_retrieved = self.cipher_information(retrieved_content=encoded_string.decode('ascii'), decrypt=True)
+            message_retrieved = self.cipher_information(retrieved_content=encoded_string, decrypt=True)
             if self.output_file_retreive != '':
                 with open(self.output_file_retreive, "wb") as file:
-                    file.write(message_retrieved)
+                    file.write(message_retrieved.encode('utf-8'))
                     file.close()
                 msg_success(
                     f"Message retrieved and saved in {self.output_file_retreive}"

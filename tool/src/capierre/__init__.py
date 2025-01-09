@@ -39,7 +39,7 @@ class Capierre:
             msg_error("You must supply a password.")
             return
         self.sentence = CapierreCipher.cipher(
-            self.sentence, self.password, decrypt=decrypt
+            self.sentence.encode('ascii'), self.password, decrypt=decrypt
         )
 
     def hide_information(self: Capierre) -> None:

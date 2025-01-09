@@ -14,11 +14,16 @@ class MainWindow(QMainWindow):
 
         self.ui.stackedWidget.setCurrentIndex(0)
 
-        self.ui.open_button_2.clicked.connect(self.clicker)
-        self.ui.open_button.clicked.connect(self.clicker)
+        self.ui.open_button_2.clicked.connect(self.clicker_2)
+        self.ui.open_button.clicked.connect(self.clicker_1)
 
 
-    def clicker(self):
+    def clicker_1(self):
+        fname, _ = QFileDialog.getOpenFileName(self, "Open File", "", "All Files (*);;Python Files (*.py)")
+        if fname:
+            self.ui.lineEdit.setText(fname)
+
+    def clicker_2(self):
         fname, _ = QFileDialog.getOpenFileName(self, "Open File", "", "All Files (*);;Python Files (*.py)")
         if fname:
             self.ui.lineEdit_4.setText(fname)
