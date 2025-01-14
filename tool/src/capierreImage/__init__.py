@@ -4,7 +4,6 @@ from capierreParsing import msg_error
 import random
 
 
-@dataclass(slots=True)
 class CapierreImage:
     """
     This class is responsible for steganography inside a image.
@@ -13,18 +12,14 @@ class CapierreImage:
 
     @param image: `PIL.Image.Image` - The image to hide/extract the message.
     @param seed: `int` - The seed to be used for encryption/decryption. (default: `0`)
-    @param nb_bits: `int` - The number of LSB bits to use. (default: `1`)
     """
 
-    image: Image.Image
-    seed: int = 0
-    nb_bit: int = 1
-
-    def check_nbits(self) -> bool:
-        if self.nb_bit < 1 or self.nb_bit > 2:
-            msg_error("[!][CapierreImage] nb_bit must be between 1 and 2.")
-            return False
-        return True
+    def __init__(self, image: Image.Image, seed=0):
+        self.image = image
+        self.seed = seed
+        self.image_size = self.image.width + self.image.height
+        self.nb_channels = len(self.image.mode)
+        self.image_data = tuple(self.image.getdata())
 
     def check_size(self) -> bool:
         if len(self.data) < self.image.size[0] + self.image.size[1]:
@@ -32,26 +27,42 @@ class CapierreImage:
             return False
         return True
 
-    def check_imagetype(self) -> bool:
-        if self.image.mode != "RGBA":
-            msg_error("[!][CapierreImage] image must be in PNG format (with alpha).")
-            return False
-        return True
+    def get_new_position(self):
+        random_stack = []
 
-    # TODO: LSB Using pseudo-random seeding for byte frequency
-    def hide(self):
-        if not (self.check_nbits() and self.check_size() and self.data is not None):
+        random.seed(self.seed)
+        for _ in range(self.image_size):
+            value = random.randint(0, self.image_size)
+            while value in random_stack:
+                value = random.randint(0, self.image_size)
+            random_stack.append(value)
+            yield value
+
+    def hide(self, message: bytes):
+        if not (self.check_size() and self.data is not None):
             return
 
-        nb_pixels = 2 // self.nb_bit
-        for i in range((self.image.size[0] + self.image.size[1]) // nb_pixels):
-            pixels = self.image[i * nb_pixels : (i + 1) * nb_pixels]
+        bit_pos = 0
+        random_position = self.get_new_position()
 
-    # TODO: Extract LSB using the same seed
-    def extract(self):
-        if not (self.check_nbits() and self.check_imagetype()):
-            return
+        for i in range(self.image_size):
+            position = random_position()
 
-        nb_pixels = 2 // self.nb_bit
-        for i in range((self.image.size[0] + self.image.size[1]) // nb_pixels):
-            pixels = self.image[i * nb_pixels : (i + 1) * nb_pixels]
+            for j in range(self.nb_channels):
+                if message[i * self.image_size + j] & (1 << bit_pos):
+                    self.image_data[position][j] |=  1
+                else:
+                    self.image_data[position][j] &=  0
+                bit_pos = (bit_pos + 1) % 8
+
+    def extract(self) -> bytes:
+        bit_pos = 0
+        random_position = self.get_new_position()
+        message = bytearray(self.image_size * self.nb_channels)
+
+        for i in range(self.image_size):
+            position = random_position()
+
+            for j in range(self.nb_channels):
+                message[(i * self.image_size + j) // 8] |= (self.image_data[position][j] & 1) << bit_pos
+                bit_pos = (bit_pos + 1) % 8
