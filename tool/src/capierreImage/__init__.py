@@ -1,5 +1,4 @@
 from PIL import Image
-from dataclasses import dataclass
 from capierreParsing import msg_error
 import random
 
