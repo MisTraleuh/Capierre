@@ -55,6 +55,7 @@ class CapierreImage:
                 else:
                     self.image_data[position][j] &=  0
                 bit_pos = (bit_pos + 1) % 8
+        self.image.putdata(self.image_data)
 
     def extract(self) -> bytes:
         bit_pos = 0
