@@ -32,8 +32,10 @@ class CapierreImage:
         random.seed(self.seed)
         for _ in range(self.image_size):
             value = random.randint(0, self.image_size)
+
             while value in random_stack:
                 value = random.randint(0, self.image_size)
+
             random_stack.append(value)
             yield value
 
@@ -63,5 +65,7 @@ class CapierreImage:
             position = random_position()
 
             for j in range(self.nb_channels):
-                message[(i * self.image_size + j) // 8] |= (self.image_data[position][j] & 1) << bit_pos
+                message[(i * self.image_size + j) // 8] |= (
+                    (self.image_data[position][j] & 1) << bit_pos
+                )
                 bit_pos = (bit_pos + 1) % 8
