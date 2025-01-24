@@ -184,7 +184,7 @@ class Capierre:
         # To make the fake eh_frame entries more believable, the binary is opened again and its compiled symbols' 
         # addresses are added to the FDEs by removing their placeholder values.
         with open(self.binary_file, 'r+b') as binary:
-            read_bin = binary.read()
+            read_bin: bytes = binary.read()
             binary.seek(0)
             eh_frame_block: bytearray = read_bin[eh_frame_section.offset:eh_frame_section.offset + eh_frame_section.memsize]
 
