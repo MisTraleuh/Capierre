@@ -18,15 +18,16 @@ class Capierre:
     @param file: `str` - The path of the file to hide the information
     @param type_file: `str` - The type of file to hide the information
     @param sentence: `str` - The sentence to hide
+    @param password: `str` - The password to encrypt the sentence
+    @param binary_file: `str` - The path of the binary file to hide the information
     """
-
     def __init__(
         self: Capierre,
         file: str,
         type_file: str,
         sentence: str,
         password: str,
-        binary_file="capierre_binary",
+        binary_file = "./capierre_binary" if platform.system() != 'Windows' else ".\capierre_binary.exe"
     ) -> None:
         self.file = file
         self.type_file = type_file
