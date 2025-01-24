@@ -153,6 +153,7 @@ class CapierreParsing:
 
     def check_retrieve_args(self: CapierreParsing) -> tuple[bool, int]:
         self.file = self.get_args(("--file", "-f"))
+        self.password = self.argv_to_password(sys.argv)
         if any(arg in sys.argv for arg in ["--output", "-o"]):
             self.output_file_retreive = self.get_args(("--output", "-o"))
         return (True, 0)

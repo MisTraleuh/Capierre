@@ -1,0 +1,28 @@
+<RCC>
+  <qresource prefix="icon">
+    <file>icon/cil-check-alt.png</file>
+    <file>icon/cil-folder-open.png</file>
+    <file>icon/cil-folder.png</file>
+    <file>icon/cil-options-horizontal.png</file>
+    <file>icon/cil-menu.png</file>
+    <file>icon/cil-exit-to-app.png</file>
+    <file>icon/cil-star.png</file>
+    <file>icon/cil-file.png</file>
+    <file>icon/cil-zoom-in.png</file>
+    <file>icon/cil-4k.png</file>
+    <file>icon/cil-menu.png</file>
+    <file>icon/cil-image1.png</file>
+    <file>icon/icon_menu.png</file>
+    <file>icon/cil-exit-to-app.png</file>
+    <file>icon/icon_settings.png</file>
+    <file>icon/cil-align-left.png</file>
+    <file>icon/cog-64.ico</file>
+    <file>icon/cil-menu.png</file>
+    <file>icon/logout-64.ico</file>
+    <file>icon/trophy-3-64.ico</file>
+    <file>icon/menu-4-64.ico</file>
+    <file>icon/magnifying-glass-3-64.ico</file>
+    <file>icon/eye-3-64.ico</file>
+    <file>icon/favicon-64.png</file>
+  </qresource>
+</RCC>
