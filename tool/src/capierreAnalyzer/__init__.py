@@ -82,6 +82,7 @@ class CapierreAnalyzer:
                 index += length + 4
 
             message_retrieved = self.cipher_information(retrieved_content=encoded_string, decrypt=True)
+
             if self.output_file_retreive != '':
                 with open(self.output_file_retreive, "wb") as file:
                     file.write(message_retrieved.encode('utf-8'))
