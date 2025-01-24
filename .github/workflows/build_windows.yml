@@ -56,8 +56,8 @@ jobs:
         run: |
           ./dist/capierre_binary.exe --help
           ./dist/capierre_binary.exe --version
-          ./dist/capierre_binary.exe --conceal --file ./tests/src/main.cpp --file-to-hide ./tests/src/HIDDEN_FILE
-          ./dist/capierre_binary.exe -r --file ./capierre_binary.exe
+          ./dist/capierre_binary.exe --conceal --file ./tests/src/main.cpp --file-to-hide ./tests/src/HIDDEN_FILE --password "password"
+          ./dist/capierre_binary.exe -r --file ./capierre_binary.exe --password "password"
 
       - name: Tests Fonctionnels
         working-directory: ./tool

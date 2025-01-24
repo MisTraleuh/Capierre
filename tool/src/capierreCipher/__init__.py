@@ -3,7 +3,6 @@ from Crypto.Cipher import AES
 from hashlib import sha256
 from base64 import b64encode, b64decode
 
-
 class CapierreCipher:
     """
     This class is the cipher module that provides encryption/decryption.
