@@ -27,7 +27,7 @@ class Capierre:
         type_file: str,
         sentence: str,
         password: str,
-        binary_file = "./capierre_binary" if platform.system() != 'Windows' else ".\capierre_binary.exe"
+        binary_file: str = None,
     ) -> None:
         self.file = file
         self.type_file = type_file
@@ -53,7 +53,6 @@ class Capierre:
             "cpp": "g++",
         }
 
-        self.cipher_information(decrypt=False)
         if self.type_file in extension_files:
             self.compile_code(self.file, self.sentence, extension_files[self.type_file])
         else:
@@ -171,7 +170,6 @@ class Capierre:
         return (malicious_code_fd.name, sentence_to_hide_fd.name, information_to_hide)
 
     def complete_eh_frame_section(self: object, encoded_message: bytes) -> None:
-
         capierre_magic: object = CapierreMagic()
         eh_frame_section: object = {}
         project: object = angr.Project(self.binary_file, load_options={'auto_load_libs': False})
@@ -223,6 +221,7 @@ class Capierre:
         @return None
         """
         msg_info(f"Hidden sentence: {sentence_to_hide}")
+        self.cipher_information(decrypt=False)
         (malicious_code_file_path, sentece_to_hide_file_path, encoded_message) = (
             self.create_malicious_file(sentence_to_hide)
         )
