@@ -31,7 +31,7 @@ class CapierreCipher:
                 # https://stackoverflow.com/questions/40729276/base64-incorrect-padding-error-using-python
                 value: bytes = inputBytes
                 if (len(value) % 4) != 0:
-                    value += '=' * (4 - len(value) % 4) 
+                    value += b'=' * (4 - (len(value) % 4))
                 inputBytes = b64decode(value)
                 output: bytes = cipher.decrypt(inputBytes)[16:] # Remove padding
                 return str(output[:-output[-1] - 1], "utf-8")
