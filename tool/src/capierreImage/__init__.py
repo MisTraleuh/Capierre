@@ -5,23 +5,23 @@ import random
 
 class CapierreImage:
     """
-    This class is responsible for steganography inside a image.
+    This class is responsible for hiding content within images.
 
-    It uses the LSB (Least Significan Bit) method using a custom implementation using pseudo-random generator for frequency detection (using builtin `random()` function).
+    It uses the LSB (Least Significan Bit) method using a custom implementation with as pseudo-random generator for frequency detection (using builtin `random()` function).
 
     @param image: `PIL.Image.Image` - The image to hide/extract the message.
     @param seed: `int` - The seed to be used for encryption/decryption. (default: `0`)
     """
 
-    def __init__(self, image: Image.Image, seed=0):
-        self.image = image
+    def __init__(self, image: str, seed=0):
+        self.image = Image.open(image)
         self.seed = seed
         self.image_size = self.image.width + self.image.height
         self.nb_channels = len(self.image.mode)
         self.image_data = tuple(self.image.getdata())
 
     def check_size(self) -> bool:
-        if len(self.data) < self.image.size[0] + self.image.size[1]:
+        if len(self.image_data) < self.image.size[0] + self.image.size[1]:
             msg_error("[!][CapierreImage] data must be smaller than the image file.")
             return False
         return True
@@ -40,17 +40,17 @@ class CapierreImage:
             yield value
 
     def hide(self, message: bytes):
-        if not (self.check_size() and self.data is not None):
+        if not (self.check_size() and self.image_data is not None):
             return
 
         bit_pos = 0
-        random_position = self.get_new_position()
+        random_int = self.get_new_position()
 
         for i in range(self.image_size):
-            position = random_position()
+            position = next(random_int)
 
             for j in range(self.nb_channels):
-                if message[i * self.image_size + j] & (1 << bit_pos):
+                if ord(message[i * self.image_size + j]) & (1 << bit_pos):
                     self.image_data[position][j] |=  1
                 else:
                     self.image_data[position][j] &=  0

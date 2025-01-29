@@ -5,3 +5,4 @@ angr==9.2.102
 pyvex==9.2.102
 cle==9.2.102
 pycryptodome==3.21.0
+pillow==11.1.0

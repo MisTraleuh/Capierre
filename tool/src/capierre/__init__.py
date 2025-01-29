@@ -10,6 +10,7 @@ import random
 import angr
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
+from capierreImage import CapierreImage
 
 class Capierre:
     """
@@ -43,18 +44,32 @@ class Capierre:
             self.sentence.encode('ascii'), self.password, decrypt=decrypt
         )
 
+    def image_support(self: Capierre) -> None:
+        hide_object: object = CapierreImage(self.file, 654341)
+
+        hide_object.hide(self.sentence)
+        msg_success(f"Message hidden successfully")
+
     def hide_information(self: Capierre) -> None:
         """
         This function hides the information in the file
         @return None
         """
-        extension_files = {
+        extension_files_compile = {
             "c": "gcc",
             "cpp": "g++",
         }
 
-        if self.type_file in extension_files:
+        extension_files_image = [
+            "png", "jpg", "jpeg", "webp", "gif", "apng", "svg", "pjpeg", "jfif", "pjp", "avif"
+        ]
+
+        msg_info(f"Hidden sentence: {self.sentence}")
+        self.cipher_information(decrypt=False)
+        if self.type_file in extension_files_compile:
             self.compile_code(self.file, self.sentence, extension_files[self.type_file])
+        elif self.type_file in extension_files_image:
+            self.image_support()
         else:
             msg_error("File not supported")
             sys.exit(1)
@@ -223,10 +238,8 @@ class Capierre:
         @param type_file: `str` - The type of file to compile.
         @return None
         """
-        msg_info(f"Hidden sentence: {sentence_to_hide}")
-        self.cipher_information(decrypt=False)
         (malicious_code_file_path, sentece_to_hide_file_path, encoded_message) = (
-            self.create_malicious_file(self.sentence)
+            self.create_malicious_file(sentence_to_hide)
         )
         compilation_result = subprocess.run(
             [

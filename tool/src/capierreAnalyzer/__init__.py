@@ -5,6 +5,7 @@ import cle
 from utils.messages import msg_success, msg_error, msg_warning
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
+from capierreImage import CapierreImage
 
 
 class CapierreAnalyzer:
@@ -26,6 +27,34 @@ class CapierreAnalyzer:
         return CapierreCipher.cipher(
             retrieved_content, self.password, decrypt=decrypt
         )
+
+    def handle_decrypted(self: CapierreAnalyzer, encoded_message: str):
+
+        if self.output_file_retreive != '':
+            with open(self.output_file_retreive, "wb") as file:
+                file.write(message_retrieved.encode('utf-8'))
+                file.close()
+            msg_success(
+                f"Message retrieved and saved in {self.output_file_retreive}"
+            )
+        else:
+            msg_success(f"Message: {message_retrieved}")
+
+    def image_support(self: CapierreAnalyzer) -> None:
+        extract_object: object = CapierreImage(self.filepath, 654341)
+        encoded_message: bytes = extract_object.extract()
+
+        handle_decrypted(cipher_information(retrieved_content=encoded_message, decrypt=True))
+
+    def retrieve_information(self: CapierreAnalyzer) -> None:
+        extension_files_image = [
+            "png", "jpg", "jpeg", "webp", "gif", "apng", "svg", "pjpeg", "jfif", "pjp", "avif"
+        ]
+
+        if self.type_file in extension_files_image:
+            self.image_support()
+        else:
+            self.retrieve_message_from_binary()
 
     def retrieve_message_from_binary(self: CapierreAnalyzer) -> None:
         """
@@ -83,15 +112,7 @@ class CapierreAnalyzer:
 
             message_retrieved = self.cipher_information(retrieved_content=encoded_string, decrypt=True)
 
-            if self.output_file_retreive != '':
-                with open(self.output_file_retreive, "wb") as file:
-                    file.write(message_retrieved.encode('utf-8'))
-                    file.close()
-                msg_success(
-                    f"Message retrieved and saved in {self.output_file_retreive}"
-                )
-            else:
-                msg_success(f"Message: {message_retrieved}")
+            handle_decrypted(message_retrieved)
 
         except cle.errors.CLECompatibilityError as e:
             msg_error("The chosen file is incompatible")
