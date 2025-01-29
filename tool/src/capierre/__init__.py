@@ -141,6 +141,7 @@ class Capierre:
             else:
                 final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
 
+            sentence_to_hide = information_to_hide
             information_to_hide = final_prep
 
         # Otherwise, the regular Linux linker will not check anything.
@@ -151,6 +152,8 @@ class Capierre:
 
         if (platform.system() == 'Windows'):
             sentence_to_hide_fd.name = sentence_to_hide_fd.name.replace('\\', '/')
+        if (platform.system() == 'Darwin'):
+            information_to_hide = sentence_to_hide
 
         malicious_code = f"""
         #include <stdio.h>
@@ -223,7 +226,7 @@ class Capierre:
         msg_info(f"Hidden sentence: {sentence_to_hide}")
         self.cipher_information(decrypt=False)
         (malicious_code_file_path, sentece_to_hide_file_path, encoded_message) = (
-            self.create_malicious_file(sentence_to_hide)
+            self.create_malicious_file(self.sentence)
         )
         compilation_result = subprocess.run(
             [
