@@ -18,7 +18,7 @@ def test_help_argument():
         [BINARY_PATH, '--help'],
     )
     assert result.returncode == 0
-    expected_output = "Usage: Capierre <file> <sentence>\nOptions:\n  -h, --help     Show this help message and exit\n  -v, --version  Show version of the tool\n  -c, --conceal  Hide a message\n  -r, --retrieve Retrieve a message\n  -fth, --file-to-hide <file>  File to hide\n  -s, --sentence <sentence>  Sentence to hide\n  -f, --file <file>  File to compile or to retrieve\n  -o, --output <file>  Output file\n"
+    expected_output = "Usage: Capierre <file> <sentence>\nOptions:\n  -h, --help     Show this help message and exit\n  -v, --version  Show version of the tool\n  -c, --conceal  Hide a message\n  -r, --retrieve Retrieve a message\n  -fth, --file-to-hide <file>  File to hide\n  -s, --sentence <sentence>  Sentence to hide\n  -p, --password <password>  Password for encryption\n  -f, --file <file>  File to compile or to retrieve\n  -o, --output <file>  Output file\n"
     assert result.stdout == expected_output
 
 def test_conceal_and_retrieve_params():
