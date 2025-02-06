@@ -12,14 +12,17 @@ The goal is to hide a secret message inside an image using the tool.
 
 ### Steps:
 
-1. **Choose an image**: Select an image of your choice.
-2. **Enter a secret message**: Type the message you want to hide.
-3. **Use the tool**: Apply the steganography feature to embed the message into the image.
-4. **Save the image**: Store the modified image.
+1. **Enter a password**: Input a password to secure your message.
+   ![](/Hide_data_password.png)
+2. **Choose an image**: Select an image of your choice.
+   ![](/Hide_data_filepath.png)
+3. **Enter a secret message**: Type the message you want to hide.
+   ![](/Hide_data_sentence.png)
+4. **Confirm & Save**: Click the "Confirm" button to hide the message and save the image. ✅
 
 ### Verification:
 
-Once completed, try extracting the message using the decoding function of the tool to ensure everything works correctly.
+Once completed, try extracting the message using the decoding function of the tool to ensure everything works correctly. (See Challenge 2)
 
 📌 **Before and After Image**  
 _Add the images before and after encoding here._
@@ -35,8 +38,11 @@ Extract a secret message hidden inside a provided image.
 ### Steps:
 
 1. **Load the image**: Open the given image with the tool.
-2. **Use the decoding function**: Activate the function to extract the hidden message.
-3. **Read the message**: If everything works, the hidden message will be revealed.
+   ![](/retrieve_data_filepath.png)
+2. **Enter the password**: Input the password required to retrieve the message.
+   ![](/retrieve_data_password.png)
+3. **Use the decoding function**: Click "Confirm" to extract the hidden message.
+4. **Read the message**: If everything works, the hidden message will be revealed.
 
 ### Verification:
 
@@ -55,10 +61,13 @@ Hide a secret message inside a binary file.
 
 ### Steps:
 
-1. **Choose a binary file**: Select an executable or any other binary file.
-2. **Enter a secret message**: Type the text you want to hide.
-3. **Use the tool**: Apply steganography to the binary file.
-4. **Save the file**: Store the modified file.
+1. **Enter a password**: Input a password to secure your message.
+   ![](/Hide_data_password.png)
+2. **Choose a binary file**: Select an executable or any other binary file.
+   ![](/Hide_data_filepath.png)
+3. **Enter a secret message**: Type the text you want to hide.
+   ![](/Hide_data_sentence.png)
+4. **Confirm & Save**: Click the "Confirm" button to save the modified file. ✅
 
 ### Verification:
 
@@ -78,8 +87,11 @@ Extract a secret message hidden inside a binary file.
 ### Steps:
 
 1. **Load the file**: Open the provided binary file with the tool.
-2. **Use the decoding function**: Decode the file to retrieve the message.
-3. **Read the message**: If it appears, congratulations!
+   ![](/retrieve_data_filepath.png)
+2. **Enter the password**: Input the password required to retrieve the message.
+   ![](/retrieve_data_password.png)
+3. **Use the decoding function**: Click "Confirm" to decode the file and extract the message.
+4. **Read the message**: If the message appears, congratulations!
 
 ### Verification:
 
