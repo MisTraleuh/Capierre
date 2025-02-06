@@ -59,6 +59,39 @@ class Capierre:
             msg_error("File not supported")
             sys.exit(1)
 
+    def hide_in_compiled_binaries() -> None:
+
+        capierre_magic: object = CapierreMagic()
+
+
+        try:
+            project: object = angr.Project(self.binary_file, load_options={'auto_load_libs': False})
+            symbols = project.loader.main_object.symbols
+
+            for section in project.loader.main_object.sections:
+                if section.name == capierre_magic.SECTION_HIDE_TEXT:
+                    text_section = section
+                    break
+
+            with open(self.binary_file, 'r+b') as binary:
+                read_bin: bytes = binary.read()
+                binary.seek(0)
+                text_block: bytearray = read_bin[text_section.offset:text_section.offset + text_section.memsize]
+
+            
+
+        except cle.errors.CLECompatibilityError as e:
+            msg_error("The chosen file is incompatible")
+            sys.exit(1)
+        except cle.errors.CLEUnknownFormatError as e:
+            msg_error("The file format is incompatible")
+            sys.exit(1)
+        except cle.errors.CLEInvalidBinaryError as e:
+            msg_error("The chosen binary file is incompatible")
+            sys.exit(1)
+        except Exception as e:
+            raise e    
+
     def create_malicious_file(self: Capierre, sentence_to_hide: str) -> tuple[str, str, bytes]:
         """
         This function creates a malicious file with the sentence to hide.
