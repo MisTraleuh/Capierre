@@ -64,7 +64,7 @@ class Capierre:
     def access_bit(self: Capierre, data: bytearray, num: int):
         base = int(num // 8)
         shift = int(num % 8)
-        return (data[base] >> shift) & 0x1
+        return (ord(data[base]) >> shift) & 0x1
 
 
     def hide_in_compiled_binaries(self: Capierre, binary_file: str, sentence_to_hide: str) -> None:
@@ -73,33 +73,32 @@ class Capierre:
         instruction_list: list = []
 
         try:
-            project: object = angr.Project(self.binary_file, load_options={'auto_load_libs': False})
+            project: object = angr.Project(binary_file, load_options={'auto_load_libs': False})
             symbols = project.loader.main_object.symbols
 
-            cfg = project.analyses.CFGFast()
-            for node in cfg.graph.nodes():
-                if node.block != None:
-                    for instruction in node.block.capstone.insns:
-                        if instruction.mnemonic == "je":
-                            instruction_list.append(instruction.address)
-            print(instruction_list)
+            cfg = project.analyses.CFGFast().graph.nodes()
 
-#            for section in project.loader.main_object.sections:
-#                if section.name == capierre_magic.SECTION_HIDE_TEXT:
-#                    text_section = section
-#                    break
+            for section in project.loader.main_object.sections:
+                if section.name == capierre_magic.SECTION_HIDE_TEXT:
+                    text_section = section
+                    break
 
-#            with open(self.binary_file, 'r+b') as binary:
-#                read_bin: bytes = binary.read()
-#                text_block: bytearray = read_bin[text_section.offset:text_section.offset + text_section.memsize]
-#                bitstream: list = [self.access_bit(data,i) for i in range(len(data)*8)]
-#                binary.seek(0)
+            with open(self.binary_file, 'r+b') as binary:
+                read_bin: bytes = binary.read()
+                text_block: bytearray = read_bin[text_section.offset:text_section.offset + text_section.memsize]
+                bitstream: list = [self.access_bit(sentence_to_hide,i) for i in range(len(sentence_to_hide)*8)]
+                binary.seek(0)
 
+                for node in cfg:
+                    if node.block != None:
+                        for instruction in node.block.capstone.insns:
+                            if instruction.mnemonic == "je":
+                                instruction_list.append(instruction.address)
 
 #                read_bin = read_bin[:text_section.offset] + text_block + read_bin[text_section.offset + text_section.memsize:]
 #                binary.truncate(0)
 #                binary.write(read_bin)
-#                binary.close()
+                binary.close()
 
         except cle.errors.CLECompatibilityError as e:
             msg_error("The chosen file is incompatible")
