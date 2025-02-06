@@ -9,8 +9,8 @@ class CapierreImage:
 
     It uses the LSB (Least Significan Bit) method using a custom implementation with as pseudo-random generator for frequency detection (using builtin `random()` function).
 
-    @param image: `PIL.Image.Image` - The image to hide/extract the message.
-    @param seed: `int` - The seed to be used for encryption/decryption. (default: `0`)
+    @param filepath: `str` - The fitlepath to the image to hide or extract the message.
+    @param seed: `int` - The seed to be used for encryption and decryption. (default: `0`)
     """
 
     def __init__(self, filepath: str, seed=0):
