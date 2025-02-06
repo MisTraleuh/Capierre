@@ -77,7 +77,8 @@ class Capierre:
 
             cfg = project.analyses.CFGFast()
             for node in cfg.graph:
-                print(node)
+                if node.block != None:
+                    print(node.block.capstone)
 
 #            for section in project.loader.main_object.sections:
 #                if section.name == capierre_magic.SECTION_HIDE_TEXT:
