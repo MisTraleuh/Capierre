@@ -13,12 +13,15 @@ class CapierreImage:
     @param seed: `int` - The seed to be used for encryption/decryption. (default: `0`)
     """
 
-    def __init__(self, image: str, seed=0):
-        self.image = Image.open(image)
+    def __init__(self, filepath: str, seed=0):
+        self.image = Image.open(filepath)
         self.seed = seed
         self.image_size = self.image.width + self.image.height
         self.nb_channels = len(self.image.mode)
         self.image_data = tuple(self.image.getdata())
+
+    def __del__(self):
+        self.image.close()
 
     def check_size(self) -> bool:
         if len(self.image_data) < self.image.size[0] + self.image.size[1]:
