@@ -70,15 +70,19 @@ class Capierre:
     def hide_in_compiled_binaries(self: Capierre, binary_file: str, sentence_to_hide: str) -> None:
 
         capierre_magic: object = CapierreMagic()
+        instruction_list: list = []
 
         try:
             project: object = angr.Project(self.binary_file, load_options={'auto_load_libs': False})
             symbols = project.loader.main_object.symbols
 
             cfg = project.analyses.CFGFast()
-            for node in cfg.graph:
+            for node in cfg.graph.nodes():
                 if node.block != None:
-                    print(node.block.capstone)
+                    for instruction in node.block.capstone.insns:
+                        if instruction.mnemonic == "je":
+                            instruction_list.append(instruction.address)
+            print(instruction_list)
 
 #            for section in project.loader.main_object.sections:
 #                if section.name == capierre_magic.SECTION_HIDE_TEXT:
