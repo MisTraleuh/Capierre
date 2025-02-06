@@ -44,13 +44,13 @@ class CapierreImage:
             return
 
         bit_pos = 0
-        random_int = self.get_new_position()
+        random_position = self.get_new_position()
 
         for i in range(self.image_size):
-            position = next(random_int)
+            position = next(random_position)
 
             for j in range(self.nb_channels):
-                if ord(message[i * self.image_size + j]) & (1 << bit_pos):
+                if message[i * self.image_size + j] & (1 << bit_pos):
                     self.image_data[position][j] |=  1
                 else:
                     self.image_data[position][j] &=  0
@@ -63,10 +63,12 @@ class CapierreImage:
         message = bytearray(self.image_size * self.nb_channels)
 
         for i in range(self.image_size):
-            position = random_position()
+            position = next(random_position)
 
             for j in range(self.nb_channels):
                 message[(i * self.image_size + j) // 8] |= (
                     (self.image_data[position][j] & 1) << bit_pos
                 )
                 bit_pos = (bit_pos + 1) % 8
+
+        return bytes(message)
