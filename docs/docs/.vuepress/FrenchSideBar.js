@@ -31,6 +31,7 @@ export default {
               '/fr/gui/Presentation_GUI.md',
               '/fr/gui/Utilisation_GUI.md',
               '/fr/gui/FAQ_GUI.md',
+              '/fr/gui/Challenges_GUI.md',
             ],
           },
         ],
