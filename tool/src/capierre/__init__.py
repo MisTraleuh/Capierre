@@ -8,6 +8,7 @@ import platform
 import struct
 import random
 import angr
+import cle
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
 
@@ -56,29 +57,44 @@ class Capierre:
         if self.type_file in extension_files:
             self.compile_code(self.file, self.sentence, extension_files[self.type_file])
         else:
-            msg_error("File not supported")
-            sys.exit(1)
+            self.hide_in_compiled_binaries(self.file, self.sentence)
+#            msg_error("File not supported")
+#            sys.exit(1)
+    
+    def access_bit(self: Capierre, data: bytearray, num: int):
+        base = int(num // 8)
+        shift = int(num % 8)
+        return (data[base] >> shift) & 0x1
 
-    def hide_in_compiled_binaries() -> None:
+
+    def hide_in_compiled_binaries(self: Capierre, binary_file: str, sentence_to_hide: str) -> None:
 
         capierre_magic: object = CapierreMagic()
-
 
         try:
             project: object = angr.Project(self.binary_file, load_options={'auto_load_libs': False})
             symbols = project.loader.main_object.symbols
 
-            for section in project.loader.main_object.sections:
-                if section.name == capierre_magic.SECTION_HIDE_TEXT:
-                    text_section = section
-                    break
+            cfg = project.analyses.CFGFast()
+            for node in cfg.graph:
+                print(node)
 
-            with open(self.binary_file, 'r+b') as binary:
-                read_bin: bytes = binary.read()
-                binary.seek(0)
-                text_block: bytearray = read_bin[text_section.offset:text_section.offset + text_section.memsize]
+#            for section in project.loader.main_object.sections:
+#                if section.name == capierre_magic.SECTION_HIDE_TEXT:
+#                    text_section = section
+#                    break
 
-            
+#            with open(self.binary_file, 'r+b') as binary:
+#                read_bin: bytes = binary.read()
+#                text_block: bytearray = read_bin[text_section.offset:text_section.offset + text_section.memsize]
+#                bitstream: list = [self.access_bit(data,i) for i in range(len(data)*8)]
+#                binary.seek(0)
+
+
+#                read_bin = read_bin[:text_section.offset] + text_block + read_bin[text_section.offset + text_section.memsize:]
+#                binary.truncate(0)
+#                binary.write(read_bin)
+#                binary.close()
 
         except cle.errors.CLECompatibilityError as e:
             msg_error("The chosen file is incompatible")
