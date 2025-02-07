@@ -17,6 +17,7 @@ class CapierreImage:
     """
 
     HEADER_FORMAT = '>I'
+    HEADER_SIZE = 4
 
     def __init__(self, image: Image.Image, seed=0):
         self.image = image
@@ -24,7 +25,8 @@ class CapierreImage:
         self.image_size = self.image.width + self.image.height
         self.nb_channels = len(self.image.mode)
         self.image_data = list(map(list, self.image.getdata()))
-
+        self.header_offset = self.HEADER_SIZE // self.nb_channels
+        self.nb_bits = 8
 
     def __del__(self):
         self.image.close()
@@ -35,18 +37,23 @@ class CapierreImage:
             return False
         return True
 
+    def set_bit(self, value: int, position: int) -> int:
+        return (value | 1 << position) % 256
+
+    def clear_bit(self, value: int, position: int) -> int:
+        return (value & ~(1 << position)) % 256
+
     def get_new_position(self):
         random_stack: list[int] = []
 
         random.seed(self.seed)
         for _ in range(self.image_size):
-            value = random.randint(4, self.image_size)
+            value = random.randint(self.HEADER_SIZE, self.image_size)
 
             while value in random_stack:
-                value = random.randint(4, self.image_size)
+                value = random.randint(self.HEADER_SIZE, self.image_size)
 
             random_stack.append(value)
-            print(f'[*] Random stack: {random_stack}')
             yield value
 
     def hide(self, message: bytes):
@@ -56,19 +63,36 @@ class CapierreImage:
         bit_pos = 0
         message_length = len(message)
         message_length_offset = message_length // self.nb_channels
-        message_length_encoded = struct.pack(self.HEADER_FORMAT, message_length)
+        message_length_encoded = struct.pack(
+            self.HEADER_FORMAT,
+            message_length
+        )
         random_position = self.get_new_position()
 
         for i in range(4):
-            self.image_data[i // self.nb_channels][i % self.nb_channels] = message_length_encoded[i]
-        for i in range(4 // self.nb_channels, message_length_offset):
+            self.image_data[i // self.nb_channels][i % self.nb_channels] = (
+                message_length_encoded[i]
+            )
+        for i in range(
+            self.header_offset * self.nb_bits,
+            (self.header_offset + message_length_offset) * self.nb_bits
+        ):
             position = next(random_position)
 
             for j in range(self.nb_channels):
-                if message[i * message_length_offset + j] & (1 << bit_pos):
-                    self.image_data[position][j] |=  1
+                if (
+                    message[((i - self.header_offset * self.nb_bits) * message_length_offset + j) // self.nb_bits] &
+                    (1 << bit_pos)
+                ):
+                    self.image_data[position][j] = self.set_bit(
+                        self.image_data[position][j],
+                        0
+                    )
                 else:
-                    self.image_data[position][j] &=  0
+                    self.image_data[position][j] = self.clear_bit(
+                        self.image_data[position][j],
+                        0
+                    )
                 bit_pos = (bit_pos + 1) % 8
         self.image.putdata(list(map(tuple, self.image_data)))
 
@@ -82,13 +106,20 @@ class CapierreImage:
         message_length_offset = message_length_decoded // self.nb_channels
         message = bytearray(message_length_decoded)
 
-        for i in range(4 // self.nb_channels, message_length_offset):
+        for i in range(
+            self.header_offset * self.nb_bits,
+            (self.header_offset + message_length_offset) * self.nb_bits
+        ):
+            i_offset = i - self.header_offset * self.nb_bits
             position = next(random_position)
 
             for j in range(self.nb_channels):
-                message[(i * message_length_offset + j) // 8] |= (
-                    (self.image_data[position][j] & 1) << bit_pos
-                )
-                bit_pos = (bit_pos + 1) % 8
+                if self.image_data[position][j] & 1:
 
+                    message[(i_offset * message_length_offset + j) // self.nb_bits] = self.set_bit(
+                        message[(i_offset * message_length_offset + j) // self.nb_bits],
+                        bit_pos
+                    )
+                print(f'{message[(i_offset * message_length_offset + j) // self.nb_bits]:08b}')
+                bit_pos = (bit_pos + 1) % 8
         return bytes(message)
