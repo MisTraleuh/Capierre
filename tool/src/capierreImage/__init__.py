@@ -1,6 +1,9 @@
+import random
+import struct
 from PIL import Image
 from capierreParsing import msg_error
-import random
+from itertools import chain
+from math import ceil
 
 
 class CapierreImage:
@@ -13,12 +16,15 @@ class CapierreImage:
     @param seed: `int` - The seed to be used for encryption and decryption. (default: `0`)
     """
 
+    HEADER_FORMAT = '>I'
+
     def __init__(self, image: Image.Image, seed=0):
         self.image = image
         self.seed = seed
         self.image_size = self.image.width + self.image.height
         self.nb_channels = len(self.image.mode)
-        self.image_data = tuple(self.image.getdata())
+        self.image_data = list(map(list, self.image.getdata()))
+
 
     def __del__(self):
         self.image.close()
@@ -30,16 +36,17 @@ class CapierreImage:
         return True
 
     def get_new_position(self):
-        random_stack = []
+        random_stack: list[int] = []
 
         random.seed(self.seed)
         for _ in range(self.image_size):
-            value = random.randint(0, self.image_size)
+            value = random.randint(4, self.image_size)
 
             while value in random_stack:
-                value = random.randint(0, self.image_size)
+                value = random.randint(4, self.image_size)
 
             random_stack.append(value)
+            print(f'[*] Random stack: {random_stack}')
             yield value
 
     def hide(self, message: bytes):
@@ -47,29 +54,39 @@ class CapierreImage:
             return
 
         bit_pos = 0
+        message_length = len(message)
+        message_length_offset = message_length // self.nb_channels
+        message_length_encoded = struct.pack(self.HEADER_FORMAT, message_length)
         random_position = self.get_new_position()
 
-        for i in range(self.image_size):
+        for i in range(4):
+            self.image_data[i // self.nb_channels][i % self.nb_channels] = message_length_encoded[i]
+        for i in range(4 // self.nb_channels, message_length_offset):
             position = next(random_position)
 
             for j in range(self.nb_channels):
-                if message[i * self.image_size + j] & (1 << bit_pos):
+                if message[i * message_length_offset + j] & (1 << bit_pos):
                     self.image_data[position][j] |=  1
                 else:
                     self.image_data[position][j] &=  0
                 bit_pos = (bit_pos + 1) % 8
-        self.image.putdata(self.image_data)
+        self.image.putdata(list(map(tuple, self.image_data)))
 
     def extract(self) -> bytes:
         bit_pos = 0
         random_position = self.get_new_position()
-        message = bytearray(self.image_size * self.nb_channels)
+        message_length_decoded: int = struct.unpack(
+            self.HEADER_FORMAT,
+            bytes(chain(*self.image_data[:ceil(4 / self.nb_channels)]))
+        )[0]
+        message_length_offset = message_length_decoded // self.nb_channels
+        message = bytearray(message_length_decoded)
 
-        for i in range(self.image_size):
+        for i in range(4 // self.nb_channels, message_length_offset):
             position = next(random_position)
 
             for j in range(self.nb_channels):
-                message[(i * self.image_size + j) // 8] |= (
+                message[(i * message_length_offset + j) // 8] |= (
                     (self.image_data[position][j] & 1) << bit_pos
                 )
                 bit_pos = (bit_pos + 1) % 8

@@ -8,6 +8,7 @@ import platform
 import struct
 import random
 import angr
+from PIL import Image
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
 from capierreImage import CapierreImage
@@ -28,7 +29,7 @@ class Capierre:
         type_file: str,
         sentence: str,
         password: str,
-        binary_file: str = None,
+        binary_file: str | None = None,
     ) -> None:
         self.file = file
         self.type_file = type_file
@@ -45,9 +46,14 @@ class Capierre:
         )
 
     def image_support(self: Capierre) -> None:
-        hide_object: object = CapierreImage(self.file, 654341)
+        try:
+            image = Image.open(self.file)
+        except FileNotFoundError:
+            msg_error(f'[!] The file {self.file} doesn´t exists.')
+            return
+        hide_object: object = CapierreImage(image, 42)
 
-        hide_object.hide(self.sentence)
+        hide_object.hide(bytes(self.sentence, 'utf-8'))
         msg_success(f"Message hidden successfully")
 
     def hide_information(self: Capierre) -> None:

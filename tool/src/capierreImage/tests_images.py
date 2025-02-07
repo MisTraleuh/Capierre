@@ -16,9 +16,12 @@ def run_tests():
 #    cpImgSmall = CapierreImage(small, seed)
 #    cpImgJpeg = CapierreImage(jpeg, seed)
 
+    print(payload)
     cpImgGood.hide(payload)
 #    cpImgJpeg.hide(payload)
 
+    extracted = cpImgGood.extract()
+    print(extracted)
     assert cpImgGood.extract() == payload, '[!] The payload is not the same.'
 #    assert cpImgJpeg.extract() == payload, '[!] The payload is not the same.'
 
