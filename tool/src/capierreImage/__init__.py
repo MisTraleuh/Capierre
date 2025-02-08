@@ -33,14 +33,6 @@ class CapierreImage:
     def __del__(self):
         self.image.close()
 
-    def check_size(self) -> bool:
-        if len(self.image_data) < self.image.size[0] + self.image.size[1]:
-            msg_error(
-                "[!][CapierreImage] data must be smaller than the image file."
-            )
-            return False
-        return True
-
     def set_bit(self, value: int, position: int) -> int:
         return (value | 1 << position) % 256
 
@@ -61,7 +53,7 @@ class CapierreImage:
             yield value
 
     def hide(self, message: bytes):
-        if not (self.check_size() and self.image_data is not None):
+        if not (len(message) <= self.image_size and self.image_data is not None):
             return
 
         bit_pos = 0
