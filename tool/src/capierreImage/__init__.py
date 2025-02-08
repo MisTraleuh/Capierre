@@ -113,7 +113,6 @@ class CapierreImage:
                     self.image_data[position][i % self.nb_channels],
                     0
                 )
-            print(f'i : {i}')
             bit_pos = (bit_pos + 1) % self.BYTE_SIZE
         self.image.putdata(list(map(tuple, self.image_data)))
 
@@ -143,6 +142,5 @@ class CapierreImage:
                     message[i // self.BYTE_SIZE],
                     bit_pos
                 )
-            print(f'{message[i // self.BYTE_SIZE]:08b}')
             bit_pos = (bit_pos + 1) % 8
         return bytes(message)
