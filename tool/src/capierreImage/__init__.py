@@ -1,9 +1,8 @@
 import random
 import struct
+from typing import Generator
 from PIL import Image
 from capierreParsing import msg_error
-from itertools import chain
-from math import ceil
 
 
 class CapierreImage:
@@ -34,12 +33,35 @@ class CapierreImage:
         self.image.close()
 
     def set_bit(self, value: int, position: int) -> int:
+        """
+        This function sets a bit to a byte at a given position.
+
+        @param value: `int` - The actual value.
+        @param position: `int` - The bit position.
+
+        @return The affected value (modulo 256)
+        """
         return (value | 1 << position) % 256
 
     def clear_bit(self, value: int, position: int) -> int:
+        """
+        This function clears a bit to a byte at a given position.
+
+        @param value: `int` - The actual value.
+        @param position: `int` - The bit position.
+
+        @return The affected value (modulo 256)
+        """
         return (value & ~(1 << position)) % 256
 
-    def get_new_position(self):
+    def get_new_position(self) -> Generator[int, None, None]:
+        """
+        This is the random position generator (with the header taken into
+        account).
+        This generator uses `self.seed` as his starting seed.
+
+        @return The actual initialized random position generator.
+        """
         random_stack: list[int] = []
 
         random.seed(self.seed)
@@ -53,7 +75,17 @@ class CapierreImage:
             yield value
 
     def hide(self, message: bytes):
-        if not (len(message) <= self.image_size and self.image_data is not None):
+        """
+        This function hides the given message (must be size compatible with the
+        image) into the image given by the class constructor.
+
+        @param message: `bytes` - The message to hide (must be encoded).
+        """
+        if not (len(message) <= self.image_size):
+            msg_error('[!] Error: the message is too big to hide.')
+            return
+        if not isinstance(message, bytes):
+            msg_error('[!] Error: the message must be encoded into bytes.')
             return
 
         bit_pos = 0
@@ -86,11 +118,20 @@ class CapierreImage:
         self.image.putdata(list(map(tuple, self.image_data)))
 
     def extract(self) -> bytes:
+        """
+        This function extracts the message hidden into the given image by the
+        class constructor.
+
+        @return The message in `bytes`.
+        """
         bit_pos = 0
         random_position = self.get_new_position()
         message_length_decoded: int = struct.unpack(
             self.HEADER_FORMAT,
-            bytes((self.image_data[i // self.nb_channels][i % self.nb_channels] for i in range(self.HEADER_SIZE)))
+            bytes(
+                self.image_data[i // self.nb_channels][i % self.nb_channels]
+                for i in range(self.HEADER_SIZE)
+            )
         )[0]
         message = bytearray(message_length_decoded)
 
