@@ -81,7 +81,9 @@ class CapierreImage:
 
         @param message: `bytes` - The message to hide (must be encoded).
         """
-        if not (len(message) <= self.image_size):
+        message_length = len(message)
+
+        if not (message_length * self.BYTE_SIZE <= self.image_size):
             msg_error('[!] Error: the message is too big to hide.')
             return
         if not isinstance(message, bytes):
@@ -89,7 +91,6 @@ class CapierreImage:
             return
 
         bit_pos = 0
-        message_length = len(message)
         message_length_encoded = struct.pack(
             self.HEADER_FORMAT,
             message_length
@@ -116,7 +117,7 @@ class CapierreImage:
             bit_pos = (bit_pos + 1) % self.BYTE_SIZE
         self.image.putdata(list(map(tuple, self.image_data)))
 
-    def extract(self) -> bytes:
+    def extract(self) -> bytes | None:
         """
         This function extracts the message hidden into the given image by the
         class constructor.
@@ -132,6 +133,11 @@ class CapierreImage:
                 for i in range(self.HEADER_SIZE)
             )
         )[0]
+
+        if message_length_decoded * self.BYTE_SIZE > self.image_size:
+            msg_error('[!] Error: message is too big to be decoded (invalid header).')
+            return
+
         message = bytearray(message_length_decoded)
 
         for i in range(message_length_decoded * self.BYTE_SIZE):

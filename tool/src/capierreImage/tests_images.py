@@ -6,7 +6,8 @@ sys.path.append('../')
 from capierreImage import CapierreImage
 
 def run_tests():
-    payload = b'test12345'
+    payload = b'test1234'
+    big_payload = b'this phrase is too big to be hidden in a small png file.'
     seed = 42
     good = Image.open('test.png')
 #    small = Image.open('invalid.png')
@@ -21,6 +22,7 @@ def run_tests():
 #    cpImgJpeg.hide(payload)
 
     extracted = cpImgGood.extract()
+    assert extracted is not None, '[!] The payload cannot be returned.'
     print(extracted)
     assert cpImgGood.extract() == payload, '[!] The payload is not the same.'
 #    assert cpImgJpeg.extract() == payload, '[!] The payload is not the same.'
