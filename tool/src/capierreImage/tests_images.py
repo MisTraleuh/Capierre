@@ -6,7 +6,7 @@ sys.path.append('../')
 from capierreImage import CapierreImage
 
 def run_tests():
-    payload = b'test1234'
+    payload = b'test12345'
     seed = 42
     good = Image.open('test.png')
 #    small = Image.open('invalid.png')
