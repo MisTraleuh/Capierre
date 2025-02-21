@@ -3,7 +3,7 @@
 
 Bienvenue sur la page dédiée à **Capierre**, un outil de stéganographie conçu pour intégrer des informations dans des fichiers binaires tout en maintenant leur fonctionnalité intacte. Ce projet combine les domaines de la cybersécurité, de l'ingénierie logicielle et de la stéganographie pratique en un outil puissant, compatible avec **Windows**, **Ubuntu** et **macOS**
 
-:::danger ❗Warning ❗
+:::danger ❗Warning❗
 Cet outil est destiné à des fins éducatives et éthiques uniquement. Toute utilisation abusive de **Capierre** pour contourner des systèmes de sécurité ou violer la vie privée est strictement interdite et contraire à l'objectif de ce projet.
 :::
 
