@@ -6,10 +6,12 @@ import tempfile
 import platform
 import struct
 import itertools
+from multiprocessing.pool import ThreadPool
 import time
 import random
 import angr
 import cle
+import hashlib
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
 from utils.messages import msg_success, msg_error, msg_info, msg_warning
@@ -106,7 +108,7 @@ class Capierre:
         instruction_list: list = []
 
         try:
-            project: object = angr.Project(binary_file, load_options={'auto_load_libs': False})
+            project = angr.Project(binary_file, load_options={'auto_load_libs': False})
             symbols = project.loader.main_object.symbols
             cfg = project.analyses.CFGFast().graph.nodes()
 
@@ -115,32 +117,26 @@ class Capierre:
                     text_section = section
                     break
             with open(binary_file, 'r+b') as binary:
-                read_bin: bytes = binary.read()
-                text_block: bytearray = bytearray(read_bin[text_section.offset:text_section.offset + text_section.memsize])
-                bitstream: list = [self.access_bit(sentence_to_hide, i) for i in range(len(sentence_to_hide) * 8)]
+                read_bin = binary.read()
+                text_block = bytearray(read_bin[text_section.offset:text_section.offset + text_section.memsize])
+                bitstream: list[int] = [self.access_bit(sentence_to_hide, i) for i in range(len(sentence_to_hide) * 8)]
                 nodes = filter(lambda node: node.block != None, cfg)
+                threads = ThreadPool(os.cpu_count())
 
                 binary.seek(0)
-                t1 = time.time()
                 for node in nodes:
                     for instruction in node.block.capstone.insns:
                         if instruction.mnemonic in ('add', 'sub'):
                             instruction_list.append(instruction)
-                t2 = time.time()
 
-                instructions = itertools.starmap(self.compile_asm, zip(bitstream, instruction_list))
-                print(f'[*] Checksum before : {sum(text_block)}')
-                print(f'[*] Time: {t2 - t1}')
-                print(list(instructions))
-                for instruction in instructions:
-                    if instruction is None:
-                        continue
+                instructions = threads.starmap(self.compile_asm, zip(bitstream, instruction_list))
+
+                for instruction in filter(lambda i: i is not None, instructions):
                     text_block[
                         instruction[0] - text_section.offset :
                         instruction[0] - text_section.offset + len(instruction[1])
                     ] = instruction[1]
 
-                print(f'[*] Checksum after : {sum(text_block)}')
                 read_bin = read_bin[:text_section.offset] + text_block + read_bin[text_section.offset + text_section.memsize:]
 
                 binary.truncate(0)
@@ -157,7 +153,7 @@ class Capierre:
             msg_error("The chosen binary file is incompatible")
             sys.exit(1)
         except Exception as e:
-            raise e    
+            raise e
 
     def create_malicious_file(self: Capierre, sentence_to_hide: str) -> tuple[str, str, bytes]:
         """
