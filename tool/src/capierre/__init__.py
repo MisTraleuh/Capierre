@@ -1,16 +1,18 @@
 from __future__ import annotations
 import sys
-from utils.messages import msg_success, msg_error, msg_info, msg_warning
 import subprocess
 import os
 import tempfile
 import platform
 import struct
+import itertools
+import time
 import random
 import angr
 import cle
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
+from utils.messages import msg_success, msg_error, msg_info, msg_warning
 
 class Capierre:
     """
@@ -61,43 +63,88 @@ class Capierre:
 #            msg_error("File not supported")
 #            sys.exit(1)
     
-    def access_bit(self: Capierre, data: bytearray, num: int):
+    def access_bit(self: Capierre, data: str, num: int):
         base = int(num // 8)
         shift = int(num % 8)
+
         return (ord(data[base]) >> shift) & 0x1
 
+    def compile_asm(self: Capierre, bit: int, instruction) -> None | tuple[int, bytes]:
+        capierre_magic = CapierreMagic()
+
+        if bit and instruction.mnemonic == 'add' or not bit and instruction.mnemonic == 'sub':
+            return None
+        if bit and instruction.mnemonic == 'sub' or not bit and instruction.mnemonic == 'add':
+            args = instruction.op_str.split(', ')
+
+            try:
+                int(args[1])
+            except ValueError:
+                return None
+
+            immediate = -int(args[1])
+
+            if instruction.mnemonic == 'sub':
+                asm = f".intel_syntax noprefix\nadd {args[0]}, {immediate}\n"
+            else:
+                asm = f".intel_syntax noprefix\nsub {args[0]}, {immediate}\n"
+            with tempfile.NamedTemporaryFile() as tmpfile:
+                subprocess.run(
+                    capierre_magic.COMPILE_GCC + (tmpfile.name, '-'),
+                    input=bytes(asm, "ascii"),
+                )
+
+                binary = tmpfile.read()
+
+            return (instruction.address, binary)
+
+        msg_error('[!] Invalid operand.')
+        return None
 
     def hide_in_compiled_binaries(self: Capierre, binary_file: str, sentence_to_hide: str) -> None:
-
-        capierre_magic: object = CapierreMagic()
+        capierre_magic = CapierreMagic()
         instruction_list: list = []
 
         try:
             project: object = angr.Project(binary_file, load_options={'auto_load_libs': False})
             symbols = project.loader.main_object.symbols
-
             cfg = project.analyses.CFGFast().graph.nodes()
 
             for section in project.loader.main_object.sections:
                 if section.name == capierre_magic.SECTION_HIDE_TEXT:
                     text_section = section
                     break
-
-            with open(self.binary_file, 'r+b') as binary:
+            with open(binary_file, 'r+b') as binary:
                 read_bin: bytes = binary.read()
-                text_block: bytearray = read_bin[text_section.offset:text_section.offset + text_section.memsize]
-                bitstream: list = [self.access_bit(sentence_to_hide,i) for i in range(len(sentence_to_hide)*8)]
+                text_block: bytearray = bytearray(read_bin[text_section.offset:text_section.offset + text_section.memsize])
+                bitstream: list = [self.access_bit(sentence_to_hide, i) for i in range(len(sentence_to_hide) * 8)]
+                nodes = filter(lambda node: node.block != None, cfg)
+
                 binary.seek(0)
+                t1 = time.time()
+                for node in nodes:
+                    for instruction in node.block.capstone.insns:
+                        if instruction.mnemonic in ('add', 'sub'):
+                            instruction_list.append(instruction)
+                t2 = time.time()
 
-                for node in cfg:
-                    if node.block != None:
-                        for instruction in node.block.capstone.insns:
-                            if instruction.mnemonic == "je":
-                                instruction_list.append(instruction.address)
+                instructions = itertools.starmap(self.compile_asm, zip(bitstream, instruction_list))
+                print(f'[*] Checksum before : {sum(text_block)}')
+                print(f'[*] Time: {t2 - t1}')
+                print(list(instructions))
+                for instruction in instructions:
+                    if instruction is None:
+                        continue
+                    text_block[
+                        instruction[0] - text_section.offset :
+                        instruction[0] - text_section.offset + len(instruction[1])
+                    ] = instruction[1]
 
-#                read_bin = read_bin[:text_section.offset] + text_block + read_bin[text_section.offset + text_section.memsize:]
-#                binary.truncate(0)
-#                binary.write(read_bin)
+                print(f'[*] Checksum after : {sum(text_block)}')
+                read_bin = read_bin[:text_section.offset] + text_block + read_bin[text_section.offset + text_section.memsize:]
+
+                binary.truncate(0)
+                binary.write(read_bin)
                 binary.close()
 
         except cle.errors.CLECompatibilityError as e:

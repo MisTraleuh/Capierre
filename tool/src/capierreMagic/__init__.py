@@ -12,6 +12,15 @@ class CapierreMagic:
         self.SECTION_HIDE = self.choose_section_hide()
         self.SECTION_RETRIEVE = self.choose_section_retrieve()
         self.SECTION_HIDE_TEXT = self.choose_section_hide_text()
+        self.COMPILE_GCC = (
+            "gcc",
+            "-nostartfiles",
+            "-nostdlib",
+            "-x",
+            "assembler",
+            "-Wl,--oformat=binary,--entry=0",
+            "-o",
+        )
 
     """
     This function chooses the section to hide the information
