@@ -1,3 +1,5 @@
+# pylint: disable=C0114,C0103
+
 from __future__ import annotations
 from multiprocessing.pool import ThreadPool
 import sys
@@ -12,7 +14,10 @@ import angr
 import cle
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
+from capierreInterface import *
+from capierreError import *
 from utils.messages import msg_success, msg_error, msg_info, msg_warning
+
 
 class Capierre:
     """
@@ -22,14 +27,13 @@ class Capierre:
     @param type_file: `str` - The type of file to hide the information.
     @param sentence: `str` - The sentence to hide.
     """
-
     def __init__(
         self: Capierre,
         file: str,
         type_file: str,
         sentence: str,
         password: str,
-        binary_file="capierre_binary",
+        binary_file: str = "capierre_binary",
     ) -> None:
         self.file = file
         self.type_file = type_file
@@ -89,7 +93,7 @@ class Capierre:
     def compile_asm(
         self: Capierre,
         bit: int,
-        instruction
+        instruction: Instruction
     ) -> None | tuple[int, bytes]:
         """
         This function is used with external programs to convert assembly op
@@ -136,7 +140,7 @@ class Capierre:
         msg_error('[!] Invalid operand.')
         return None
 
-    def read_instructions(self: Capierre, node: list):
+    def read_instructions(self: Capierre, node: Node):
         """
         This is a helper function for reading and filtering helpful
         instructions. 
@@ -146,14 +150,20 @@ class Capierre:
         """
         return filter(
             lambda ins: ins.mnemonic in ('add', 'sub'),
-            (ins for ins in node.block.capstone.insns)
+            (ins for ins in node.block.capstone.insns) # type: ignore
         )
 
     def hide_in_compiled_binaries(
         self: Capierre,
         binary_file: str,
         sentence_to_hide: str
-    ) -> None:
+    ):
+        """
+        Hides the current sentence into the already compiled binary.
+
+        @param binary_file: `str` - The path to the binary file.
+        @param sentence_to_hide: `str` - The sentence to hide.
+        """
         try:
             capierre_magic = CapierreMagic()
             project = angr.Project(
@@ -162,13 +172,15 @@ class Capierre:
             )
 
             # WARN: Pylint doesn't recognise the angr library's definitions.
-            # pylint: disable=E1101
-            cfg = project.analyses.CFGFast().graph.nodes()
+            cfg = NodeView(project.analyses.CFGFast().graph.nodes()) # type: ignore pylint: disable=E1101
+            text_section = None
 
             for section in project.loader.main_object.sections:
                 if section.name == capierre_magic.SECTION_HIDE_TEXT:
                     text_section = section
                     break
+            if text_section is None:
+                raise NonexistentTextSection()
             with open(binary_file, 'r+b') as binary:
                 read_bin = binary.read()
                 text_block = bytearray(
@@ -187,12 +199,12 @@ class Capierre:
                 instruction_list = tuple(itertools.chain(
                     *map(self.read_instructions, nodes)
                 ))
-                instructions = tuple(filter(
+                instructions: tuple[tuple[int, bytes]] = tuple(filter(
                     lambda ins: ins is not None,
                     threads.starmap(
                         self.compile_asm, zip(bitstream, instruction_list)
                     )
-                ))
+                )) # type: ignore
                 for instruction in instructions:
                     text_block[
                         instruction[0] - text_section.offset :
@@ -246,12 +258,8 @@ class Capierre:
         i = 0
 
         # https://stackoverflow.com/a/8577226/23570806
-        sentence_to_hide_fd: list[bytes] = tempfile.NamedTemporaryFile(
-            delete=False
-        )
-        if isinstance(sentence_to_hide, str):
-            data = bytearray(data.encode())
-
+        sentence_to_hide_fd = tempfile.NamedTemporaryFile(delete=False)
+        data = bytearray(data.encode())
         rand_step: int = random.randint(1, 16)
         i: int = 0
 
@@ -411,7 +419,7 @@ class Capierre:
             information_to_hide
         )
 
-    def complete_eh_frame_section(
+    def complete_eh_frame_section( # pylint: disable=C0116
         self: Capierre,
         encoded_message: bytes
     ) -> None:
@@ -422,12 +430,14 @@ class Capierre:
             load_options={'auto_load_libs': False}
         )
         symbols = project.loader.main_object.symbols
+        eh_frame_section = None
 
         for section in project.loader.main_object.sections:
             if section.name == capierre_magic.SECTION_RETRIEVE:
                 eh_frame_section = section
                 break
-
+        if eh_frame_section is None:
+            raise NonexistentEhFrameSection()
         # To make the fake eh_frame entries more believable, the binary is
         # opened again and its compiled symbols' addresses are added to the
         # FDEs by removing their placeholder values.
@@ -513,6 +523,6 @@ class Capierre:
         os.remove(malicious_code_file_path)
         os.remove(sentece_to_hide_file_path)
         if compilation_result.returncode != 0:
-            raise Exception(compilation_result.stderr.strip())
+            raise CompilationError(compilation_result.stderr.strip())
         self.complete_eh_frame_section(encoded_message)
         msg_success("Code compiled successfully")
