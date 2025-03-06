@@ -2,6 +2,7 @@ from __future__ import annotations
 import sys
 from utils.messages import msg_success, msg_error
 import os
+import platform
 
 
 class CapierreParsing:
@@ -144,6 +145,8 @@ class CapierreParsing:
 
         if any(arg in sys.argv for arg in ["--output", "-o"]):
             self.binary_file = self.get_args(("--output", "-o"))
+        if (platform.system() == 'Windows' and self.binary_file.split('.')[-1] != 'exe'):
+            self.binary_file = f"{self.binary_file}.exe"
         if os.path.exists(self.file) == False:
             msg_error(f"File not found: {self.file}")
             return (False, 1)

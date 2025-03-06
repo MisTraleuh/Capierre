@@ -1,6 +1,6 @@
 __pycache__
 *.pyc
-capierre_binary
+capierre_binary*
 build/
 dist/
 *.spec

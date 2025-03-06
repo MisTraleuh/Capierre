@@ -23,9 +23,11 @@ class Capierre:
     """
     This class is responsible for hiding information in files.
 
-    @param file: `str` - The path of the file to hide the information.
-    @param type_file: `str` - The type of file to hide the information.
-    @param sentence: `str` - The sentence to hide.
+    @param file: `str` - The path of the file to hide the information
+    @param type_file: `str` - The type of file to hide the information
+    @param sentence: `str` - The sentence to hide
+    @param password: `str` - The password to encrypt the sentence
+    @param binary_file: `str` - The path of the binary file to hide the information
     """
     def __init__(
         self: Capierre,
@@ -65,7 +67,6 @@ class Capierre:
             "cpp": "g++",
         }
 
-        self.cipher_information(decrypt=False)
         if self.type_file in extension_files:
             self.compile_code(
                 self.file,
@@ -385,6 +386,7 @@ class Capierre:
                     b'\x00\x00\x00'
                 )
 
+            sentence_to_hide = information_to_hide
             information_to_hide = final_prep
 
         # Otherwise, the regular Linux linker will not check anything.
@@ -397,6 +399,8 @@ class Capierre:
 
         if platform.system() == 'Windows':
             sentence_to_hide_fd.name = sentence_to_hide_fd.name.replace('\\', '/')
+        if (platform.system() == 'Darwin'):
+            information_to_hide = sentence_to_hide
 
         malicious_code = f"""
         #include <stdio.h>
@@ -503,8 +507,9 @@ class Capierre:
         @return None
         """
         msg_info(f"Hidden sentence: {sentence_to_hide}")
+        self.cipher_information(decrypt=False)
         (malicious_code_file_path, sentece_to_hide_file_path, encoded_message) = (
-            self.create_malicious_file(sentence_to_hide)
+            self.create_malicious_file(self.sentence)
         )
         compilation_result = subprocess.run(
             [
