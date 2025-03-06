@@ -18,15 +18,16 @@ class Capierre:
     @param file: `str` - The path of the file to hide the information
     @param type_file: `str` - The type of file to hide the information
     @param sentence: `str` - The sentence to hide
+    @param password: `str` - The password to encrypt the sentence
+    @param binary_file: `str` - The path of the binary file to hide the information
     """
-
     def __init__(
         self: Capierre,
         file: str,
         type_file: str,
         sentence: str,
         password: str,
-        binary_file="capierre_binary",
+        binary_file: str = None,
     ) -> None:
         self.file = file
         self.type_file = type_file
@@ -52,7 +53,6 @@ class Capierre:
             "cpp": "g++",
         }
 
-        self.cipher_information(decrypt=False)
         if self.type_file in extension_files:
             self.compile_code(self.file, self.sentence, extension_files[self.type_file])
         else:
@@ -141,6 +141,7 @@ class Capierre:
             else:
                 final_prep += b'\x10\x00\x00\x00' + capierre_magic.CIE_INFORMATION + b'\x00\x00\x00'
 
+            sentence_to_hide = information_to_hide
             information_to_hide = final_prep
 
         # Otherwise, the regular Linux linker will not check anything.
@@ -151,6 +152,8 @@ class Capierre:
 
         if (platform.system() == 'Windows'):
             sentence_to_hide_fd.name = sentence_to_hide_fd.name.replace('\\', '/')
+        if (platform.system() == 'Darwin'):
+            information_to_hide = sentence_to_hide
 
         malicious_code = f"""
         #include <stdio.h>
@@ -170,7 +173,6 @@ class Capierre:
         return (malicious_code_fd.name, sentence_to_hide_fd.name, information_to_hide)
 
     def complete_eh_frame_section(self: object, encoded_message: bytes) -> None:
-
         capierre_magic: object = CapierreMagic()
         eh_frame_section: object = {}
         project: object = angr.Project(self.binary_file, load_options={'auto_load_libs': False})
@@ -222,8 +224,9 @@ class Capierre:
         @return None
         """
         msg_info(f"Hidden sentence: {sentence_to_hide}")
+        self.cipher_information(decrypt=False)
         (malicious_code_file_path, sentece_to_hide_file_path, encoded_message) = (
-            self.create_malicious_file(sentence_to_hide)
+            self.create_malicious_file(self.sentence)
         )
         compilation_result = subprocess.run(
             [

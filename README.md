@@ -1,6 +1,6 @@
-# Capierre
+# Capierre 📦
 
-## Installation
+## Installation ⚡
 
 ```bash
 $ cd tool
@@ -10,3 +10,18 @@ $ mv dist/capierre_binary ./capierre
 $ chmod +x capierre
 $ ./capierre
 ```
+
+## Usage 🚀
+
+```bash
+$ ./capierre -h
+```
+
+## Documentation 📖
+
+```bash
+$ cd docs/
+$ npm i --save-dev
+$ npm run docs:dev
+```
+

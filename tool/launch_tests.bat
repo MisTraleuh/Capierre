@@ -16,6 +16,16 @@ if not "%CURRENT_DIR%"=="%EXPECTED_DIR%" (
 
 if not exist "%BINARY_PATH%" (
     echo Erreur : Le fichier .\dist\capierre_binary.exe est introuvable.
+    call pyinstaller --collect-all z3 ^
+        --collect-all pyvex ^
+        --collect-all angrop ^
+        --collect-all unicorn ^
+        --collect-all cle ^
+        --onefile ^
+        --hidden-import=angr ^
+        --hidden-import=angr.procedures ^
+        --hidden-import=angr.misc ^
+        --name capierre_binary src/__main__.py
     exit /b 1
 )
 
