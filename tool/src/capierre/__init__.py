@@ -9,6 +9,7 @@ import tempfile
 import platform
 import struct
 import itertools
+import functools
 import random
 import angr
 import cle
@@ -29,6 +30,7 @@ class Capierre:
     @param password: `str` - The password to encrypt the sentence
     @param binary_file: `str` - The path of the binary file to hide the information
     """
+
     def __init__(
         self: Capierre,
         file: str,
@@ -151,29 +153,20 @@ class Capierre:
         """
         return filter(
             lambda ins: ins.mnemonic in ('add', 'sub'),
-            (ins for ins in node.block.capstone.insns) # type: ignore
+            (ins for ins in node.block.capstone.insns)  # type: ignore
         )
 
-    def hide_in_compiled_binaries(
-        self: Capierre,
-        binary_file: str,
-        sentence_to_hide: str
-    ):
-        """
-        Hides the current sentence into the already compiled binary.
-
-        @param binary_file: `str` - The path to the binary file.
-        @param sentence_to_hide: `str` - The sentence to hide.
-        """
+    def load_angr_project(self: Capierre, filepath: str):
         try:
             capierre_magic = CapierreMagic()
             project = angr.Project(
-                binary_file,
+                filepath,
                 load_options={'auto_load_libs': False}
             )
 
             # WARN: Pylint doesn't recognise the angr library's definitions.
-            cfg = NodeView(project.analyses.CFGFast().graph.nodes()) # type: ignore pylint: disable=E1101
+            # pylint: disable=E1101
+            cfg = NodeView(project.analyses.CFGFast().graph.nodes()) # type: ignore
             text_section = None
 
             for section in project.loader.main_object.sections:
@@ -182,47 +175,7 @@ class Capierre:
                     break
             if text_section is None:
                 raise NonexistentTextSection()
-            with open(binary_file, 'r+b') as binary:
-                read_bin = binary.read()
-                text_block = bytearray(
-                    read_bin[
-                        text_section.offset:text_section.offset +
-                        text_section.memsize
-                    ]
-                )
-                bitstream: list[int] = [
-                    self.access_bit(sentence_to_hide, i) for i in range(
-                        len(sentence_to_hide) * 8
-                    )
-                ]
-                threads = ThreadPool(os.cpu_count())
-                nodes = filter(lambda node: node.block is not None, cfg)
-                instruction_list = tuple(itertools.chain(
-                    *map(self.read_instructions, nodes)
-                ))
-                instructions: tuple[tuple[int, bytes]] = tuple(filter(
-                    lambda ins: ins is not None,
-                    threads.starmap(
-                        self.compile_asm, zip(bitstream, instruction_list)
-                    )
-                )) # type: ignore
-                for instruction in instructions:
-                    text_block[
-                        instruction[0] - text_section.offset :
-                        instruction[0] - text_section.offset + len(instruction[1])
-                    ] = instruction[1]
-
-                read_bin = (
-                    read_bin[:text_section.offset] +
-                    text_block +
-                    read_bin[text_section.offset + text_section.memsize:]
-                )
-
-                binary.seek(0)
-                binary.truncate(0)
-                binary.write(read_bin)
-                binary.close()
-
+            return cfg, text_section
         except cle.errors.CLECompatibilityError:
             msg_error("The chosen file is incompatible")
             sys.exit(1)
@@ -234,6 +187,84 @@ class Capierre:
             sys.exit(1)
         except Exception as e:
             raise e
+
+    def read_in_compiled_binaries(
+        self: Capierre,
+        filepath: str,
+    ) -> str:
+        """
+        Reads the sentence into the already compiled binary.
+
+        @param filepath: `str` - The path to the binary file.
+        @return `str` - The sentence.
+        """
+        cfg, _ = self.load_angr_project(filepath)
+
+        nodes = filter(lambda node: node.block is not None, cfg)
+        instruction_list = tuple(itertools.chain(
+            *map(self.read_instructions, nodes)
+        ))
+        bits = functools.reduce(lambda s, ins: s + '1' if ins.mnemonic ==
+            'add' else s + '0', instruction_list, '')
+        sentence = ''.join(
+            [chr(int(bits[i:i+8], 2)) for i in range(0, len(bits), 8)]
+        )
+        return sentence
+
+    def hide_in_compiled_binaries(
+        self: Capierre,
+        filepath: str,
+        sentence_to_hide: str
+    ):
+        """
+        Hides the current sentence into the already compiled binary.
+
+        @param filepath: `str` - The path to the binary file.
+        @param sentence_to_hide: `str` - The sentence to hide.
+        """
+        cfg, text_section = self.load_angr_project(filepath)
+
+        with open(filepath, 'r+b') as file:
+            read_bin = file.read()
+            text_block = bytearray(
+                read_bin[
+                    text_section.offset:text_section.offset +
+                    text_section.memsize
+                ]
+            )
+            bitstream: list[int] = [
+                self.access_bit(sentence_to_hide, i) for i in range(
+                    len(sentence_to_hide) * 8
+                )
+            ]
+            threads = ThreadPool(os.cpu_count())
+            nodes = filter(lambda node: node.block is not None, cfg)
+            instruction_list = tuple(itertools.chain(
+                *map(self.read_instructions, nodes)
+            ))
+            instructions: tuple[tuple[int, bytes]] = tuple(filter(
+                lambda ins: ins is not None,
+                threads.starmap(
+                    self.compile_asm, zip(bitstream, instruction_list)
+                )
+            ))  # type: ignore
+            for instruction in instructions:
+                text_block[
+                    instruction[0] - text_section.offset:
+                    instruction[0] - text_section.offset +
+                        len(instruction[1])
+                ] = instruction[1]
+
+            read_bin = (
+                read_bin[:text_section.offset] +
+                text_block +
+                read_bin[text_section.offset + text_section.memsize:]
+            )
+
+            file.seek(0)
+            file.truncate(0)
+            file.write(read_bin)
+            file.close()
 
     def create_malicious_file(
         self: Capierre,
@@ -304,8 +335,8 @@ class Capierre:
                         'bb',
                         (
                             4 - (rand_step & 0b11)) & 0b11,
-                            random.randint(0, 127)
-                        ) +
+                        random.randint(0, 127)
+                    ) +
                     b"\x00\x00\x00" +
                     temp_information_to_hide +
                     struct.pack(
@@ -398,7 +429,8 @@ class Capierre:
         sentence_to_hide_fd.close()
 
         if platform.system() == 'Windows':
-            sentence_to_hide_fd.name = sentence_to_hide_fd.name.replace('\\', '/')
+            sentence_to_hide_fd.name = sentence_to_hide_fd.name.replace(
+                '\\', '/')
         if (platform.system() == 'Darwin'):
             information_to_hide = sentence_to_hide
 
@@ -413,7 +445,8 @@ class Capierre:
         """
 
         # https://stackoverflow.com/a/65156317/23570806
-        malicious_code_fd = tempfile.NamedTemporaryFile(delete=False, suffix=".c")
+        malicious_code_fd = tempfile.NamedTemporaryFile(
+            delete=False, suffix=".c")
         malicious_code_fd.write(malicious_code.encode())
         malicious_code_fd.close()
 
@@ -423,7 +456,7 @@ class Capierre:
             information_to_hide
         )
 
-    def complete_eh_frame_section( # pylint: disable=C0116
+    def complete_eh_frame_section(  # pylint: disable=C0116
         self: Capierre,
         encoded_message: bytes
     ) -> None:
@@ -473,7 +506,8 @@ class Capierre:
                 if int.from_bytes(eh_frame_block[i + 4: i + 8], "little") != 0:
                     fake_addr = (
                         project.loader.main_object.min_addr +
-                        symbols[random.randint(0, len(symbols) - 1)].relative_addr
+                        symbols[random.randint(
+                            0, len(symbols) - 1)].relative_addr
                     ) - (
                         eh_frame_section.vaddr + i + 8
                     )
