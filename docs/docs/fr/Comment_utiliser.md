@@ -17,7 +17,7 @@ $ cd tool
 
 ### 🧰 Installer les dépendances
 
-::: warning
+:::warning ⚠️ WARNING ⚠️
 Assurez-vous d'avoir ``Python 3.9`` ou une version supérieure installée sur votre machine. Si ce n'est pas le cas, vous pouvez le télécharger depuis le [site officiel](https://www.python.org/downloads/).
 
 Vérifiez que ``pip3`` est installé sur votre machine. Si ce n'est pas le cas, installez-le avec la commande suivante :
