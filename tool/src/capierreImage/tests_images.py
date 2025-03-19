@@ -25,6 +25,7 @@ def run_tests():
     assert extracted is not None, '[!] The payload cannot be returned.'
     print(extracted)
     assert cpImgGood.extract() == payload, '[!] The payload is not the same.'
+    good.close()
 #    assert cpImgJpeg.extract() == payload, '[!] The payload is not the same.'
 
 run_tests()

@@ -22,15 +22,13 @@ class CapierreImage:
     HEADER_SIZE = 4
     BYTE_SIZE = 8
 
-    def __init__(self, image: Image.Image, seed=0):
+    def __init__(self, image: Image.Image, output_path: str, seed=0):
         self.image = image
+        self.output = output_path
         self.seed = seed
-        self.image_size = self.image.width + self.image.height
+        self.image_size = self.image.width * self.image.height
         self.nb_channels = len(self.image.mode)
         self.image_data = list(map(list, self.image.getdata()))
-
-    def __del__(self):
-        self.image.close()
 
     def set_bit(self, value: int, position: int) -> int:
         """
@@ -116,6 +114,7 @@ class CapierreImage:
                 )
             bit_pos = (bit_pos + 1) % self.BYTE_SIZE
         self.image.putdata(list(map(tuple, self.image_data)))
+        self.image.save(self.output, self.image.format)
 
     def extract(self) -> bytes | None:
         """

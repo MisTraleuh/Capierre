@@ -16,11 +16,13 @@ class CapierreParsing:
         self.file = str()
         self.type_file = str()
         self.sentence = str()
+        self.seed = 42
         self.password = str()
         self.binary_file = "capierre_binary"
         self.output_file_retreive = str()
         self.conceal = False
         self.retrieve = False
+        self.mode = 0
 
     def print_help(self: CapierreParsing) -> None:
         """
@@ -32,11 +34,13 @@ class CapierreParsing:
         print(f"  -v, --version  Show version of the tool")
         print(f"  -c, --conceal  Hide a message")
         print(f"  -r, --retrieve Retrieve a message")
+        print(f"  -i, --image Switch to Image Mode. Default: Normal Mode")
         print(f"  -fth, --file-to-hide <file>  File to hide")
         print(f"  -s, --sentence <sentence>  Sentence to hide")
         print(f"  -p, --password <password>  Password for encryption")
-        print(f"  -f, --file <file>  File to compile or to retrieve")
+        print(f"  -f, --file <file>  Input file to compile or to retrieve")
         print(f"  -o, --output <file>  Output file")
+        print(f"  -sd, --seed <number>  Optional: Seed used by the image algorithm")
 
     def check_file(self: CapierreParsing) -> bool:
         """
@@ -46,11 +50,11 @@ class CapierreParsing:
 
         # https://stackoverflow.com/a/61065546/23570806
         magic_numbers = {
-            "a/png": bytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
+            "png": bytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
             "jpg": bytes([0xFF, 0xD8, 0xFF]),
             "webp": bytes([0x52, 0x49, 0x46, 0x46]),
-            "gif(87a)": bytes([0x47, 0x49, 0x46, 0x38, 0x37, 0x61]),
-            "gif(89a)": bytes([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]),
+            "gif": bytes([0x47, 0x49, 0x46, 0x38, 0x37, 0x61]),
+            "gif": bytes([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]),
             "elf": bytes([0x7F, 0x45, 0x4C, 0x46]),
         }
         extension_files = {
@@ -110,6 +114,23 @@ class CapierreParsing:
             ]
         return str()
 
+    def argv_to_seed(self: CapierreParsing, argv: list[str]) -> str:
+        """
+        This function gets the seed from the arguments
+        @param args - The arguments
+        @return int - The seed
+        """
+        try:
+            if any(arg in argv for arg in ["--seed", "-sd"]):
+                return int(argv[
+                    (argv.index("--seed") if "--seed" in argv else argv.index("-sd"))
+                    + 1
+                ])
+            return 42
+        except:
+            msg_error("The chosen seed isn't a valid integer.")
+            return -1
+
     def argv_to_sentence(self: CapierreParsing, argv: list[str]) -> str:
         """
         This function gets the sentence from the arguments
@@ -144,9 +165,12 @@ class CapierreParsing:
             return (False, 1)
 
         self.file = self.get_args(("--file", "-f"))
+        self.seed = self.argv_to_seed(sys.argv)
         self.sentence = self.argv_to_sentence(sys.argv)
         self.password = self.argv_to_password(sys.argv)
 
+        if (self.seed < 0):
+            return (False, 1)
         if any(arg in sys.argv for arg in ["--output", "-o"]):
             self.binary_file = self.get_args(("--output", "-o"))
         if (platform.system() == 'Windows' and self.binary_file.split('.')[-1] != 'exe'):
@@ -180,6 +204,7 @@ class CapierreParsing:
             "file": ("--file", "-f"),
             "retrieve": ("--retrieve", "-r"),
             "conceal": ("--conceal", "-c"),
+            "image": ("--image", "-i")
         }
 
         if any(arg in sys.argv for arg in ALL_ARGS["help"]):
@@ -201,6 +226,8 @@ class CapierreParsing:
         if not any(arg in sys.argv for arg in ["--file", "-f"]):
             msg_error(f'"--file", "-f" not found\nUsage: {self.name} -h')
             return (False, 1)
+        if any(arg in sys.argv for arg in ALL_ARGS["image"]):
+            self.mode = 1
         if self.conceal == True:
             return self.check_conceal_args()
         else:
