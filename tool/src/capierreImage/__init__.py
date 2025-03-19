@@ -116,7 +116,7 @@ class CapierreImage:
         self.image.putdata(list(map(tuple, self.image_data)))
         self.image.save(self.output, self.image.format)
 
-    def extract(self) -> bytes | None:
+    def extract(self) -> bytes:
         """
         This function extracts the message hidden into the given image by the
         class constructor.
@@ -135,7 +135,7 @@ class CapierreImage:
 
         if message_length_decoded * self.BYTE_SIZE > self.image_size:
             msg_error('[!] Error: message is too big to be decoded (invalid header).')
-            return
+            return bytes()
 
         message = bytearray(message_length_decoded)
 
