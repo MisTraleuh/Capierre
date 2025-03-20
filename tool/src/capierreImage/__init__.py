@@ -148,4 +148,10 @@ class CapierreImage:
                     bit_pos
                 )
             bit_pos = (bit_pos + 1) % 8
+
+        if self.output != '':
+            with open(self.output, "wb") as file:
+                file.write(message)
+                file.close()
+
         return bytes(message)

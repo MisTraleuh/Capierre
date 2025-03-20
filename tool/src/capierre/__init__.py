@@ -73,7 +73,7 @@ class Capierre:
         msg_info(f"Hidden sentence: {self.sentence}")
         self.cipher_information(decrypt=False)
         if self.type_file in extension_files_compile:
-            self.compile_code(self.file, self.sentence, extension_files[self.type_file])
+            self.compile_code(self.file, self.sentence, extension_files_compile[self.type_file])
         elif self.type_file in extension_files_image:
             self.image_support()
         else:

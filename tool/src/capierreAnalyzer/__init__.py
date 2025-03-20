@@ -28,7 +28,7 @@ class CapierreAnalyzer:
             retrieved_content, self.password, decrypt=decrypt
         )
 
-    def handle_decrypted(self: CapierreAnalyzer, encoded_message: str):
+    def handle_decrypted(self: CapierreAnalyzer, message_retrieved: str):
 
         if self.output_file_retreive != '':
             with open(self.output_file_retreive, "wb") as file:
@@ -44,7 +44,7 @@ class CapierreAnalyzer:
         extract_object: object = CapierreImage(self.filepath, 654341)
         encoded_message: bytes = extract_object.extract()
 
-        handle_decrypted(cipher_information(retrieved_content=encoded_message, decrypt=True))
+        self.handle_decrypted(cipher_information(retrieved_content=encoded_message, decrypt=True))
 
     def retrieve_information(self: CapierreAnalyzer) -> None:
         extension_files_image = [
@@ -112,7 +112,7 @@ class CapierreAnalyzer:
 
             message_retrieved = self.cipher_information(retrieved_content=encoded_string, decrypt=True)
 
-            handle_decrypted(message_retrieved)
+            self.handle_decrypted(message_retrieved)
 
         except cle.errors.CLECompatibilityError as e:
             msg_error("The chosen file is incompatible")
