@@ -1,0 +1,8 @@
+{
+    "id": 2,
+    "title": "Binary Extraction",
+    "description": "Find the hidden message in this binary file.",
+    "hint": "Try using the extract feature with default settings.",
+    "file": "challenge1.png",
+    "flag": "stego_is_fun_assembly_is_not"
+}

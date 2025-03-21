@@ -363,9 +363,10 @@ class Ui_MainWindow(object):
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.label_8 = QtWidgets.QLabel(self.challenges_page)
         font = QtGui.QFont()
-        font.setPointSize(20)
+        font.setPointSize(14)
         font.setBold(True)
         self.label_8.setFont(font)
+        self.label_8.setText("Challenges Page")
         self.label_8.setScaledContents(False)
         self.label_8.setAlignment(QtCore.Qt.AlignCenter)
         self.label_8.setObjectName("label_8")
@@ -374,6 +375,10 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.addWidget(self.stackedWidget)
         self.gridLayout.addWidget(self.widget, 0, 2, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
+        # Challenge List
+        self.challenge_list = QtWidgets.QListWidget(self.challenges_page)
+        self.challenge_list.setObjectName("challenge_list")
+        self.gridLayout_2.addWidget(self.challenge_list, 1, 0, 1, 1)
 
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(0)
