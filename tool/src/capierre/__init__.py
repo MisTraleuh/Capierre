@@ -250,12 +250,10 @@ class Capierre:
                     self.compile_asm, zip(bitstream, instruction_list)
                 )
             ))  # type: ignore
-            print(instruction_list)
-            print(instructions)
             for instruction in instructions:
                 text_block[
-                    instruction[0] - text_section.offset:
-                    instruction[0] - text_section.offset +
+                    instruction[0] - text_section.vaddr:
+                    instruction[0] - text_section.vaddr +
                         len(instruction[1])
                 ] = instruction[1]
 
