@@ -138,6 +138,8 @@ class Capierre:
                 )
 
                 binary = tmpfile.read()
+                if len(binary) > 4096:
+                    binary = binary[4096:]
 
             return (instruction.address, binary)
         msg_error('[!] Invalid operand.')
@@ -248,6 +250,8 @@ class Capierre:
                     self.compile_asm, zip(bitstream, instruction_list)
                 )
             ))  # type: ignore
+            print(instruction_list)
+            print(instructions)
             for instruction in instructions:
                 text_block[
                     instruction[0] - text_section.offset:
