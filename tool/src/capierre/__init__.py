@@ -254,14 +254,13 @@ class Capierre:
             for instruction in instructions:
                 # Some instructions that this project supports may come from sections other than the .text section.
                 # As we didn't yet find a way to filter out nodes by sections, this temporary fix is added here.
-                if instruction[0] - text_section.vaddr > text_section.memsize:
+                if instruction[0] - text_section.vaddr > text_section.memsize or instruction[0] - text_section.vaddr < 0:
                     continue
                 text_block[
                     instruction[0] - text_section.vaddr:
                     instruction[0] - text_section.vaddr +
                         len(instruction[1])
                 ] = instruction[1]
-
             read_bin = (
                 read_bin[:text_section.offset] +
                 text_block +
