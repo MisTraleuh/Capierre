@@ -146,19 +146,6 @@ class Capierre:
         msg_error('[!] Invalid operand.')
         return None
 
-    def read_instructions(self: Capierre, node: Node):
-        """
-        This is a helper function for reading and filtering helpful
-        instructions. 
-
-        @param node: `list[NodeView]` - The list of nodes to filter.
-        @return `filter()`
-        """
-        return filter(
-            lambda ins: ins.mnemonic in ('add', 'sub'),
-            (ins for ins in node.block.capstone.insns)  # type: ignore
-        )
-
     def load_angr_project(self: Capierre, filepath: str):
         try:
             capierre_magic = CapierreMagic()
@@ -191,28 +178,18 @@ class Capierre:
         except Exception as e:
             raise e
 
-    def read_in_compiled_binaries(
-        self: Capierre,
-        filepath: str,
-    ) -> str:
+    def read_instructions(self: CapierreAnalyzer, node: Node):
         """
-        Reads the sentence into the already compiled binary.
+        This is a helper function for reading and filtering helpful
+        instructions. 
 
-        @param filepath: `str` - The path to the binary file.
-        @return `str` - The sentence.
+        @param node: `list[NodeView]` - The list of nodes to filter.
+        @return `filter()`
         """
-        cfg, _ = self.load_angr_project(filepath)
-
-        nodes = filter(lambda node: node.block is not None, cfg)
-        instruction_list = tuple(itertools.chain(
-            *map(self.read_instructions, nodes)
-        ))
-        bits = functools.reduce(lambda s, ins: s + '1' if ins.mnemonic ==
-            'add' else s + '0', instruction_list, '')
-        sentence = ''.join(
-            [chr(int(bits[i:i+8], 2)) for i in range(0, len(bits), 8)]
+        return filter(
+            lambda ins: ins.mnemonic in ('add', 'sub'),
+            (ins for ins in node.block.capstone.insns)  # type: ignore
         )
-        return sentence
 
     def hide_in_compiled_binaries(
         self: Capierre,
@@ -244,18 +221,19 @@ class Capierre:
             nodes = filter(lambda node: node.block is not None, cfg)
             instruction_list = tuple(itertools.chain(
                 *map(self.read_instructions, nodes)
-            ))
+            ))               
+            # Some instructions that this project supports may come from sections other than the .text section.
+            # As we didn't yet find a way to filter out nodes by sections, this temporary fix is added here.
+            instruction_list = tuple(filter(lambda ins: ins.address - text_section.vaddr <= text_section.memsize and ins.address - text_section.vaddr >= 0, instruction_list))
+            print(len(instruction_list))
             instructions: tuple[tuple[int, bytes]] = tuple(filter(
                 lambda ins: ins is not None,
                 threads.starmap(
                     self.compile_asm, zip(bitstream, instruction_list)
                 )
             ))  # type: ignore
+            msg_info(str(len(instructions)) + " bit could be written.\nThe rest was ignored.")
             for instruction in instructions:
-                # Some instructions that this project supports may come from sections other than the .text section.
-                # As we didn't yet find a way to filter out nodes by sections, this temporary fix is added here.
-                if instruction[0] - text_section.vaddr > text_section.memsize or instruction[0] - text_section.vaddr < 0:
-                    continue
                 text_block[
                     instruction[0] - text_section.vaddr:
                     instruction[0] - text_section.vaddr +
