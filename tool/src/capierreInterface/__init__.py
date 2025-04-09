@@ -1,4 +1,5 @@
 # pylint: disable=C0115,C0114,C0103
+from __future__ import annotations
 
 class Instruction:
     size: int

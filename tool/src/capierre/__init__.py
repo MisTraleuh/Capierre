@@ -160,7 +160,7 @@ class Capierre:
             text_section = None
 
             for section in project.loader.main_object.sections:
-                if section.name == capierre_magic.SECTION_HIDE_TEXT:
+                if section.name == capierre_magic.SECTION_HIDE_TEXT or section.name == "__text":
                     text_section = section
                     break
             if text_section is None:
@@ -225,7 +225,6 @@ class Capierre:
             # Some instructions that this project supports may come from sections other than the .text section.
             # As we didn't yet find a way to filter out nodes by sections, this temporary fix is added here.
             instruction_list = tuple(filter(lambda ins: ins.address - text_section.vaddr <= text_section.memsize and ins.address - text_section.vaddr >= 0, instruction_list))
-            print(len(instruction_list))
             instructions: tuple[tuple[int, bytes]] = tuple(filter(
                 lambda ins: ins is not None,
                 threads.starmap(
