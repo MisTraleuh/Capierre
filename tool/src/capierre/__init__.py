@@ -108,13 +108,13 @@ class Capierre:
         capierre_magic = CapierreMagic()
 
         if (
-            bit and instruction.mnemonic == 'add' or
-            not bit and instruction.mnemonic == 'sub'
+            (bit and instruction.mnemonic == 'add') or
+            (not bit and instruction.mnemonic == 'sub')
         ):
             return None
         if (
-            bit and instruction.mnemonic == 'sub' or
-            not bit and instruction.mnemonic == 'add'
+            (bit and instruction.mnemonic == 'sub') or
+            (not bit and instruction.mnemonic == 'add')
         ):
             args = instruction.op_str.split(', ')
             immediate = -int(args[1])
@@ -228,7 +228,6 @@ class Capierre:
             # As we didn't yet find a way to filter out nodes by sections, this temporary fix is added here.
             instruction_list = tuple(filter(lambda ins: ins.address - text_section.vaddr <= text_section.memsize and ins.address - text_section.vaddr >= 0, instruction_list))
             instruction_list = tuple(filter(lambda ins: self.remove_incorrect_instructions(ins) is not None, instruction_list))
-            print(len(instruction_list))
             instructions: tuple[tuple[int, bytes]] = tuple(filter(
                 lambda ins: ins is not None,
                 threads.starmap(
