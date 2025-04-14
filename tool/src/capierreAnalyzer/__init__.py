@@ -103,7 +103,7 @@ class CapierreAnalyzer:
         sentence = ''.join(
             [chr(int(bits[i:i+8], 2)) for i in range(0, len(bits), 8)]
         )
-        print(sentence)
+        print(sentence[0:22])
         return sentence
 
     def retrieve_message_from_binary(self: CapierreAnalyzer) -> None:

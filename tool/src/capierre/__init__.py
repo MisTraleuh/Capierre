@@ -89,7 +89,7 @@ class Capierre:
         @return `int`
         """
         base = int(num // 8)
-        shift = int(num % 8)
+        shift = 7 - int(num % 8)
 
         return (ord(data[base]) >> shift) & 0x1
 
