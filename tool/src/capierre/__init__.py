@@ -223,11 +223,11 @@ class Capierre:
             nodes = filter(lambda node: node.block is not None, cfg)
             instruction_list = tuple(itertools.chain(
                 *map(self.read_instructions, nodes)
-            ))               
+            ))
             # Some instructions that this project supports may come from sections other than the .text section.
             # As we didn't yet find a way to filter out nodes by sections, this temporary fix is added here.
-            instruction_list = tuple(filter(lambda ins: ins.address - text_section.vaddr <= text_section.memsize and ins.address - text_section.vaddr >= 0, instruction_list))
-            instruction_list = tuple(filter(lambda ins: self.remove_incorrect_instructions(ins) is not None, instruction_list))
+            instruction_list = tuple(filter(lambda ins: self.remove_incorrect_instructions(ins) is not None and ins.address - text_section.vaddr <= text_section.memsize and ins.address - text_section.vaddr >= 0, instruction_list))
+            instruction_list = tuple(dict([(str(ins.address), ins) for ins in instruction_list]).values())
             instructions: tuple[tuple[int, bytes]] = tuple(filter(
                 lambda ins: ins is not None,
                 threads.starmap(

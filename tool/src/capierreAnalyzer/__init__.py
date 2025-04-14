@@ -96,8 +96,8 @@ class CapierreAnalyzer:
         instruction_list = tuple(itertools.chain(
             *map(self.read_instructions, nodes)
         ))
-        instruction_list = tuple(filter(lambda ins: ins.address - text_section.vaddr <= text_section.memsize and ins.address - text_section.vaddr >= 0, instruction_list))
-        instruction_list = tuple(filter(lambda ins: self.remove_incorrect_instructions(ins) is not None, instruction_list))
+        instruction_list = tuple(filter(lambda ins: self.remove_incorrect_instructions(ins) is not None and ins.address - text_section.vaddr <= text_section.memsize and ins.address - text_section.vaddr >= 0, instruction_list))
+        instruction_list = tuple(dict([(str(ins.address), ins) for ins in instruction_list]).values())
         bits = functools.reduce(lambda s, ins: s + '1' if ins.mnemonic ==
             'add' else s + '0', instruction_list, '')
         sentence = ''.join(
