@@ -117,12 +117,6 @@ class Capierre:
             not bit and instruction.mnemonic == 'add'
         ):
             args = instruction.op_str.split(', ')
-
-            try:
-                int(args[1])
-            except ValueError:
-                return None
-
             immediate = -int(args[1])
 
             if instruction.mnemonic == 'sub':
@@ -191,6 +185,14 @@ class Capierre:
             (ins for ins in node.block.capstone.insns)  # type: ignore
         )
 
+    def remove_incorrect_instructions(self: CapierreAnalyzer, instruction: Instruction):
+        args = instruction.op_str.split(', ')
+        try:
+            int(args[1])
+        except ValueError:
+            return None
+        return instruction
+
     def hide_in_compiled_binaries(
         self: Capierre,
         filepath: str,
@@ -225,13 +227,14 @@ class Capierre:
             # Some instructions that this project supports may come from sections other than the .text section.
             # As we didn't yet find a way to filter out nodes by sections, this temporary fix is added here.
             instruction_list = tuple(filter(lambda ins: ins.address - text_section.vaddr <= text_section.memsize and ins.address - text_section.vaddr >= 0, instruction_list))
+            instruction_list = tuple(filter(lambda ins: self.remove_incorrect_instructions(ins) is not None, instruction_list))
+            print(len(instruction_list))
             instructions: tuple[tuple[int, bytes]] = tuple(filter(
                 lambda ins: ins is not None,
                 threads.starmap(
                     self.compile_asm, zip(bitstream, instruction_list)
                 )
             ))  # type: ignore
-            msg_info(str(len(instructions)) + " bit could be written.\nThe rest was ignored.")
             for instruction in instructions:
                 text_block[
                     instruction[0] - text_section.vaddr:
