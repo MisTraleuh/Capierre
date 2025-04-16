@@ -62,6 +62,19 @@ class CapierreAnalyzer:
         except Exception as e:
             raise e
 
+    def access_bit(self: Capierre, data: str, num: int):
+        """
+        Useful function to access a particular bit.
+
+        @param data: `str` - data.
+        @param num: `int` - number.
+        @return `int`
+        """
+        base = int(num // 8)
+        shift = 7 - int(num % 8)
+
+        return (ord(data[base]) >> shift) & 0x1
+
     def read_instructions(self: CapierreAnalyzer, node: Node):
         """
         This is a helper function for reading and filtering helpful
@@ -90,6 +103,7 @@ class CapierreAnalyzer:
         @param filepath: `str` - The path to the binary file.
         @return `str` - The sentence.
         """
+        size: int = 0
         cfg, text_section = self.load_angr_project(self.filepath)
 
         nodes = filter(lambda node: node.block is not None, cfg)
@@ -100,10 +114,13 @@ class CapierreAnalyzer:
         instruction_list = tuple(dict([(str(ins.address), ins) for ins in instruction_list]).values())
         bits = functools.reduce(lambda s, ins: s + '1' if ins.mnemonic ==
             'add' else s + '0', instruction_list, '')
+        size = int.from_bytes(''.join(
+            [chr(int(bits[i:i+8], 2)) for i in range(0, 32, 8)]
+        ).encode(), 'big')
         sentence = ''.join(
-            [chr(int(bits[i:i+8], 2)) for i in range(0, len(bits), 8)]
+            [chr(int(bits[i:i+8], 2)) for i in range(32, len(bits), 8)]
         )
-        print(sentence)
+        print(sentence[0:size])
         return sentence
 
     def retrieve_message_from_binary(self: CapierreAnalyzer) -> None:

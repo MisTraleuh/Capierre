@@ -80,6 +80,17 @@ class Capierre:
 #            msg_error("File not supported")
 #            sys.exit(1)
 
+    def retrieve_int_byte(self: Capierre, data: int, shift: int, size: int):
+        """
+        Useful function to access a particular bit.
+
+        @param data: `str` - data.
+        @param num: `int` - number.
+        @return `int`
+        """
+        return (data >> size - shift - 1) & 0x1
+
+
     def access_bit(self: Capierre, data: str, num: int):
         """
         Useful function to access a particular bit.
@@ -219,6 +230,7 @@ class Capierre:
                     len(sentence_to_hide) * 8
                 )
             ]
+            bitstream = [self.retrieve_int_byte(len(sentence_to_hide), i, 32) for i in range(0, 32)] + bitstream
             threads = ThreadPool(os.cpu_count())
             nodes = filter(lambda node: node.block is not None, cfg)
             instruction_list = tuple(itertools.chain(
