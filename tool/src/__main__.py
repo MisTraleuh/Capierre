@@ -31,7 +31,10 @@ def main():
             capierreParsing.output_file_retreive,
             capierreParsing.password,
         )
-        capierreAnalyzer.retrieve_message_from_binary()
+        if (capierreParsing.mode == False):
+            capierreAnalyzer.retrieve_message_from_binary()
+        else:
+            capierreAnalyzer.read_in_compiled_binaries()
 
 
 if __name__ == "__main__":
