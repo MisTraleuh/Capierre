@@ -241,6 +241,8 @@ class Ui_MainWindow(object):
         self.title_retrieve = QtWidgets.QLabel(self.widget_6)
         self.title_retrieve.setObjectName("title_retrieve")
         self.verticalLayout.addWidget(self.title_retrieve)
+        self.checkBox_mode = QtWidgets.QCheckBox(text="Binary Mode")
+        self.verticalLayout.addWidget(self.checkBox_mode)
         self.widget_7 = QtWidgets.QWidget(self.widget_6)
         self.widget_7.setObjectName("widget_7")
         self.horizontalLayout_11 = QtWidgets.QHBoxLayout(self.widget_7)
@@ -363,9 +365,10 @@ class Ui_MainWindow(object):
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.label_8 = QtWidgets.QLabel(self.challenges_page)
         font = QtGui.QFont()
-        font.setPointSize(20)
+        font.setPointSize(14)
         font.setBold(True)
         self.label_8.setFont(font)
+        self.label_8.setText("Challenges Page")
         self.label_8.setScaledContents(False)
         self.label_8.setAlignment(QtCore.Qt.AlignCenter)
         self.label_8.setObjectName("label_8")
@@ -374,6 +377,10 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.addWidget(self.stackedWidget)
         self.gridLayout.addWidget(self.widget, 0, 2, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
+        # Challenge List
+        self.challenge_list = QtWidgets.QListWidget(self.challenges_page)
+        self.challenge_list.setObjectName("challenge_list")
+        self.gridLayout_2.addWidget(self.challenge_list, 1, 0, 1, 1)
 
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(0)
@@ -409,7 +416,7 @@ class Ui_MainWindow(object):
         box_value_file = self.lineEdit.text()
         box_value_sentence = self.lineEdit_2.text()
         box_value_password = self.lineEdit_3.text()
-        value: str = "c" if (box_value_file[-1] == 'c') else "cpp"
+        value: str = "c" if (box_value_file[-1] == 'c') else "cpp" if (box_value_file[-3:0] == "cpp") else "bin"
 
         capierreObject = Capierre(
             box_value_file,
@@ -433,7 +440,10 @@ class Ui_MainWindow(object):
             "MESSAGE",
             box_value_password,
         )
-        capierreObject.retrieve_message_from_binary()
+        if (self.checkBox_mode.isChecked() == False):
+            capierreObject.retrieve_message_from_binary()
+        else:
+            capierreObject.read_in_compiled_binaries()
         self.show_info_messagebox_retrieve()
         self.lineEdit_4.setText("")
         self.lineEdit_5.setText("")

@@ -79,3 +79,21 @@ QLineEdit:hover {
 QLineEdit:focus {
 	border: 2px solid rgb(91, 101, 124);
 }
+
+QListWidget#challenge_list {
+	background-color: rgb(44, 49, 58);
+    border: none;
+    padding: 10px;
+}
+
+QFrame#challenge_frame {
+    background-color:  rgb(33, 37, 43);
+    color: white;
+    border: 2px solid #444;
+    border-radius: 10px;
+}
+
+QListWidget::item:selected {
+    background: transparent;
+    border: none;
+}

@@ -21,6 +21,7 @@ class CapierreParsing:
         self.output_file_retreive = str()
         self.conceal = False
         self.retrieve = False
+        self.mode = False
 
     def print_help(self: CapierreParsing) -> None:
         """
@@ -37,6 +38,7 @@ class CapierreParsing:
         print(f"  -p, --password <password>  Password for encryption")
         print(f"  -f, --file <file>  File to compile or to retrieve")
         print(f"  -o, --output <file>  Output file")
+        print(f"  -m, --mode Changes the retrieval process into Compiled mode. Default is Compilation mode")
 
     def check_file(self: CapierreParsing) -> bool:
         """
@@ -48,6 +50,8 @@ class CapierreParsing:
         magic_numbers = {
             "png": bytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
             "elf": bytes([0x7F, 0x45, 0x4C, 0x46]),
+            "mach-o": bytes([0xCF, 0xFA, 0xED, 0xFE]),
+            "macho-o-universal": bytes([0xCA, 0xFE, 0xBA, 0xBE]),
         }
         extension_files = {
             "c": ".c",
@@ -176,6 +180,7 @@ class CapierreParsing:
             "file": ("--file", "-f"),
             "retrieve": ("--retrieve", "-r"),
             "conceal": ("--conceal", "-c"),
+            "mode": ("--mode", "-m")
         }
 
         if any(arg in sys.argv for arg in ALL_ARGS["help"]):
@@ -197,6 +202,8 @@ class CapierreParsing:
         if not any(arg in sys.argv for arg in ["--file", "-f"]):
             msg_error(f'"--file", "-f" not found\nUsage: {self.name} -h')
             return (False, 1)
+        if any(arg in sys.argv for arg in ALL_ARGS["mode"]):
+            self.mode = True
         if self.conceal == True:
             return self.check_conceal_args()
         else:
