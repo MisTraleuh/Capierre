@@ -117,11 +117,19 @@ class CapierreAnalyzer:
         size = int.from_bytes(''.join(
             [chr(int(bits[i:i+8], 2)) for i in range(0, 32, 8)]
         ).encode(), 'big')
-        sentence = ''.join(
+        message_retrieved = ''.join(
             [chr(int(bits[i:i+8], 2)) for i in range(32, len(bits), 8)]
         )
-        print(sentence[0:size])
-        return sentence
+        if self.output_file_retreive != '':
+            with open(self.output_file_retreive, "wb") as file:
+                file.write(message_retrieved[0:size].encode('utf-8'))
+                file.close()
+            msg_success(
+                f"Message retrieved and saved in {self.output_file_retreive}"
+            )
+        else:
+            msg_success(f"Message: {message_retrieved[0:size]}")
+        return message_retrieved
 
     def retrieve_message_from_binary(self: CapierreAnalyzer) -> None:
         """

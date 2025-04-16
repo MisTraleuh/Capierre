@@ -241,6 +241,8 @@ class Ui_MainWindow(object):
         self.title_retrieve = QtWidgets.QLabel(self.widget_6)
         self.title_retrieve.setObjectName("title_retrieve")
         self.verticalLayout.addWidget(self.title_retrieve)
+        self.checkBox_mode = QtWidgets.QCheckBox(text="Binary Mode")
+        self.verticalLayout.addWidget(self.checkBox_mode)
         self.widget_7 = QtWidgets.QWidget(self.widget_6)
         self.widget_7.setObjectName("widget_7")
         self.horizontalLayout_11 = QtWidgets.QHBoxLayout(self.widget_7)
@@ -409,7 +411,7 @@ class Ui_MainWindow(object):
         box_value_file = self.lineEdit.text()
         box_value_sentence = self.lineEdit_2.text()
         box_value_password = self.lineEdit_3.text()
-        value: str = "c" if (box_value_file[-1] == 'c') else "cpp"
+        value: str = "c" if (box_value_file[-1] == 'c') else "cpp" if (box_value_file[-3:0] == "cpp") else "bin"
 
         capierreObject = Capierre(
             box_value_file,
@@ -433,7 +435,10 @@ class Ui_MainWindow(object):
             "MESSAGE",
             box_value_password,
         )
-        capierreObject.retrieve_message_from_binary()
+        if (self.checkBox_mode.isChecked() == False):
+            capierreObject.retrieve_message_from_binary()
+        else:
+            capierreObject.read_in_compiled_binaries()
         self.show_info_messagebox_retrieve()
         self.lineEdit_4.setText("")
         self.lineEdit_5.setText("")
