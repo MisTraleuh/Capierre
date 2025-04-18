@@ -250,8 +250,11 @@ class Ui_MainWindow(object):
         """)
         self.title_retrieve.setObjectName("title_retrieve")
         self.verticalLayout.addWidget(self.title_retrieve)
-        self.verticalLayout.insertWidget(1, self.retrieve_intro)  # Just after title
+        self.verticalLayout.insertWidget(1, self.retrieve_intro)
         self.checkBox_mode = QtWidgets.QCheckBox(text="Binary Mode")
+        self.checkBox_mode.setStyleSheet("""
+            color: #aaa;
+        """)
         self.verticalLayout.addWidget(self.checkBox_mode)
         self.widget_7 = QtWidgets.QWidget(self.widget_6)
         self.widget_7.setObjectName("widget_7")

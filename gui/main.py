@@ -13,6 +13,7 @@ class MainWindow(QMainWindow):
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setFixedSize(1200, 800) 
 
         self.ui.sidebar_full.hide()
 
@@ -86,14 +87,14 @@ class ChallengeWidget(QWidget):
         outer_layout = QVBoxLayout(self)
         outer_layout.setContentsMargins(5, 5, 5, 5)
 
-        # Frame de fond
+        # Cadre principal
         self.frame = QFrame()
         self.frame.setObjectName("challenge_frame")
         main_layout = QHBoxLayout(self.frame)
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(20)
 
-        # === GAUCHE ===
+        # === COLONNE DE GAUCHE ===
         left_layout = QVBoxLayout()
         left_layout.setSpacing(8)
 
@@ -101,32 +102,40 @@ class ChallengeWidget(QWidget):
         description_label = QLabel(challenge['description'])
         description_label.setWordWrap(True)
 
-        # Flag + Submit
-        flag_line = QHBoxLayout()
-        flag_label = QLabel("Flag")
-        flag_label.setFixedWidth(50)
-        self.flag_input = QLineEdit()
-        self.flag_input.setPlaceholderText("Enter flag...")
-        self.flag_input.setFixedWidth(200)
-        self.submit_button = QPushButton("Submit")
-        self.submit_button.setFixedWidth(100)
-        self.submit_button.clicked.connect(self.check_flag)
-
-        flag_line.addWidget(flag_label)
-        flag_line.addWidget(self.flag_input)
-        flag_line.addWidget(self.submit_button)
-
-        # Assemble gauche
         left_layout.addWidget(title_label)
         left_layout.addWidget(description_label)
-        left_layout.addStretch()
-        left_layout.addLayout(flag_line)
+        description_label.setMinimumWidth(400) 
 
+        # FLAG challenge
+        if 'flag' in challenge:
+            flag_line = QHBoxLayout()
+            flag_label = QLabel("Flag")
+            flag_label.setFixedWidth(50)
+            self.flag_input = QLineEdit()
+            self.flag_input.setPlaceholderText("Enter flag...")
+            self.flag_input.setFixedWidth(200)
+            self.submit_button = QPushButton("Submit")
+            self.submit_button.setFixedWidth(100)
+            self.submit_button.clicked.connect(self.check_flag)
+
+            flag_line.addWidget(flag_label)
+            flag_line.addWidget(self.flag_input)
+            flag_line.addWidget(self.submit_button)
+            left_layout.addLayout(flag_line)
+
+        # FILE UPLOAD challenge
+        if challenge.get('upload_check'):
+            self.upload_button = QPushButton("Submit File")
+            self.upload_button.setFixedWidth(150)
+            self.upload_button.clicked.connect(self.submit_file)
+            left_layout.addWidget(self.upload_button)
+
+        left_layout.addStretch()
         main_layout.addLayout(left_layout)
 
-        # === DROITE ===
+        # === COLONNE DE DROITE ===
         right_layout = QVBoxLayout()
-        right_layout.addStretch()  # pousse les boutons en bas
+        right_layout.addStretch()
 
         # Download bouton
         self.download_button = QPushButton("Download")
@@ -160,9 +169,8 @@ class ChallengeWidget(QWidget):
             }
         """)
 
-        # Ajoute à droite
         btn_line = QHBoxLayout()
-        btn_line.addStretch()  # pousse à droite
+        btn_line.addStretch()
         btn_line.addWidget(self.download_button)
         btn_line.addWidget(self.hint_button)
 
@@ -170,6 +178,7 @@ class ChallengeWidget(QWidget):
         main_layout.addLayout(right_layout)
 
         outer_layout.addWidget(self.frame)
+
 
     def download_file(self):
         file_name = self.challenge.get('file')
@@ -186,6 +195,26 @@ class ChallengeWidget(QWidget):
         if dest_path:
             shutil.copyfile(source_path, dest_path)
             QMessageBox.information(self, "Success", f"File '{file_name}' downloaded.")
+
+    def submit_file(self):
+        submitted_file, _ = QFileDialog.getOpenFileName(self, "Submit your file", "", "All Files (*)")
+        if not submitted_file:
+            return
+
+        expected_file_path = os.path.join('./challenge_files', self.challenge.get('file'))
+
+        # Vérifie l'égalité (contenu binaire) ou appelle ta fonction de comparaison
+        try:
+            if self.compare_files(submitted_file, expected_file_path):
+                QMessageBox.information(self, "Success", "✅ Submitted file is correct!")
+            else:
+                QMessageBox.critical(self, "Failed", "❌ Submitted file is incorrect.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"An error occurred: {e}")
+
+    def compare_files(self, user_file, expected_file):
+        with open(user_file, 'rb') as f1, open(expected_file, 'rb') as f2:
+            return f1.read() == f2.read()
 
 
     def check_flag(self):
