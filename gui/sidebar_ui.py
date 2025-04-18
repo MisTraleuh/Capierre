@@ -239,8 +239,18 @@ class Ui_MainWindow(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.widget_6)
         self.verticalLayout.setObjectName("verticalLayout")
         self.title_retrieve = QtWidgets.QLabel(self.widget_6)
+        self.retrieve_intro = QtWidgets.QLabel(self.widget_6)
+        self.retrieve_intro.setText("Use this form to extract a hidden message from a file. You may need to provide a password.")
+        self.retrieve_intro.setWordWrap(True)
+        self.retrieve_intro.setStyleSheet("""
+            color: #ccc;
+            font-size: 15px;
+            font-weight: 500;
+            padding-bottom: 15px;
+        """)
         self.title_retrieve.setObjectName("title_retrieve")
         self.verticalLayout.addWidget(self.title_retrieve)
+        self.verticalLayout.insertWidget(1, self.retrieve_intro)  # Just after title
         self.checkBox_mode = QtWidgets.QCheckBox(text="Binary Mode")
         self.verticalLayout.addWidget(self.checkBox_mode)
         self.widget_7 = QtWidgets.QWidget(self.widget_6)
@@ -262,6 +272,16 @@ class Ui_MainWindow(object):
         self.open_button_2.setObjectName("open_button_2")
         self.horizontalLayout_11.addWidget(self.open_button_2)
         self.verticalLayout.addWidget(self.widget_7)
+        self.filepath_info = QtWidgets.QLabel(self.widget_6)
+        self.filepath_info.setText("Select the file (image or binary) that contains the hidden message.")
+        self.filepath_info.setStyleSheet("""
+            color: #aaa;
+            font-size: 13px;
+            margin-top: 5px;
+            padding-left: 5px;
+        """)
+        self.filepath_info.setWordWrap(True)
+        self.verticalLayout.insertWidget(self.verticalLayout.indexOf(self.widget_7) + 1, self.filepath_info)
         self.widget_8 = QtWidgets.QWidget(self.widget_6)
         self.widget_8.setObjectName("widget_8")
         self.horizontalLayout_12 = QtWidgets.QHBoxLayout(self.widget_8)
@@ -274,6 +294,16 @@ class Ui_MainWindow(object):
         self.lineEdit_5.setObjectName("lineEdit_5")
         self.horizontalLayout_12.addWidget(self.lineEdit_5)
         self.verticalLayout.addWidget(self.widget_8)
+        self.password_info = QtWidgets.QLabel(self.widget_6)
+        self.password_info.setText("If the message was encrypted, enter the password to decrypt it.")
+        self.password_info.setStyleSheet("""
+            color: #aaa;
+            font-size: 13px;
+            margin-top: 5px;
+            padding-left: 5px;
+        """)
+        self.password_info.setWordWrap(True)
+        self.verticalLayout.insertWidget(self.verticalLayout.indexOf(self.widget_8) + 1, self.password_info)
         self.widget_9 = QtWidgets.QWidget(self.widget_6)
         self.widget_9.setObjectName("widget_9")
         self.horizontalLayout_10 = QtWidgets.QHBoxLayout(self.widget_9)
@@ -303,6 +333,17 @@ class Ui_MainWindow(object):
         self.title_hide.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.title_hide.setObjectName("title_hide")
         self.verticalLayout_8.addWidget(self.title_hide)
+        self.intro_label = QtWidgets.QLabel(self.widget_10)
+        self.intro_label.setText("Use this form to hide a secret message inside a file. Provide a password for encryption.")
+        self.intro_label.setWordWrap(True)
+        self.intro_label.setStyleSheet("""
+            color: #ccc;
+            font-size: 15px;
+            font-weight: 500;
+            padding-bottom: 15px;
+        """)
+        self.intro_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        self.verticalLayout_8.addWidget(self.intro_label)
         self.widget_4 = QtWidgets.QWidget(self.widget_10)
         self.widget_4.setObjectName("widget_4")
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.widget_4)
@@ -322,6 +363,11 @@ class Ui_MainWindow(object):
         self.label_4 = QtWidgets.QLabel(self.widget_2)
         self.label_4.setObjectName("label_4")
         self.horizontalLayout_4.addWidget(self.label_4)
+        self.password_help = QtWidgets.QLabel(self.widget_10)
+        self.password_help.setText("This password will be used to encrypt your message.")
+        self.password_help.setStyleSheet("color: #888; font-size: 12px;")
+        self.password_help.setWordWrap(True)
+        self.verticalLayout_8.insertWidget(self.verticalLayout_8.indexOf(self.widget_4) + 1, self.password_help)
         self.lineEdit = QtWidgets.QLineEdit(self.widget_2)
         self.lineEdit.setMinimumSize(QtCore.QSize(0, 30))
         self.lineEdit.setObjectName("lineEdit")
@@ -358,6 +404,11 @@ class Ui_MainWindow(object):
         self.horizontalLayout_7.addItem(spacerItem4)
         self.verticalLayout_8.addWidget(self.widget_5)
         self.gridLayout_3.addWidget(self.widget_10, 0, 0, 1, 1)
+        self.sentence_help = QtWidgets.QLabel(self.widget_10)
+        self.sentence_help.setText("Enter the secret message you want to embed into the selected file.")
+        self.sentence_help.setStyleSheet("color: #888; font-size: 12px;")
+        self.sentence_help.setWordWrap(True)
+        self.verticalLayout_8.insertWidget(self.verticalLayout_8.indexOf(self.widget_3) + 1, self.sentence_help)
         self.stackedWidget.addWidget(self.hide_page)
         self.challenges_page = QtWidgets.QWidget()
         self.challenges_page.setObjectName("challenges_page")
@@ -373,6 +424,11 @@ class Ui_MainWindow(object):
         self.label_8.setAlignment(QtCore.Qt.AlignCenter)
         self.label_8.setObjectName("label_8")
         self.gridLayout_2.addWidget(self.label_8, 0, 0, 1, 1)
+        self.filepath_help = QtWidgets.QLabel(self.widget_10)
+        self.filepath_help.setText("Choose the file (image or binary) where the message will be hidden.")
+        self.filepath_help.setStyleSheet("color: #888; font-size: 12px;")
+        self.filepath_help.setWordWrap(True)
+        self.verticalLayout_8.insertWidget(self.verticalLayout_8.indexOf(self.widget_2) + 1, self.filepath_help)
         self.stackedWidget.addWidget(self.challenges_page)
         self.verticalLayout_6.addWidget(self.stackedWidget)
         self.gridLayout.addWidget(self.widget, 0, 2, 1, 1)
