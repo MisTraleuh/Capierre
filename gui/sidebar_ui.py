@@ -23,6 +23,8 @@ class Ui_MainWindow(object):
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setSpacing(0)
         self.gridLayout.setObjectName("gridLayout")
+
+
         self.sidebar_full = QtWidgets.QWidget(self.centralwidget)
         self.sidebar_full.setObjectName("sidebar_full")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.sidebar_full)
@@ -60,6 +62,16 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.setContentsMargins(-1, 0, 9, 0)
         self.verticalLayout_4.setSpacing(0)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.home_btn = QtWidgets.QPushButton(self.icon_sidebar_full)
+        self.home_btn.setMinimumSize(QtCore.QSize(50, 50))
+        home_icon = QtGui.QIcon()
+        home_icon.addPixmap(QtGui.QPixmap(":/icon/icon/cil-star.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.home_btn.setIcon(home_icon)
+        self.home_btn.setIconSize(QtCore.QSize(25, 25))
+        self.home_btn.setCheckable(True)
+        self.home_btn.setAutoExclusive(True)
+        self.home_btn.setObjectName("home_btn")
+        self.verticalLayout_4.addWidget(self.home_btn) 
         self.retrieve_btn_3 = QtWidgets.QPushButton(self.icon_sidebar_full)
         self.retrieve_btn_3.setMinimumSize(QtCore.QSize(50, 50))
         icon = QtGui.QIcon()
@@ -85,7 +97,7 @@ class Ui_MainWindow(object):
         self.challenges_btn_2 = QtWidgets.QPushButton(self.icon_sidebar_full)
         self.challenges_btn_2.setMinimumSize(QtCore.QSize(0, 50))
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(":/icon/icon/cil-star.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap(":/icon/icon/cil-folder-open.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.challenges_btn_2.setIcon(icon2)
         self.challenges_btn_2.setIconSize(QtCore.QSize(25, 25))
         self.challenges_btn_2.setCheckable(True)
@@ -138,6 +150,15 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.setContentsMargins(-1, 0, 9, 0)
         self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.home_btn_2 = QtWidgets.QPushButton(self.icon_sidebar_min)
+        self.home_btn_2.setMinimumSize(QtCore.QSize(50, 50))
+        self.home_btn_2.setText("")
+        self.home_btn_2.setIcon(home_icon)
+        self.home_btn_2.setIconSize(QtCore.QSize(25, 25))
+        self.home_btn_2.setCheckable(True)
+        self.home_btn_2.setAutoExclusive(True)
+        self.home_btn_2.setObjectName("home_btn_2")
+        self.verticalLayout_3.addWidget(self.home_btn_2)
         self.retrieve_btn_2 = QtWidgets.QPushButton(self.icon_sidebar_min)
         self.retrieve_btn_2.setMinimumSize(QtCore.QSize(50, 50))
         self.retrieve_btn_2.setText("")
@@ -230,6 +251,26 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.addWidget(self.header_bar)
         self.stackedWidget = QtWidgets.QStackedWidget(self.widget)
         self.stackedWidget.setObjectName("stackedWidget")
+          # --- Welcome Page ---
+        self.welcome_page = QtWidgets.QWidget()
+        self.welcome_page.setObjectName("welcome_page")
+        welcome_layout = QtWidgets.QVBoxLayout(self.welcome_page)
+        welcome_layout.setContentsMargins(60, 60, 60, 60)
+        welcome_layout.setSpacing(20)
+
+        welcome_title = QtWidgets.QLabel("👋 Welcome to PyCapierre")
+        welcome_title.setStyleSheet("font-size: 28px; font-weight: bold; color: white;")
+        welcome_title.setAlignment(QtCore.Qt.AlignCenter)
+        welcome_layout.addWidget(welcome_title)
+
+        welcome_text = QtWidgets.QLabel("This app lets you hide and retrieve secret messages in files.\nUse the sidebar to get started.")
+        welcome_text.setWordWrap(True)
+        welcome_text.setStyleSheet("font-size: 16px; color: #bbb;")
+        welcome_text.setAlignment(QtCore.Qt.AlignCenter)
+        welcome_layout.addWidget(welcome_text)
+        self.stackedWidget.addWidget(self.welcome_page)
+
+        # --- Retrieve Page ---
         self.retrieve_page = QtWidgets.QWidget()
         self.retrieve_page.setObjectName("retrieve_page")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.retrieve_page)
@@ -443,16 +484,20 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(0)
-        self.hide_btn_1.toggled['bool'].connect(self.hide_btn_2.setChecked) # type: ignore
-        self.challenges_btn_2.toggled['bool'].connect(self.challenges_btn_1.setChecked) # type: ignore
-        self.hide_btn_2.toggled['bool'].connect(self.hide_btn_1.setChecked) # type: ignore
-        self.challenges_btn_1.toggled['bool'].connect(self.challenges_btn_2.setChecked) # type: ignore
         self.exit_btn_2.clicked.connect(MainWindow.close) # type: ignore
         self.show_btn_1.toggled['bool'].connect(self.sidebar_full.setVisible) # type: ignore
         self.show_btn_1.toggled['bool'].connect(self.sidebar_icon.setHidden) # type: ignore
         self.exit_btn_3.clicked.connect(MainWindow.close) # type: ignore
-        self.retrieve_btn_2.toggled['bool'].connect(self.retrieve_btn_3.setChecked) # type: ignore
-        self.retrieve_btn_3.toggled['bool'].connect(self.retrieve_btn_2.setChecked) # type: ignore
+
+        self.retrieve_btn_3.toggled['bool'].connect(self.retrieve_btn_2.setChecked)
+        self.home_btn.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(0) if checked else None)
+        self.home_btn_2.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(0) if checked else None)
+        self.retrieve_btn_3.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(1) if checked else None)
+        self.retrieve_btn_2.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(1) if checked else None)
+        self.hide_btn_1.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(2) if checked else None)
+        self.hide_btn_2.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(2) if checked else None)
+        self.challenges_btn_1.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(3) if checked else None)
+        self.challenges_btn_2.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(3) if checked else None) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def show_info_messagebox(self): 
@@ -509,7 +554,9 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
+        self.stackedWidget.setCurrentWidget(self.welcome_page)
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.home_btn.setText(_translate("MainWindow", "Home"))
         self.title_top.setText(_translate("MainWindow", "PyCapierre"))
         self.description_2.setText(_translate("MainWindow", "Modern GUI / Flat Style "))
         self.retrieve_btn_3.setText(_translate("MainWindow", "Retrieve"))

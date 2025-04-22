@@ -22,7 +22,14 @@ class MainWindow(QMainWindow):
         self.ui.open_button_2.clicked.connect(self.clicker_2)
         self.ui.open_button.clicked.connect(self.clicker_1)
         self.ui.challenge_list.setSpacing(10) 
-
+        
+        self.ui.retrieve_btn_2.toggled.connect(self.on_retrieve_btn_2_toggled)
+        self.ui.retrieve_btn_3.toggled.connect(self.on_retrieve_btn_1_toggled)
+        self.ui.hide_btn_1.toggled.connect(self.on_hide_btn_1_toggled)
+        self.ui.hide_btn_2.toggled.connect(self.on_hide_btn_2_toggled)
+        self.ui.home_btn.toggled.connect(lambda checked: self.ui.stackedWidget.setCurrentIndex(0) if checked else None)
+        self.ui.home_btn_2.toggled.connect(lambda checked: self.ui.stackedWidget.setCurrentIndex(0) if checked else None)
+        
         self.ui.challenges_btn_1.toggled.connect(self.on_challenges_btn_1_toggled)
         self.ui.challenges_btn_2.toggled.connect(self.on_challenges_btn_2_toggled)
 
@@ -37,23 +44,23 @@ class MainWindow(QMainWindow):
             self.ui.lineEdit_4.setText(fname)
 
     def on_retrieve_btn_1_toggled(self):
-        self.ui.stackedWidget.setCurrentIndex(0)
+        self.ui.stackedWidget.setCurrentIndex(1)  # Retrieve page is at index 1
 
     def on_retrieve_btn_2_toggled(self):
-        self.ui.stackedWidget.setCurrentIndex(0)
+        self.ui.stackedWidget.setCurrentIndex(1)  # Retrieve page is at index 1
 
     def on_hide_btn_1_toggled(self):
-        self.ui.stackedWidget.setCurrentIndex(1)
+        self.ui.stackedWidget.setCurrentIndex(2)  # Hide page is at index 2
 
     def on_hide_btn_2_toggled(self):
-        self.ui.stackedWidget.setCurrentIndex(1)
+        self.ui.stackedWidget.setCurrentIndex(2)  # Hide page is at index 2
 
     def on_challenges_btn_1_toggled(self):
-        self.ui.stackedWidget.setCurrentIndex(2)
+        self.ui.stackedWidget.setCurrentIndex(3)  # Challenges page is at index 3
         self.load_challenges()
 
     def on_challenges_btn_2_toggled(self):
-        self.ui.stackedWidget.setCurrentIndex(2)
+        self.ui.stackedWidget.setCurrentIndex(3)  # Challenges page is at index 3
         self.load_challenges()
 
     def load_challenges(self, folder_path='./challenges'):
