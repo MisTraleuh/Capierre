@@ -263,10 +263,20 @@ class Ui_MainWindow(object):
         welcome_title.setAlignment(QtCore.Qt.AlignCenter)
         welcome_layout.addWidget(welcome_title)
 
-        welcome_text = QtWidgets.QLabel("This app lets you hide and retrieve secret messages in files.\nUse the sidebar to get started.")
+        welcome_text = QtWidgets.QLabel(
+        "🧪 <b>What is Steganography?</b><br><br>"
+        "Steganography is the art of hiding messages within other non-secret files or data – like images or binary executables – "
+        "so that only the sender and receiver know it's there. Unlike encryption, which makes data unreadable, steganography hides its very existence.<br><br>"
+
+        "👨‍💻 <b>What this app does:</b><br><br>"
+        "🔹 <b>Hide</b>: Embed a secret message into an image or binary file using a password and encryption.<br>"
+        "🔹 <b>Retrieve</b>: Extract the hidden message from a file if you know the correct password.<br>"
+        "🔹 <b>Challenges</b>: Practice your stego skills! Whether you're a beginner or advanced, solve guided challenges to improve your understanding.<br><br>"
+
+        "💡 Whether you're learning or testing advanced techniques, <b>PyCapierre</b> helps make stéganographie accessible to everyone.")
         welcome_text.setWordWrap(True)
-        welcome_text.setStyleSheet("font-size: 16px; color: #bbb;")
-        welcome_text.setAlignment(QtCore.Qt.AlignCenter)
+        welcome_text.setStyleSheet("font-size: 18px; color: #bbb; line-height: 1.4;")
+        welcome_text.setAlignment(QtCore.Qt.AlignTop)
         welcome_layout.addWidget(welcome_text)
         self.stackedWidget.addWidget(self.welcome_page)
 
@@ -320,7 +330,7 @@ class Ui_MainWindow(object):
         self.filepath_info.setText("Select the file (image or binary) that contains the hidden message.")
         self.filepath_info.setStyleSheet("""
             color: #aaa;
-            font-size: 13px;
+            font-size: 16px;
             margin-top: 5px;
             padding-left: 5px;
         """)
@@ -342,7 +352,7 @@ class Ui_MainWindow(object):
         self.password_info.setText("If the message was encrypted, enter the password to decrypt it.")
         self.password_info.setStyleSheet("""
             color: #aaa;
-            font-size: 13px;
+            font-size: 16px;
             margin-top: 5px;
             padding-left: 5px;
         """)
@@ -382,7 +392,7 @@ class Ui_MainWindow(object):
         self.intro_label.setWordWrap(True)
         self.intro_label.setStyleSheet("""
             color: #ccc;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 500;
             padding-bottom: 15px;
         """)
@@ -409,7 +419,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.addWidget(self.label_4)
         self.password_help = QtWidgets.QLabel(self.widget_10)
         self.password_help.setText("This password will be used to encrypt your message.")
-        self.password_help.setStyleSheet("color: #888; font-size: 12px;")
+        self.password_help.setStyleSheet("color: #888; font-size: 16px;")
         self.password_help.setWordWrap(True)
         self.verticalLayout_8.insertWidget(self.verticalLayout_8.indexOf(self.widget_4) + 1, self.password_help)
         self.lineEdit = QtWidgets.QLineEdit(self.widget_2)
@@ -450,7 +460,7 @@ class Ui_MainWindow(object):
         self.gridLayout_3.addWidget(self.widget_10, 0, 0, 1, 1)
         self.sentence_help = QtWidgets.QLabel(self.widget_10)
         self.sentence_help.setText("Enter the secret message you want to embed into the selected file.")
-        self.sentence_help.setStyleSheet("color: #888; font-size: 12px;")
+        self.sentence_help.setStyleSheet("color: #888; font-size: 16px;")
         self.sentence_help.setWordWrap(True)
         self.verticalLayout_8.insertWidget(self.verticalLayout_8.indexOf(self.widget_3) + 1, self.sentence_help)
         self.stackedWidget.addWidget(self.hide_page)
@@ -470,7 +480,7 @@ class Ui_MainWindow(object):
         self.gridLayout_2.addWidget(self.label_8, 0, 0, 1, 1)
         self.filepath_help = QtWidgets.QLabel(self.widget_10)
         self.filepath_help.setText("Choose the file (image or binary) where the message will be hidden.")
-        self.filepath_help.setStyleSheet("color: #888; font-size: 12px;")
+        self.filepath_help.setStyleSheet("color: #888; font-size: 16px;")
         self.filepath_help.setWordWrap(True)
         self.verticalLayout_8.insertWidget(self.verticalLayout_8.indexOf(self.widget_2) + 1, self.filepath_help)
         self.stackedWidget.addWidget(self.challenges_page)
