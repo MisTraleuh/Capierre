@@ -4,6 +4,7 @@ import angr
 import cle
 import itertools
 import functools
+import capstone
 from utils.messages import msg_success, msg_error, msg_warning
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
@@ -40,7 +41,7 @@ class CapierreAnalyzer:
 
             # WARN: Pylint doesn't recognise the angr library's definitions.
             # pylint: disable=E1101
-            cfg = NodeView(project.analyses.CFGFast().graph.nodes()) # type: ignore
+            
             text_section = None
 
             for section in project.loader.main_object.sections:
@@ -49,7 +50,17 @@ class CapierreAnalyzer:
                     break
             if text_section is None:
                 raise NonexistentTextSection()
-            return cfg, text_section
+
+            end_text_section: int = text_section.vaddr + text_section.memsize
+            valid_func_list: list = list(filter(lambda sym: sym.is_import == False and sym.is_function == True and text_section.vaddr <= sym.rebased_addr < end_text_section and 0 < sym.size, project.loader.main_object.symbols))
+            capstoneProjModule = project.arch.capstone
+            instruction_list: list = []
+
+            for func in valid_func_list:
+                code = project.loader.memory.load(func.rebased_addr, func.size)
+                instruction_list += list(filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, func.rebased_addr)))
+
+            return instruction_list, text_section
         except cle.errors.CLECompatibilityError:
             msg_error("The chosen file is incompatible")
             sys.exit(1)
@@ -75,26 +86,6 @@ class CapierreAnalyzer:
 
         return (ord(data[base]) >> shift) & 0x1
 
-    def read_instructions(self: CapierreAnalyzer, node: Node):
-        """
-        This is a helper function for reading and filtering helpful
-        instructions. 
-
-        @param node: `list[NodeView]` - The list of nodes to filter.
-        @return `filter()`
-        """
-        return filter(
-            lambda ins: ins.mnemonic in ('add', 'sub'),
-            (ins for ins in node.block.capstone.insns)  # type: ignore
-        )
-
-    def remove_incorrect_instructions(self: CapierreAnalyzer, instruction: Instruction):
-        args = instruction.op_str.split(', ')
-        try:
-            int(args[1])
-        except ValueError:
-            return None
-        return instruction
 
     def read_in_compiled_binaries(self: CapierreAnalyzer) -> str:
         """
@@ -104,14 +95,8 @@ class CapierreAnalyzer:
         @return `str` - The sentence.
         """
         size: int = 0
-        cfg, text_section = self.load_angr_project(self.filepath)
-
-        nodes = filter(lambda node: node.block is not None, cfg)
-        instruction_list = tuple(itertools.chain(
-            *map(self.read_instructions, nodes)
-        ))
-        instruction_list = tuple(filter(lambda ins: self.remove_incorrect_instructions(ins) is not None and ins.address - text_section.vaddr <= text_section.memsize and ins.address - text_section.vaddr >= 0, instruction_list))
-        instruction_list = tuple(dict([(str(ins.address), ins) for ins in instruction_list]).values())
+        instruction_list, text_section = self.load_angr_project(self.filepath)
+        
         bits = functools.reduce(lambda s, ins: s + '1' if ins.mnemonic ==
             'add' else s + '0', instruction_list, '')
         size = int.from_bytes(''.join(
