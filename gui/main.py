@@ -2,9 +2,15 @@ import sys
 import os
 import json
 import shutil
+from PIL import Image
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem, QWidget, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QLineEdit, QPushButton, QMessageBox, QGridLayout
 from sidebar_ui import Ui_MainWindow
+sys.path.append('../tool/src/')
+from capierre import Capierre
+from capierreAnalyzer import CapierreAnalyzer
+from capierreImage import CapierreImage
+from capierreParsing import CapierreParsing
 
 
 class MainWindow(QMainWindow):
@@ -130,17 +136,16 @@ class MainWindow(QMainWindow):
 
     def hide_action(self):
 
-
         box_value_file: str = self.ui.lineEdit.text()
         box_value_sentence: str = self.ui.lineEdit_2.text()
         box_value_password: str = self.ui.lineEdit_3.text()
         value: str = self.detect_correct_type(box_value_file)
 
-        if (self.checkBox_file.isChecked() == True):
+        if (self.ui.checkBox_file.isChecked() == True):
             if os.path.exists(box_value_sentence) == False:
-                msg_error(f"File not found: {file_index}")
+                msg_warning(f"WARNING: File not found.")
                 return
-            with open(file_index, "r") as file:
+            with open(box_value_sentence, "r") as file:
                 box_value_sentence = file.read()
 
         if value == "":
@@ -182,7 +187,7 @@ class MainWindow(QMainWindow):
                 "MESSAGE",
                 box_value_password,
             )
-            if (self.checkBox_mode.isChecked() == False):
+            if (self.ui.checkBox_mode.isChecked() == False):
                 capierreObject.retrieve_message_from_binary()
             else:
                 capierreObject.read_in_compiled_binaries()
