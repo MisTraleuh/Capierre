@@ -18,7 +18,7 @@ class CapierreParsing:
         self.sentence = bytes()
         self.seed = 42
         self.password = str()
-        self.binary_file = "capierre_binary"
+        self.binary_file = str()
         self.output_file_retreive = str()
         self.conceal = False
         self.retrieve = False
@@ -158,12 +158,8 @@ class CapierreParsing:
         if len(sys.argv) < 5:
             msg_error(f"Not good number of args\nUsage: {self.name} -h")
             return (False, 1)
-        if not any(
-            arg in sys.argv for arg in ["--sentence", "-s", "--file-to-hide", "-fth"]
-        ):
-            msg_error(
-                f'"--sentence", "-s", "--file-to-hide or "-fth" not found\nUsage: {self.name} -h'
-            )
+        if not any(arg in sys.argv for arg in ["--sentence", "-s", "--file-to-hide", "-fth"]):
+            msg_error(f'"--sentence", "-s", "--file-to-hide or "-fth" not found\nUsage: {self.name} -h')
             return (False, 1)
 
         self.file = self.get_args(("--file", "-f"))
@@ -175,6 +171,8 @@ class CapierreParsing:
             return (False, 1)
         if any(arg in sys.argv for arg in ["--output", "-o"]):
             self.binary_file = self.get_args(("--output", "-o"))
+        if (self.binary_file == "" and self.image == False):
+            self.binary_file = "capierre_binary"
         if (platform.system() == 'Windows' and self.binary_file.split('.')[-1] != 'exe'):
             self.binary_file = f"{self.binary_file}.exe"
         if os.path.exists(self.file) == False:
@@ -200,14 +198,16 @@ class CapierreParsing:
         ALL_ARGS = {
             "help": ("--help", "-h"),
             "version": ("--version", "-v"),
+            "conceal": ("--conceal", "-c"),
+            "retrieve": ("--retrieve", "-r"),
+            "image": ("--image", "-i"),
             "file_to_hide": ("--file-to-hide", "-fth"),
             "sentence": ("--sentence", "-s"),
             "password": ("--password", "-p"),
             "file": ("--file", "-f"),
-            "retrieve": ("--retrieve", "-r"),
-            "conceal": ("--conceal", "-c"),
-            "image": ("--image", "-i"),
-            "mode": ("--mode", "-m")
+            "output": ("--ouput", "-o"),
+            "seed": ("--seed", "-sd"),
+            "mode": ("--mode", "-m"),
         }
 
         if any(arg in sys.argv for arg in ALL_ARGS["help"]):

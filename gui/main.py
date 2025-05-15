@@ -139,14 +139,15 @@ class MainWindow(QMainWindow):
         box_value_file: str = self.ui.lineEdit.text()
         box_value_sentence: str = self.ui.lineEdit_2.text()
         box_value_password: str = self.ui.lineEdit_3.text()
+        box_value_bytes: bytes = box_value_sentence.encode()
         value: str = self.detect_correct_type(box_value_file)
 
         if (self.ui.checkBox_file.isChecked() == True):
             if os.path.exists(box_value_sentence) == False:
                 msg_warning(f"WARNING: File not found.")
                 return
-            with open(box_value_sentence, "r") as file:
-                box_value_sentence = file.read()
+            with open(box_value_sentence, "rb") as file:
+                box_value_bytes = file.read()
 
         if value == "":
             return
@@ -154,7 +155,7 @@ class MainWindow(QMainWindow):
             capierreObject = Capierre(
                 box_value_file,
                 value,
-                box_value_sentence,
+                box_value_bytes,
                 box_value_password,
                 "result_binary.bin",
             )
@@ -166,7 +167,7 @@ class MainWindow(QMainWindow):
                 "Modified Picture.png",
                 42
             )
-            capierreObject.hide(box_value_sentence.encode())
+            capierreObject.hide(box_value_bytes)
             image.close()
         self.show_info_messagebox()
         self.ui.lineEdit.setText("")

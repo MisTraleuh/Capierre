@@ -14,6 +14,7 @@ import random
 import angr
 import capstone
 import cle
+from PIL import Image
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
 from capierreImage import CapierreImage
@@ -61,17 +62,6 @@ class Capierre:
             self.sentence, self.password, decrypt=decrypt
         )
 
-    def image_support(self: Capierre) -> None:
-        try:
-            image = Image.open(self.file)
-        except FileNotFoundError:
-            msg_error(f'[!] The file {self.file} doesn´t exists.')
-            return
-        hide_object: object = CapierreImage(image, 42)
-
-        hide_object.hide(self.sentence)
-        msg_success(f"Message hidden successfully")
-
     def hide_information(self: Capierre) -> None:
         """
         This function hides the information in the file
@@ -91,7 +81,7 @@ class Capierre:
         if self.type_file in extension_files_compile:
             self.compile_code(self.file, self.sentence, extension_files_compile[self.type_file])
         elif self.type_file in extension_files_image:
-            self.image_support()
+            msg_error("FATAL: To conceal within a picture, add the '-i' flag.")
         else:
             self.hide_in_compiled_binaries(self.file, self.sentence)
 
