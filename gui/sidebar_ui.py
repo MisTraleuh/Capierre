@@ -254,6 +254,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.addWidget(self.header_bar)
         self.stackedWidget = QtWidgets.QStackedWidget(self.widget)
         self.stackedWidget.setObjectName("stackedWidget")
+
           # --- Welcome Page ---
         self.welcome_page = QtWidgets.QWidget()
         self.welcome_page.setObjectName("welcome_page")
@@ -386,6 +387,8 @@ class Ui_MainWindow(object):
         self.widget_10.setObjectName("widget_10")
         self.verticalLayout_8 = QtWidgets.QVBoxLayout(self.widget_10)
         self.verticalLayout_8.setObjectName("verticalLayout_8")
+
+        # --- Hide Page ---
         self.title_hide = QtWidgets.QLabel(self.widget_10)
         self.title_hide.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.title_hide.setObjectName("title_hide")
@@ -401,6 +404,12 @@ class Ui_MainWindow(object):
         """)
         self.intro_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self.verticalLayout_8.addWidget(self.intro_label)
+        self.checkBox_file = QtWidgets.QCheckBox(text="File Mode")
+        self.checkBox_file.toggled.connect(self.update_on_file_select)
+        self.checkBox_file.setStyleSheet("""
+            color: #aaa;
+        """)
+        self.verticalLayout_8.addWidget(self.checkBox_file)
         self.widget_4 = QtWidgets.QWidget(self.widget_10)
         self.widget_4.setObjectName("widget_4")
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.widget_4)
@@ -490,7 +499,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.addWidget(self.stackedWidget)
         self.gridLayout.addWidget(self.widget, 0, 2, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
-        # Challenge List
+
+        # --- Challenge List ---
         self.challenge_list = QtWidgets.QListWidget(self.challenges_page)
         self.challenge_list.setObjectName("challenge_list")
         self.gridLayout_2.addWidget(self.challenge_list, 1, 0, 1, 1)
@@ -512,6 +522,20 @@ class Ui_MainWindow(object):
         self.challenges_btn_1.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(3) if checked else None)
         self.challenges_btn_2.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(3) if checked else None) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def update_on_file_select(self):
+
+        if (self.checkBox_file.isChecked() == True):
+            icon6 = QtGui.QIcon()
+            icon6.addPixmap(QtGui.QPixmap(":/icon/icon/cil-folder-open.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            open_button = QtWidgets.QPushButton(self.widget_2)
+            open_button.setMinimumSize(QtCore.QSize(100, 30))
+            open_button.setIcon(icon6)
+            open_button.setText("Open")
+            open_button.setObjectName("open_button")
+            self.horizontalLayout_5.addWidget(open_button, 0)
+        else:
+            self.horizontalLayout_5.itemAt(2).widget().deleteLater()
 
     def show_info_messagebox(self): 
         msg = QtWidgets.QMessageBox() 
@@ -581,6 +605,13 @@ class Ui_MainWindow(object):
         box_value_sentence: str = self.lineEdit_2.text()
         box_value_password: str = self.lineEdit_3.text()
         value: str = self.detect_correct_type(box_value_file)
+
+        if (self.checkBox_file.isChecked() == True):
+            if os.path.exists(box_value_sentence) == False:
+                msg_error(f"File not found: {file_index}")
+                return
+            with open(file_index, "r") as file:
+                box_value_sentence = file.read()
 
         if value == "":
             return
