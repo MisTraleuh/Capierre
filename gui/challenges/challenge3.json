@@ -1,0 +1,8 @@
+{
+    "id": 3,
+    "title": "Image Insertion",
+    "description": "Upload the image file, and hide the phrase 'rickroll' into.",
+    "hint": "Try using the hide feature with default settings.",
+    "file": "Rickroll.jpg",
+    "upload_check": true
+}

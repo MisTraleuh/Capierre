@@ -22,7 +22,8 @@ class CapierreParsing:
         self.output_file_retreive = str()
         self.conceal = False
         self.retrieve = False
-        self.mode = 0
+        self.image = False
+        self.mode = False
 
     def print_help(self: CapierreParsing) -> None:
         """
@@ -41,6 +42,7 @@ class CapierreParsing:
         print(f"  -f, --file <file>  Input file to compile or to retrieve")
         print(f"  -o, --output <file>  Output file")
         print(f"  -sd, --seed <number>  Optional: Seed used by the image algorithm")
+        print(f"  -m, --mode Changes the retrieval process into Compiled mode. Default is Compilation mode")
 
     def check_file(self: CapierreParsing) -> bool:
         """
@@ -56,6 +58,8 @@ class CapierreParsing:
             "gif": bytes([0x47, 0x49, 0x46, 0x38, 0x37, 0x61]),
             "gif": bytes([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]),
             "elf": bytes([0x7F, 0x45, 0x4C, 0x46]),
+            "mach-o": bytes([0xCF, 0xFA, 0xED, 0xFE]),
+            "macho-o-universal": bytes([0xCA, 0xFE, 0xBA, 0xBE]),
         }
         extension_files = {
             "c": ".c",
@@ -204,7 +208,8 @@ class CapierreParsing:
             "file": ("--file", "-f"),
             "retrieve": ("--retrieve", "-r"),
             "conceal": ("--conceal", "-c"),
-            "image": ("--image", "-i")
+            "image": ("--image", "-i"),
+            "mode": ("--mode", "-m")
         }
 
         if any(arg in sys.argv for arg in ALL_ARGS["help"]):
@@ -227,7 +232,9 @@ class CapierreParsing:
             msg_error(f'"--file", "-f" not found\nUsage: {self.name} -h')
             return (False, 1)
         if any(arg in sys.argv for arg in ALL_ARGS["image"]):
-            self.mode = 1
+            self.image = True
+        if any(arg in sys.argv for arg in ALL_ARGS["mode"]):
+            self.mode = True
         if self.conceal == True:
             return self.check_conceal_args()
         else:

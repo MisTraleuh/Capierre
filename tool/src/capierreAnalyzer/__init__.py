@@ -2,10 +2,14 @@ from __future__ import annotations
 import sys
 import angr
 import cle
+import itertools
+import functools
+import capstone
 from utils.messages import msg_success, msg_error, msg_warning
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
 from capierreImage import CapierreImage
+from capierreInterface import *
 
 
 class CapierreAnalyzer:
@@ -33,6 +37,83 @@ class CapierreAnalyzer:
         if self.output_file_retreive != '':
             with open(self.output_file_retreive, "wb") as file:
                 file.write(message_retrieved.encode('utf-8'))
+    def load_angr_project(self: Capierre, filepath: str):
+        try:
+            capierre_magic = CapierreMagic()
+            project = angr.Project(
+                filepath,
+                load_options={'auto_load_libs': False}
+            )
+
+            # WARN: Pylint doesn't recognise the angr library's definitions.
+            # pylint: disable=E1101
+            
+            text_section = None
+
+            for section in project.loader.main_object.sections:
+                if section.name == capierre_magic.SECTION_HIDE_TEXT:
+                    text_section = section
+                    break
+            if text_section is None:
+                raise NonexistentTextSection()
+
+            end_text_section: int = text_section.vaddr + text_section.memsize
+            valid_func_list: list = list(filter(lambda sym: sym.is_import == False and sym.is_function == True and text_section.vaddr <= sym.rebased_addr < end_text_section and 0 < sym.size, project.loader.main_object.symbols))
+            capstoneProjModule = project.arch.capstone
+            instruction_list: list = []
+
+            for func in valid_func_list:
+                code = project.loader.memory.load(func.rebased_addr, func.size)
+                instruction_list += list(filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, func.rebased_addr)))
+
+            return instruction_list, text_section
+        except cle.errors.CLECompatibilityError:
+            msg_error("The chosen file is incompatible")
+            sys.exit(1)
+        except cle.errors.CLEUnknownFormatError:
+            msg_error("The file format is incompatible")
+            sys.exit(1)
+        except cle.errors.CLEInvalidBinaryError:
+            msg_error("The chosen binary file is incompatible")
+            sys.exit(1)
+        except Exception as e:
+            raise e
+
+    def access_bit(self: Capierre, data: str, num: int):
+        """
+        Useful function to access a particular bit.
+
+        @param data: `str` - data.
+        @param num: `int` - number.
+        @return `int`
+        """
+        base = int(num // 8)
+        shift = 7 - int(num % 8)
+
+        return (ord(data[base]) >> shift) & 0x1
+
+
+    def read_in_compiled_binaries(self: CapierreAnalyzer) -> str:
+        """
+        Reads the sentence into the already compiled binary.
+
+        @param filepath: `str` - The path to the binary file.
+        @return `str` - The sentence.
+        """
+        size: int = 0
+        instruction_list, text_section = self.load_angr_project(self.filepath)
+        
+        bits = functools.reduce(lambda s, ins: s + '1' if ins.mnemonic ==
+            'add' else s + '0', instruction_list, '')
+        size = int.from_bytes(''.join(
+            [chr(int(bits[i:i+8], 2)) for i in range(0, 32, 8)]
+        ).encode(), 'big')
+        message_retrieved = ''.join(
+            [chr(int(bits[i:i+8], 2)) for i in range(32, len(bits), 8)]
+        )
+        if self.output_file_retreive != '':
+            with open(self.output_file_retreive, "wb") as file:
+                file.write(message_retrieved[0:size].encode('utf-8'))
                 file.close()
             msg_success(
                 f"Message retrieved and saved in {self.output_file_retreive}"
@@ -55,6 +136,8 @@ class CapierreAnalyzer:
             self.image_support()
         else:
             self.retrieve_message_from_binary()
+            msg_success(f"Message: {message_retrieved[0:size]}")
+        return message_retrieved
 
     def retrieve_message_from_binary(self: CapierreAnalyzer) -> None:
         """

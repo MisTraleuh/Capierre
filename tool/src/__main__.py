@@ -48,7 +48,11 @@ def retrieve_binary(capierreParsing: CapierreParsing):
         capierreParsing.output_file_retreive,
         capierreParsing.password,
     )
-    capierreAnalyzer.retrieve_message_from_binary()
+    if (capierreParsing.mode == False):
+        capierreAnalyzer.retrieve_message_from_binary()
+    else:
+        capierreAnalyzer.read_in_compiled_binaries()
+
 
 def main():
 
@@ -58,15 +62,20 @@ def main():
     if statement == False:
         sys.exit(status)
     if capierreParsing.conceal == True:
-        if capierreParsing.mode == 0:
+        if capierreParsing.image == False:
             conceal_binary(capierreParsing)
         else:
             conceal_image(capierreParsing)
     else:
-        if capierreParsing.mode == 0:
+        if capierreParsing.image == False:
             retrieve_binary(capierreParsing)
         else:
             retrieve_image(capierreParsing)
+        capierreAnalyzer = CapierreAnalyzer(
+            capierreParsing.file,
+            capierreParsing.output_file_retreive,
+            capierreParsing.password,
+        )
 
 if __name__ == "__main__":
     main()
