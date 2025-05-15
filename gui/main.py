@@ -2,7 +2,7 @@ import sys
 import os
 import json
 import shutil
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem, QWidget, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QLineEdit, QPushButton, QMessageBox, QGridLayout
 from sidebar_ui import Ui_MainWindow
 
@@ -19,6 +19,9 @@ class MainWindow(QMainWindow):
 
         self.ui.stackedWidget.setCurrentIndex(0)
 
+        self.ui.confirm_btn.clicked.connect(self.hide_action)
+        self.ui.confirm_btn_2.clicked.connect(self.retrieve_action)
+        self.ui.checkBox_file.toggled.connect(self.update_on_file_select)
         self.ui.open_button_2.clicked.connect(self.clicker_2)
         self.ui.open_button.clicked.connect(self.clicker_1)
         self.ui.challenge_list.setSpacing(10) 
@@ -42,6 +45,159 @@ class MainWindow(QMainWindow):
         fname, _ = QFileDialog.getOpenFileName(self, "Open File", "", "All Files (*);;Python Files (*.py)")
         if fname:
             self.ui.lineEdit_4.setText(fname)
+
+    def clicker_3(self):
+        fname, _ = QFileDialog.getOpenFileName(self, "Open File", "", "All Files (*);;Python Files (*.py)")
+        if fname:
+            self.ui.lineEdit_2.setText(fname)
+
+
+    def update_on_file_select(self):
+
+        if (self.ui.checkBox_file.isChecked() == True):
+            icon6 = QtGui.QIcon()
+            icon6.addPixmap(QtGui.QPixmap(":/icon/icon/cil-folder-open.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            open_button = QtWidgets.QPushButton(self.ui.widget_2)
+            open_button.clicked.connect(self.clicker_3)
+            open_button.setMinimumSize(QtCore.QSize(100, 30))
+            open_button.setIcon(icon6)
+            open_button.setText("Open")
+            open_button.setObjectName("open_button")
+            self.ui.horizontalLayout_5.addWidget(open_button, 0)
+        else:
+            self.ui.horizontalLayout_5.itemAt(2).widget().deleteLater()
+
+    def show_info_messagebox(self): 
+        msg = QtWidgets.QMessageBox() 
+        msg.setIcon(QtWidgets.QMessageBox.Information) 
+        msg.setText("SUCCESS: Binary compiled successfully.")
+        msg.setWindowTitle("Information MessageBox") 
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()
+
+    def show_info_messagebox_retrieve(self): 
+        msg = QtWidgets.QMessageBox() 
+        msg.setIcon(QtWidgets.QMessageBox.Information) 
+        msg.setText("SUCCESS: Content extracted successfully.")
+        msg.setWindowTitle("Information MessageBox") 
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()
+
+    def show_info_failure(self): 
+        msg = QtWidgets.QMessageBox() 
+        msg.setIcon(QtWidgets.QMessageBox.Information) 
+        msg.setText("FAILURE: Unsupported file.")
+        msg.setWindowTitle("Information MessageBox") 
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()
+
+    def detect_correct_type(self, box_value_file: str) -> str:
+
+        magic_numbers = {
+            "png": bytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
+            "elf": bytes([0x7F, 0x45, 0x4C, 0x46]),
+            "mach-o": bytes([0xCF, 0xFA, 0xED, 0xFE]),
+            "macho-o-universal": bytes([0xCA, 0xFE, 0xBA, 0xBE]),
+        }
+
+        extension_files = {
+            "c": ".c",
+            "cpp": ".cpp",
+            "png": ".png"
+        }
+
+        value: str = str()
+
+        with open(box_value_file, "rb") as fd:
+            file_head = fd.read()
+
+        for name, magic in magic_numbers.items():
+            if file_head.startswith(magic):
+                value = name
+                break
+
+        if value == "":
+            for name, end in extension_files.items():
+                if box_value_file.endswith(end):
+                    value = name
+                    break
+
+            if value == "":
+                self.show_info_failure()
+
+        return value
+
+
+    def hide_action(self):
+
+
+        box_value_file: str = self.ui.lineEdit.text()
+        box_value_sentence: str = self.ui.lineEdit_2.text()
+        box_value_password: str = self.ui.lineEdit_3.text()
+        value: str = self.detect_correct_type(box_value_file)
+
+        if (self.checkBox_file.isChecked() == True):
+            if os.path.exists(box_value_sentence) == False:
+                msg_error(f"File not found: {file_index}")
+                return
+            with open(file_index, "r") as file:
+                box_value_sentence = file.read()
+
+        if value == "":
+            return
+        elif value != "png":
+            capierreObject = Capierre(
+                box_value_file,
+                value,
+                box_value_sentence,
+                box_value_password,
+                "result_binary.bin",
+            )
+            capierreObject.hide_information()
+        else:
+            image = Image.open(box_value_file)
+            capierreObject = CapierreImage(
+                image,
+                "Modified Picture.png",
+                42
+            )
+            capierreObject.hide(box_value_sentence.encode())
+            image.close()
+        self.show_info_messagebox()
+        self.ui.lineEdit.setText("")
+        self.ui.lineEdit_2.setText("")
+        self.ui.lineEdit_3.setText("")
+
+    def retrieve_action(self):
+
+        box_value_file: str = self.ui.lineEdit_4.text()
+        box_value_password: str = self.ui.lineEdit_5.text()
+        value: str = self.detect_correct_type(box_value_file)
+
+        if value == "":
+            return
+        elif value != "png":
+            capierreObject = CapierreAnalyzer(
+                box_value_file,
+                "MESSAGE",
+                box_value_password,
+            )
+            if (self.checkBox_mode.isChecked() == False):
+                capierreObject.retrieve_message_from_binary()
+            else:
+                capierreObject.read_in_compiled_binaries()
+        else:
+            image = Image.open(box_value_file)
+            capierreObject = CapierreImage(
+                image,
+                "MESSAGE",
+                42
+            )
+            capierreObject.extract()
+            image.close()
+        self.show_info_messagebox_retrieve()
+        self.ui.lineEdit_4.setText("")
+        self.ui.lineEdit_5.setText("")
 
     def on_retrieve_btn_1_toggled(self):
         self.ui.stackedWidget.setCurrentIndex(1)  # Retrieve page is at index 1
