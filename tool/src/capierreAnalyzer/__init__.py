@@ -117,10 +117,10 @@ class CapierreAnalyzer:
             ).encode(), 'big')
 
             message_retrieved = ''.join(
-                [chr(int(bits[i:i+8], 2)) for i in range(32, len(bits[0:size * 8]), 8)]
-            ).encode('utf-8')
+                [chr(int(bits[i:i+8], 2)) for i in range(32, len(bits), 8)]
+            )[0:size]
 
-            decrypted_message = self.cipher_information(message_retrieved, True)
+            decrypted_message = self.cipher_information(retrieved_content=message_retrieved.encode('utf-8'), decrypt=True)
             if self.output_file_retreive != '':
                 with open(self.output_file_retreive, "wb") as file:
                     file.write(decrypted_message.encode('utf-8'))
@@ -130,8 +130,8 @@ class CapierreAnalyzer:
                 )
             else:
                 msg_success(f"Message: {decrypted_message}")
-        except:
-            msg_error("FATAL: An exception occured")
+        except Exception as e:
+            raise e
 
     def image_support(self: CapierreAnalyzer) -> None:
         extract_object: object = CapierreImage(self.filepath, 654341)
@@ -141,7 +141,7 @@ class CapierreAnalyzer:
 
     def retrieve_information(self: CapierreAnalyzer) -> None:
         extension_files_image = [
-            "png", "jpg", "jpeg", "webp", "gif", "apng", "svg", "pjpeg", "jfif", "pjp", "avif"
+            "png",
         ]
 
         if self.type_file in extension_files_image:
