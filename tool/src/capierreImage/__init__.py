@@ -64,10 +64,10 @@ class CapierreImage:
 
         random.seed(self.seed)
         for _ in range(self.image_size):
-            value = random.randint(self.HEADER_SIZE, self.image_size)
+            value = random.randint(self.HEADER_SIZE * self.BYTE_SIZE, self.image_size)
 
             while value in random_stack:
-                value = random.randint(self.HEADER_SIZE, self.image_size)
+                value = random.randint(self.HEADER_SIZE * self.BYTE_SIZE, self.image_size)
 
             random_stack.append(value)
             yield value
@@ -84,21 +84,28 @@ class CapierreImage:
         if not (message_length * self.BYTE_SIZE <= self.image_size):
             msg_error('[!] Error: the message is too big to hide.')
             return
-        if not isinstance(message, bytes):
-            msg_error('[!] Error: the message must be encoded into bytes.')
-            return
 
-        bit_pos = 0
         message_length_encoded = struct.pack(
             self.HEADER_FORMAT,
             message_length
         )
+        bit_pos = 0
+
+        for i in range(self.HEADER_SIZE * self.BYTE_SIZE):
+            if message_length_encoded[i // self.BYTE_SIZE] & (1 << bit_pos):
+                self.image_data[i][i % self.nb_channels] = self.set_bit(
+                    self.image_data[i][i % self.nb_channels],
+                    0
+                )
+            else:
+                self.image_data[i][i % self.nb_channels] = self.clear_bit(
+                    self.image_data[i][i % self.nb_channels],
+                    0
+                )
+            bit_pos = (bit_pos + 1) % self.BYTE_SIZE
+
         random_position = self.get_new_position()
 
-        for i in range(self.HEADER_SIZE):
-            self.image_data[i // self.nb_channels][i % self.nb_channels] = (
-                message_length_encoded[i]
-            )
         for i in range(message_length * self.BYTE_SIZE):
             position = next(random_position)
 
@@ -124,13 +131,19 @@ class CapierreImage:
         @return The message in `bytes`.
         """
         bit_pos = 0
-        random_position = self.get_new_position()
+        message_length_encoded = bytearray(self.HEADER_SIZE)
+
+        for i in range(self.HEADER_SIZE * self.BYTE_SIZE):
+            if self.image_data[i][i % self.nb_channels] & 1:
+                message_length_encoded[i // self.BYTE_SIZE] = self.set_bit(
+                    message_length_encoded[i // self.BYTE_SIZE],
+                    bit_pos
+                )
+            bit_pos = (bit_pos + 1) % 8
+
         message_length_decoded: int = struct.unpack(
             self.HEADER_FORMAT,
-            bytes(
-                self.image_data[i // self.nb_channels][i % self.nb_channels]
-                for i in range(self.HEADER_SIZE)
-            )
+            message_length_encoded
         )[0]
 
         if message_length_decoded * self.BYTE_SIZE > self.image_size:
@@ -138,6 +151,7 @@ class CapierreImage:
             return bytes()
 
         message = bytearray(message_length_decoded)
+        random_position = self.get_new_position()
 
         for i in range(message_length_decoded * self.BYTE_SIZE):
             position = next(random_position)
