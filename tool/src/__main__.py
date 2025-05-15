@@ -9,6 +9,7 @@ from capierre.__init__ import Capierre
 from capierreImage.__init__ import CapierreImage
 from capierreParsing.__init__ import CapierreParsing
 from capierreAnalyzer.__init__ import CapierreAnalyzer
+from utils.messages import msg_error, msg_success, msg_warning
 
 def conceal_image(capierreParsing: CapierreParsing):
     image = Image.open(capierreParsing.file)
@@ -29,7 +30,7 @@ def retrieve_image(capierreParsing: CapierreParsing):
         capierreParsing.output_file_retreive,
         capierreParsing.seed
     )
-    print(capierreObject.extract())
+    msg_success(f'Message: {capierreObject.extract().decode('utf-8')}')
     image.close()
 
 def conceal_binary(capierreParsing: CapierreParsing):

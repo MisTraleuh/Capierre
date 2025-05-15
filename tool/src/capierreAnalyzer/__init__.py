@@ -37,6 +37,8 @@ class CapierreAnalyzer:
         if self.output_file_retreive != '':
             with open(self.output_file_retreive, "wb") as file:
                 file.write(message_retrieved.encode('utf-8'))
+        else:
+            msg_success(f"Message: {message_retrieved}")
 
     def load_angr_project(self: Capierre, filepath: str):
         try:
