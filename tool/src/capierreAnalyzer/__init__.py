@@ -185,7 +185,7 @@ class CapierreAnalyzer:
             index = eh_frame_block.find(capierre_magic.MAGIC_NUMBER_START)
             if index == -1:
                 msg_warning("Message not found within the binary.")
-                sys.exit(1)
+                return
 
             alignment_padding: int = eh_frame_block[index - 1]
             index = index - (5 + len(capierre_magic.CIE_INFORMATION))

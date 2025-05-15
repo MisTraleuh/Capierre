@@ -537,7 +537,7 @@ class Ui_MainWindow(object):
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
 
-    def hide_action(self):
+    def detect_correct_type(self, box_value_file: str) -> str:
 
         magic_numbers = {
             "png": bytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
@@ -551,11 +551,6 @@ class Ui_MainWindow(object):
             "cpp": ".cpp",
             "png": ".png"
         }
-
-        box_value_file: str = self.lineEdit.text()
-        box_value_sentence: str = self.lineEdit_2.text()
-        box_value_password: str = self.lineEdit_3.text()
-        value: str = str()
 
         with open(box_value_file, "rb") as fd:
             file_head = fd.read()
@@ -573,9 +568,21 @@ class Ui_MainWindow(object):
 
             if value == "":
                 self.show_info_failure()
-                return
 
-        if value != "png":
+        return value
+
+
+    def hide_action(self):
+
+
+        box_value_file: str = self.lineEdit.text()
+        box_value_sentence: str = self.lineEdit_2.text()
+        box_value_password: str = self.lineEdit_3.text()
+        value: str = self.detect_correct_type(box_value_file)
+
+        if value == "":
+            return
+        elif value != "png":
             capierreObject = Capierre(
                 box_value_file,
                 value,
@@ -599,20 +606,14 @@ class Ui_MainWindow(object):
         self.lineEdit_3.setText("")
 
     def retrieve_action(self):
-        extension_files = {
-            "png": ".png"
-        }
 
         box_value_file: str = self.lineEdit_4.text()
         box_value_password: str = self.lineEdit_5.text()
-        value: str = str()
+        value: str = self.detect_correct_type(box_value_file)
 
-        for name, end in extension_files.items():
-            if box_value_file.endswith(end):
-                value = name
-                break
-        
         if value == "":
+            return
+        elif value != "png":
             capierreObject = CapierreAnalyzer(
                 box_value_file,
                 "MESSAGE",
