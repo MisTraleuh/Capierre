@@ -13,7 +13,6 @@ from utils.messages import msg_error, msg_success, msg_warning
 
 def conceal_image(capierreParsing: CapierreParsing):
     image = Image.open(capierreParsing.file)
-    print(capierreParsing.binary_file)
     if (capierreParsing.binary_file == ""):
         capierreParsing.binary_file = "Modified Image." + capierreParsing.type_file
     capierreObject = CapierreImage(
