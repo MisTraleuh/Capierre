@@ -552,6 +552,8 @@ class Ui_MainWindow(object):
             "png": ".png"
         }
 
+        value: str = str()
+
         with open(box_value_file, "rb") as fd:
             file_head = fd.read()
 
@@ -562,7 +564,7 @@ class Ui_MainWindow(object):
 
         if value == "":
             for name, end in extension_files.items():
-                if self.file.endswith(end):
+                if box_value_file.endswith(end):
                     value = name
                     break
 

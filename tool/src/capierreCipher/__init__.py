@@ -37,7 +37,6 @@ class CapierreCipher:
                 return str(output[:-output[-1] - 1], "utf-8")
             padding: int = 16 - len(inputBytes) % 16
             inputBytes = b'\x00' * 16 + inputBytes + b''.join([i.to_bytes(1, 'big') for i in range(padding)])
-            print(len(inputBytes))
             return str(b64encode(cipher.encrypt(inputBytes)), 'ascii')
         except Exception as e:
             msg_error(f"Cipher error: {e}")
