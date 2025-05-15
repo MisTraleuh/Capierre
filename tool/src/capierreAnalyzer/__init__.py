@@ -101,27 +101,37 @@ class CapierreAnalyzer:
         @param filepath: `str` - The path to the binary file.
         @return `str` - The sentence.
         """
-        size: int = 0
-        instruction_list, text_section = self.load_angr_project(self.filepath)
-        
-        bits = functools.reduce(lambda s, ins: s + '1' if ins.mnemonic ==
-            'add' else s + '0', instruction_list, '')
-        size = int.from_bytes(''.join(
-            [chr(int(bits[i:i+8], 2)) for i in range(0, 32, 8)]
-        ).encode(), 'big')
-        message_retrieved = ''.join(
-            [chr(int(bits[i:i+8], 2)) for i in range(32, len(bits[0:size * 8]), 8)]
-        ).encode('utf-8')
-        decrypted_message = self.cipher_information(message_retrieved, True)
-        if self.output_file_retreive != '':
-            with open(self.output_file_retreive, "wb") as file:
-                file.write(decrypted_message.encode('utf-8'))
-                file.close()
-            msg_success(
-                f"Message retrieved and saved in {self.output_file_retreive}"
-            )
-        else:
-            msg_success(f"Message: {decrypted_message}")
+
+        try:
+            size: int = 0
+            instruction_list, text_section = self.load_angr_project(self.filepath)
+
+            if instruction_list == []:
+                msg_error("FATAL: Instruction list is empty.")
+                return
+            bits = functools.reduce(lambda s, ins: s + '1' if ins.mnemonic ==
+                'add' else s + '0', instruction_list, '')
+
+            size = int.from_bytes(''.join(
+                [chr(int(bits[i:i+8], 2)) for i in range(0, 32, 8)]
+            ).encode(), 'big')
+
+            message_retrieved = ''.join(
+                [chr(int(bits[i:i+8], 2)) for i in range(32, len(bits[0:size * 8]), 8)]
+            ).encode('utf-8')
+
+            decrypted_message = self.cipher_information(message_retrieved, True)
+            if self.output_file_retreive != '':
+                with open(self.output_file_retreive, "wb") as file:
+                    file.write(decrypted_message.encode('utf-8'))
+                    file.close()
+                msg_success(
+                    f"Message retrieved and saved in {self.output_file_retreive}"
+                )
+            else:
+                msg_success(f"Message: {decrypted_message}")
+        except:
+            msg_error("FATAL: An exception occured")
 
     def image_support(self: CapierreAnalyzer) -> None:
         extract_object: object = CapierreImage(self.filepath, 654341)
