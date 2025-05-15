@@ -53,18 +53,16 @@ class CapierreParsing:
         # https://stackoverflow.com/a/61065546/23570806
         magic_numbers = {
             "png": bytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
-            "jpg": bytes([0xFF, 0xD8, 0xFF]),
-            "webp": bytes([0x52, 0x49, 0x46, 0x46]),
-            "gif": bytes([0x47, 0x49, 0x46, 0x38, 0x37, 0x61]),
-            "gif": bytes([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]),
             "elf": bytes([0x7F, 0x45, 0x4C, 0x46]),
             "mach-o": bytes([0xCF, 0xFA, 0xED, 0xFE]),
             "macho-o-universal": bytes([0xCA, 0xFE, 0xBA, 0xBE]),
         }
+
         extension_files = {
             "c": ".c",
             "cpp": ".cpp",
         }
+
         try:
             if self.file is None:
                 raise FileNotFoundError()

@@ -14,6 +14,7 @@ sys.path.append('../tool/src/')
 from capierre import Capierre
 from capierreAnalyzer import CapierreAnalyzer
 from capierreImage import CapierreImage
+from capierreParsing import CapierreParsing
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -537,6 +538,14 @@ class Ui_MainWindow(object):
         msg.exec_()
 
     def hide_action(self):
+
+        magic_numbers = {
+            "png": bytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
+            "elf": bytes([0x7F, 0x45, 0x4C, 0x46]),
+            "mach-o": bytes([0xCF, 0xFA, 0xED, 0xFE]),
+            "macho-o-universal": bytes([0xCA, 0xFE, 0xBA, 0xBE]),
+        }
+
         extension_files = {
             "c": ".c",
             "cpp": ".cpp",
@@ -547,17 +556,26 @@ class Ui_MainWindow(object):
         box_value_sentence: str = self.lineEdit_2.text()
         box_value_password: str = self.lineEdit_3.text()
         value: str = str()
-        #value: str = "c" if (box_value_file[-1] == 'c') else "cpp"
 
-        for name, end in extension_files.items():
-            if box_value_file.endswith(end):
+        with open(box_value_file, "rb") as fd:
+            file_head = fd.read()
+
+        for name, magic in magic_numbers.items():
+            if file_head.startswith(magic):
                 value = name
                 break
-        
+
         if value == "":
-            self.show_info_failure()
-            return
-        elif value != "png":
+            for name, end in extension_files.items():
+                if self.file.endswith(end):
+                    value = name
+                    break
+
+            if value == "":
+                self.show_info_failure()
+                return
+
+        if value != "png":
             capierreObject = Capierre(
                 box_value_file,
                 value,

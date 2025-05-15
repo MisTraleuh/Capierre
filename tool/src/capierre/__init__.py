@@ -58,7 +58,7 @@ class Capierre:
             msg_error("You must supply a password.")
             return
         self.sentence = CapierreCipher.cipher(
-            self.sentence.encode('ascii'), self.password, decrypt=decrypt
+            self.sentence.encode('utf-8'), self.password, decrypt=decrypt
         )
 
     def image_support(self: Capierre) -> None:
@@ -83,7 +83,7 @@ class Capierre:
         }
 
         extension_files_image = [
-            "png", "jpg", "jpeg", "webp", "gif", "apng", "svg", "pjpeg", "jfif", "pjp", "avif"
+            "png",
         ]
 
         msg_info(f"Hidden sentence: {self.sentence}")
@@ -94,8 +94,6 @@ class Capierre:
             self.image_support()
         else:
             self.hide_in_compiled_binaries(self.file, self.sentence)
-#            msg_error("File not supported")
-#            sys.exit(1)
 
     def retrieve_int_byte(self: Capierre, data: int, shift: int, size: int):
         """
@@ -144,7 +142,6 @@ class Capierre:
             (bit and instruction.mnemonic == 'sub') or
             (not bit and instruction.mnemonic == 'add')
         ):
-            print(instruction.operands[1])
             args = instruction.op_str.split(', ')
             immediate = -int(args[1], 16)
 

@@ -37,6 +37,7 @@ class CapierreAnalyzer:
         if self.output_file_retreive != '':
             with open(self.output_file_retreive, "wb") as file:
                 file.write(message_retrieved.encode('utf-8'))
+
     def load_angr_project(self: Capierre, filepath: str):
         try:
             capierre_magic = CapierreMagic()
@@ -109,17 +110,18 @@ class CapierreAnalyzer:
             [chr(int(bits[i:i+8], 2)) for i in range(0, 32, 8)]
         ).encode(), 'big')
         message_retrieved = ''.join(
-            [chr(int(bits[i:i+8], 2)) for i in range(32, len(bits), 8)]
-        )
+            [chr(int(bits[i:i+8], 2)) for i in range(32, len(bits[0:size * 8]), 8)]
+        ).encode('utf-8')
+        decrypted_message = self.cipher_information(message_retrieved, True)
         if self.output_file_retreive != '':
             with open(self.output_file_retreive, "wb") as file:
-                file.write(message_retrieved[0:size].encode('utf-8'))
+                file.write(decrypted_message.encode('utf-8'))
                 file.close()
             msg_success(
                 f"Message retrieved and saved in {self.output_file_retreive}"
             )
         else:
-            msg_success(f"Message: {message_retrieved}")
+            msg_success(f"Message: {decrypted_message}")
 
     def image_support(self: CapierreAnalyzer) -> None:
         extract_object: object = CapierreImage(self.filepath, 654341)

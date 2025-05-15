@@ -71,11 +71,6 @@ def main():
             retrieve_binary(capierreParsing)
         else:
             retrieve_image(capierreParsing)
-        capierreAnalyzer = CapierreAnalyzer(
-            capierreParsing.file,
-            capierreParsing.output_file_retreive,
-            capierreParsing.password,
-        )
 
 if __name__ == "__main__":
     main()
