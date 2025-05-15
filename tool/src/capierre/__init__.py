@@ -37,7 +37,7 @@ class Capierre:
         self: Capierre,
         file: str,
         type_file: str,
-        sentence: str,
+        sentence: bytes,
         password: str,
         binary_file: str = "capierre_binary",
     ) -> None:
@@ -58,7 +58,7 @@ class Capierre:
             msg_error("You must supply a password.")
             return
         self.sentence = CapierreCipher.cipher(
-            self.sentence.encode('utf-8'), self.password, decrypt=decrypt
+            self.sentence, self.password, decrypt=decrypt
         )
 
     def image_support(self: Capierre) -> None:
@@ -69,7 +69,7 @@ class Capierre:
             return
         hide_object: object = CapierreImage(image, 42)
 
-        hide_object.hide(bytes(self.sentence, 'utf-8'))
+        hide_object.hide(self.sentence)
         msg_success(f"Message hidden successfully")
 
     def hide_information(self: Capierre) -> None:
@@ -106,18 +106,18 @@ class Capierre:
         return (data >> size - shift - 1) & 0x1
 
 
-    def access_bit(self: Capierre, data: str, num: int):
+    def access_bit(self: Capierre, data: bytes, num: int):
         """
         Useful function to access a particular bit.
 
-        @param data: `str` - data.
+        @param data: `bytes` - data.
         @param num: `int` - number.
         @return `int`
         """
         base = int(num // 8)
         shift = 7 - int(num % 8)
 
-        return (ord(data[base]) >> shift) & 0x1
+        return (data[base] >> shift) & 0x1
 
     def compile_asm(
         self: Capierre,
@@ -211,16 +211,19 @@ class Capierre:
     def hide_in_compiled_binaries(
         self: Capierre,
         filepath: str,
-        sentence_to_hide: str
+        sentence_to_hide: bytes
     ):
         """
         Hides the current sentence into the already compiled binary.
 
         @param filepath: `str` - The path to the binary file.
-        @param sentence_to_hide: `str` - The sentence to hide.
+        @param sentence_to_hide: `bytes` - The sentence to hide.
         """
         instruction_list, text_section = self.load_angr_project(filepath)
 
+        if (len(instruction_list) < (text_section.memsize + (text_section.memsize % 16) + 1) * 8):
+            msg_error(f"FATAL: Binary has {len(instruction_list)} bits available but at least {(text_section.memsize + (text_section.memsize % 16) + 1) * 8} are required.")
+            return
         with open(filepath, 'r+b') as file:
             read_bin = file.read()
             text_block = bytearray(
@@ -229,6 +232,7 @@ class Capierre:
                     text_section.memsize
                 ]
             )
+
             bitstream: list[int] = [
                 self.access_bit(sentence_to_hide, i) for i in range(
                     len(sentence_to_hide) * 8
@@ -263,17 +267,17 @@ class Capierre:
 
     def create_malicious_file(
         self: Capierre,
-        sentence_to_hide: str
+        sentence_to_hide: bytes
     ) -> tuple[str, str, bytes]:
         """
         This function creates a malicious file with the sentence to hide.
 
-        @param sentence_to_hide: `str | bytes` - The sentence to hide.
+        @param sentence_to_hide: `bytes` - The sentence to hide.
         @return `Tuple[str, str]` - The path of the malicious file and the path
         of the sentence to hide.
         """
         capierre_magic = CapierreMagic()
-        data = sentence_to_hide
+        data = bytearray(sentence_to_hide)
         section = capierre_magic.SECTION_HIDE
 
         information_to_hide = b""
@@ -286,7 +290,6 @@ class Capierre:
 
         # https://stackoverflow.com/a/8577226/23570806
         sentence_to_hide_fd = tempfile.NamedTemporaryFile(delete=False)
-        data = bytearray(data.encode())
         rand_step: int = random.randint(1, 16)
         i: int = 0
 
@@ -524,7 +527,7 @@ class Capierre:
     def compile_code(
         self: Capierre,
         file_path: str,
-        sentence_to_hide: str,
+        sentence_to_hide: bytes,
         compilator_name: str
     ) -> None:
         """

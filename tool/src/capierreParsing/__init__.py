@@ -15,7 +15,7 @@ class CapierreParsing:
         self.version = "1.0.0"
         self.file = str()
         self.type_file = str()
-        self.sentence = str()
+        self.sentence = bytes()
         self.seed = 42
         self.password = str()
         self.binary_file = "capierre_binary"
@@ -144,13 +144,13 @@ class CapierreParsing:
             return argv[
                 (argv.index("--sentence") if "--sentence" in argv else argv.index("-s"))
                 + 1
-            ]
+            ].encode('utf-8')
         if any(arg in argv for arg in ["--file-to-hide", "-fth"]):
-            file_index = self.get_args(("--file-to-hide", "-fth"))
+            file_index = self.get_args(("str()--file-to-hide", "-fth"))
             if os.path.exists(file_index) == False:
                 msg_error(f"File not found: {file_index}")
                 exit(1)
-            with open(file_index, "r") as file:
+            with open(file_index, "rb") as file:
                 return file.read()
         return str()
 

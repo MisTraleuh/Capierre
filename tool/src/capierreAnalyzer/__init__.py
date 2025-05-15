@@ -32,11 +32,11 @@ class CapierreAnalyzer:
             retrieved_content, self.password, decrypt=decrypt
         )
 
-    def handle_decrypted(self: CapierreAnalyzer, message_retrieved: str):
+    def handle_decrypted(self: CapierreAnalyzer, message_retrieved: str | bytes):
 
         if self.output_file_retreive != '':
             with open(self.output_file_retreive, "wb") as file:
-                file.write(message_retrieved.encode('utf-8'))
+                file.write(message_retrieved)
         else:
             msg_success(f"Message: {message_retrieved}")
 
