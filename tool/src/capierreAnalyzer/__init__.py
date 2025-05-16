@@ -26,8 +26,8 @@ class CapierreAnalyzer:
 
     def cipher_information(self: CapierreAnalyzer, *, retrieved_content: bytes, decrypt: bool) -> str:
         if len(self.password) == 0:
-            msg_error("You must supply a password.")
-            return
+            #msg_error("You must supply a password.")
+            return retrieved_content
         return CapierreCipher.cipher(
             retrieved_content, self.password, decrypt=decrypt
         )
@@ -125,13 +125,13 @@ class CapierreAnalyzer:
             decrypted_message = self.cipher_information(retrieved_content=message_retrieved.encode('utf-8'), decrypt=True)
             if self.output_file_retreive != '':
                 with open(self.output_file_retreive, "wb") as file:
-                    file.write(decrypted_message.encode('utf-8'))
+                    file.write(decrypted_message)
                     file.close()
                 msg_success(
                     f"Message retrieved and saved in {self.output_file_retreive}"
                 )
             else:
-                msg_success(f"Message: {decrypted_message}")
+                msg_success(f"Message: {decrypted_message.decode("utf-8")}")
         except Exception as e:
             raise e
 

@@ -56,7 +56,7 @@ class Capierre:
         encrypt.
         """
         if len(self.password) == 0:
-            msg_error("You must supply a password.")
+            #msg_error("You must supply a password.")
             return
         self.sentence = CapierreCipher.cipher(
             self.sentence, self.password, decrypt=decrypt
@@ -211,9 +211,6 @@ class Capierre:
         """
         instruction_list, text_section = self.load_angr_project(filepath)
 
-        if (len(instruction_list) < (text_section.memsize + (text_section.memsize % 16) + 1) * 8):
-            msg_error(f"FATAL: Binary has {len(instruction_list)} bits available but at least {(text_section.memsize + (text_section.memsize % 16) + 1) * 8} are required.")
-            return
         with open(filepath, 'r+b') as file:
             read_bin = file.read()
             text_block = bytearray(
@@ -229,7 +226,11 @@ class Capierre:
                 )
             ]
             bitstream = [self.retrieve_int_byte(len(sentence_to_hide), i, 32) for i in range(0, 32)] + bitstream
-            
+
+            if (len(instruction_list) < len(bitstream)):
+                msg_error(f"FATAL: Binary has {len(instruction_list)} bits available but at least {len(bitstream)} are required.")
+                return
+
             threads = ThreadPool(os.cpu_count())
             instructions: tuple[tuple[int, bytes]] = tuple(filter(
                 lambda ins: ins is not None,

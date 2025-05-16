@@ -3,6 +3,6 @@
     "title": "Binary Extraction",
     "description": "Find the hidden message in this binary file.",
     "hint": "Try using the extract feature with default settings.",
-    "file": "challenge1.png",
+    "file": "PsychEngine",
     "flag": "stego_is_fun_assembly_is_not"
 }
