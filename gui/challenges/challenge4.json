@@ -3,6 +3,6 @@
     "title": "Binary Insertion",
     "description": "Upload the binary file, and hide the phrase 'rickroll' into.",
     "hint": "Try using the hide feature with default settings.",
-    "file": "Rickroll.jpg",
+    "file": "Rickroll.png",
     "upload_check": true
 }
