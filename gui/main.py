@@ -370,7 +370,7 @@ class ChallengeWidget(QWidget):
         if not submitted_file:
             return
 
-        expected_file_path = os.path.join('./challenge_files', self.challenge.get('file'))
+        expected_file_path = os.path.join('./expected_output', self.challenge.get('file'))
 
         # Vérifie l'égalité (contenu binaire) ou appelle ta fonction de comparaison
         try:
