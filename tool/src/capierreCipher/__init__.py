@@ -29,7 +29,7 @@ class CapierreCipher:
 
             if decrypt:
                 # https://stackoverflow.com/questions/40729276/base64-incorrect-padding-error-using-python
-                value: bytes = inputBytes
+                value: str = inputBytes.decode()
                 if (len(value) % 4) != 0:
                     value += b'=' * (4 - (len(value) % 4))
                 inputBytes = b64decode(value)

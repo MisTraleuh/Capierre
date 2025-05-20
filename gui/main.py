@@ -11,6 +11,7 @@ from capierre import Capierre
 from capierreAnalyzer import CapierreAnalyzer
 from capierreImage import CapierreImage
 from capierreParsing import CapierreParsing
+from utils.messages import msg_success, msg_error, msg_info, msg_warning
 
 
 class MainWindow(QMainWindow):
@@ -114,6 +115,9 @@ class MainWindow(QMainWindow):
 
         value: str = str()
 
+
+        if os.path.exists(box_value_file) == False:
+            return ""
         with open(box_value_file, "rb") as fd:
             file_head = fd.read()
 

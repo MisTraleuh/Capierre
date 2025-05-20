@@ -22,7 +22,6 @@ from capierreInterface import *
 from capierreError import *
 from utils.messages import msg_success, msg_error, msg_info, msg_warning
 
-
 class Capierre:
     """
     This class is responsible for hiding information in files.
@@ -56,7 +55,6 @@ class Capierre:
         encrypt.
         """
         if len(self.password) == 0:
-            #msg_error("You must supply a password.")
             return
         self.sentence = CapierreCipher.cipher(
             self.sentence, self.password, decrypt=decrypt
@@ -76,7 +74,6 @@ class Capierre:
             "png",
         ]
 
-        msg_info(f"Hidden sentence: {self.sentence}")
         self.cipher_information(decrypt=False)
         if self.type_file in extension_files_compile:
             self.compile_code(self.file, self.sentence, extension_files_compile[self.type_file])
@@ -93,7 +90,7 @@ class Capierre:
         @param num: `int` - number.
         @return `int`
         """
-        return (data >> size - shift - 1) & 0x1
+        return (data >> (size - shift - 1)) & 0x1
 
 
     def access_bit(self: Capierre, data: bytes, num: int):
@@ -166,10 +163,11 @@ class Capierre:
 
             # WARN: Pylint doesn't recognise the angr library's definitions.
             # pylint: disable=E1101
+            
             text_section = None
 
             for section in project.loader.main_object.sections:
-                if section.name == capierre_magic.SECTION_HIDE_TEXT or section.name == "__text":
+                if section.name == capierre_magic.SECTION_HIDE_TEXT:
                     text_section = section
                     break
             if text_section is None:
@@ -180,12 +178,14 @@ class Capierre:
             capstoneProjModule = project.arch.capstone
             instruction_list: list = []
 
+            valid_func_list.sort(key=lambda x: x.rebased_addr)
             for func in valid_func_list:
                 code = project.loader.memory.load(func.rebased_addr, func.size)
                 instruction_list += list(filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, func.rebased_addr)))
 
-            return instruction_list, text_section
-
+            instruction_list_wrapped = {InstructionSetWrapper(ins) for ins in instruction_list}
+            instruction_list_unique = [wrapped_ins.ins for wrapped_ins in instruction_list_wrapped]
+            return instruction_list_unique, text_section
         except cle.errors.CLECompatibilityError:
             msg_error("The chosen file is incompatible")
             sys.exit(1)

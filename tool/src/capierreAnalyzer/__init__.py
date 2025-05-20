@@ -11,7 +11,6 @@ from capierreCipher import CapierreCipher
 from capierreImage import CapierreImage
 from capierreInterface import *
 
-
 class CapierreAnalyzer:
     """
     This class is responsible for analyzing the file.
@@ -24,9 +23,8 @@ class CapierreAnalyzer:
         self.output_file_retreive = output_file_retreive
         self.password = password
 
-    def cipher_information(self: CapierreAnalyzer, *, retrieved_content: bytes, decrypt: bool) -> str:
+    def cipher_information(self: CapierreAnalyzer, *, retrieved_content: bytes, decrypt: bool) -> bytes:
         if len(self.password) == 0:
-            #msg_error("You must supply a password.")
             return retrieved_content
         return CapierreCipher.cipher(
             retrieved_content, self.password, decrypt=decrypt
@@ -65,11 +63,14 @@ class CapierreAnalyzer:
             capstoneProjModule = project.arch.capstone
             instruction_list: list = []
 
+            valid_func_list.sort(key=lambda x: x.rebased_addr)
             for func in valid_func_list:
                 code = project.loader.memory.load(func.rebased_addr, func.size)
                 instruction_list += list(filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, func.rebased_addr)))
 
-            return instruction_list, text_section
+            instruction_list_wrapped = {InstructionSetWrapper(ins) for ins in instruction_list}
+            instruction_list_unique = [wrapped_ins.ins for wrapped_ins in instruction_list_wrapped]
+            return instruction_list_unique, text_section
         except cle.errors.CLECompatibilityError:
             msg_error("The chosen file is incompatible")
             sys.exit(1)
@@ -120,9 +121,11 @@ class CapierreAnalyzer:
 
             message_retrieved = ''.join(
                 [chr(int(bits[i:i+8], 2)) for i in range(32, len(bits), 8)]
-            )[0:size]
+            )[0:size].encode()
 
-            decrypted_message = self.cipher_information(retrieved_content=message_retrieved.encode('utf-8'), decrypt=True)
+            decrypted_message: bytes = self.cipher_information(retrieved_content=message_retrieved, decrypt=True)
+
+            print(decrypted_message)
             if self.output_file_retreive != '':
                 with open(self.output_file_retreive, "wb") as file:
                     file.write(decrypted_message)
