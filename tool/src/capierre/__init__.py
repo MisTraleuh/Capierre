@@ -252,14 +252,13 @@ class Capierre:
                 raise NonexistentTextSection()
 
             end_text_section: int = text_section.virtual_address + text_section.size
-            valid_func_list: deque = deque(sorted(filter(lambda sym: sym.imported == False and sym.is_function == True and text_section.virtual_address <= sym.value < end_text_section and 0 < sym.size, project.symbols), key=lambda sym: sym.value))
+            valid_func_list: deque = deque(filter(lambda sym: sym.imported == False and sym.is_function == True and text_section.virtual_address <= sym.value < end_text_section and 0 < sym.size, project.symbols))
             instruction_list: list = []
+            tmp_unduplicated: list = []
             instruction_list_unique: list = []
             len_sentence: int = len(self.sentence) * 8 + 32
 
-
-            while 0 < len(valid_func_list) and len(instruction_list_unique) < len_sentence:
-                instruction_list = instruction_list_unique
+            while 0 < len(valid_func_list) and len(instruction_list) < len_sentence:
                 for func in list(valid_func_list):
                     if len_sentence <= len(instruction_list):
                         break
@@ -267,9 +266,10 @@ class Capierre:
                     instruction_list += list(map(InstructionSetWrapper, filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, func.value))))
                     valid_func_list.popleft()
 
-                instruction_list_unique = [wrapped.ins for wrapped in dict.fromkeys(instruction_list)]
+                instruction_list = list(dict.fromkeys(instruction_list))
 
-            print(len(instruction_list_unique))
+            instruction_list_unique = [wrapped.ins for wrapped in instruction_list]
+
             return instruction_list_unique, text_section.offset, text_section.size, text_section.virtual_address
 
         except cle.errors.CLECompatibilityError:

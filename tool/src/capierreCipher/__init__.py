@@ -22,7 +22,7 @@ class CapierreCipher:
 
         @return Returns the encrypted/decrypted message (encrypted message encoded in base64).
         """
-        password_hash = sha256(bytes(password, "utf-8")).digest()
+        password_hash = sha256(bytes(password, 'utf-8')).digest()
 
         try:
             cipher = AES.new(password_hash, mode=AES.MODE_CBC)
