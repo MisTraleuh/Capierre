@@ -56,6 +56,7 @@ class CapierreParsing:
             "elf": bytes([0x7F, 0x45, 0x4C, 0x46]),
             "mach-o": bytes([0xCF, 0xFA, 0xED, 0xFE]),
             "macho-o-universal": bytes([0xCA, 0xFE, 0xBA, 0xBE]),
+            "pe": bytes([0x4D, 0x5A])
         }
 
         extension_files = {

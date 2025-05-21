@@ -14,7 +14,9 @@ import random
 import angr
 import capstone
 import cle
+import lief
 from PIL import Image
+from collections import deque
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
 from capierreImage import CapierreImage
@@ -149,13 +151,57 @@ class Capierre:
                 if len(binary) > 4096:
                     binary = binary[4096:]
 
-            return (instruction.address, binary)
+            return (instruction.address, list(binary))
         msg_error('[!] Invalid operand.')
         return None
+
+
+    def get_correct_architecture(self, file_path: str):
+        binary = lief.parse(file_path)
+        cs_arch = None
+        cs_mode = None
+
+        if isinstance(binary, lief.MachO.Binary):
+            cpu_type = binary.header.cpu_type
+            if cpu_type == lief.MachO.CPU_TYPES.X86:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
+            elif cpu_type == lief.MachO.CPU_TYPES.X86_64:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
+            else:
+                raise ValueError(f"Unsupported Mach-O CPU type: {cpu_type}")
+
+        elif isinstance(binary, lief.ELF.Binary):
+            machine = binary.header.machine_type
+            if machine == lief.ELF.ARCH.I386:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
+            elif machine == lief.ELF.ARCH.X86_64:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
+            else:
+                raise ValueError(f"Unsupported ELF machine type: {machine}")
+
+        elif isinstance(binary, lief.PE.Binary):
+            machine = binary.header.machine
+            if machine == lief.PE.MACHINE_TYPES.I386:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
+            elif machine == lief.PE.MACHINE_TYPES.AMD64:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
+            else:
+                raise ValueError(f"Unsupported PE machine type: {machine}")
+
+        else:
+            raise TypeError("Unsupported binary format")
+
+        md = capstone.Cs(cs_arch, cs_mode)
+        md.detail = True
+
+        return md, binary
+
 
     def load_angr_project(self: Capierre, filepath: str):
         try:
             capierre_magic = CapierreMagic()
+
+            """
             project = angr.Project(
                 filepath,
                 load_options={'auto_load_libs': False}
@@ -167,36 +213,81 @@ class Capierre:
             text_section = None
 
             for section in project.loader.main_object.sections:
-                if section.name == capierre_magic.SECTION_HIDE_TEXT:
+                if section.name.startswith(capierre_magic.SECTION_HIDE_TEXT):
                     text_section = section
                     break
+
             if text_section is None:
                 raise NonexistentTextSection()
 
             end_text_section: int = text_section.vaddr + text_section.memsize
             valid_func_list: list = list(filter(lambda sym: sym.is_import == False and sym.is_function == True and text_section.vaddr <= sym.rebased_addr < end_text_section and 0 < sym.size, project.loader.main_object.symbols))
             capstoneProjModule = project.arch.capstone
-            instruction_list: list = []
+            instruction_list: set = set()
+            len_sentence: int = len(self.sentence) * 8 + 32
 
-            valid_func_list.sort(key=lambda x: x.rebased_addr)
             for func in valid_func_list:
+                if len_sentence <= len(instruction_list):
+                    break
                 code = project.loader.memory.load(func.rebased_addr, func.size)
-                instruction_list += list(filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, func.rebased_addr)))
+                instruction_list |= set(map(InstructionSetWrapper, filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, func.rebased_addr))))
 
-            instruction_list_wrapped = {InstructionSetWrapper(ins) for ins in instruction_list}
-            instruction_list_unique = [wrapped_ins.ins for wrapped_ins in instruction_list_wrapped]
-            return instruction_list_unique, text_section
+            instruction_list_unique = [wrapped_ins.ins for wrapped_ins in instruction_list]
+            """
+
+
+            capstoneProjModule, project = self.get_correct_architecture(filepath)
+
+            # WARN: Pylint doesn't recognise the angr library's definitions.
+            # pylint: disable=E1101
+            
+            text_section = None
+
+            for section in project.sections:
+                if section.name.startswith(capierre_magic.SECTION_HIDE_TEXT):
+                    text_section = section
+                    break
+
+            if text_section is None:
+                raise NonexistentTextSection()
+
+            end_text_section: int = text_section.virtual_address + text_section.size
+            valid_func_list: deque = deque(sorted(filter(lambda sym: sym.imported == False and sym.is_function == True and text_section.virtual_address <= sym.value < end_text_section and 0 < sym.size, project.symbols), key=lambda sym: sym.value))
+            instruction_list: list = []
+            instruction_list_unique: list = []
+            len_sentence: int = len(self.sentence) * 8 + 32
+
+
+            while 0 < len(valid_func_list) and len(instruction_list_unique) < len_sentence:
+                instruction_list = instruction_list_unique
+                for func in list(valid_func_list):
+                    if len_sentence <= len(instruction_list):
+                        break
+                    code = project.get_content_from_virtual_address(func.value, func.size)
+                    instruction_list += list(map(InstructionSetWrapper, filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, func.value))))
+                    valid_func_list.popleft()
+
+                instruction_list_unique = [wrapped.ins for wrapped in dict.fromkeys(instruction_list)]
+
+            print(len(instruction_list_unique))
+            return instruction_list_unique, text_section.offset, text_section.size, text_section.virtual_address
+
         except cle.errors.CLECompatibilityError:
             msg_error("The chosen file is incompatible")
-            sys.exit(1)
+            return [], 0, 0, 0
         except cle.errors.CLEUnknownFormatError:
             msg_error("The file format is incompatible")
-            sys.exit(1)
+            return [], 0, 0, 0
         except cle.errors.CLEInvalidBinaryError:
             msg_error("The chosen binary file is incompatible")
-            sys.exit(1)
+            return [], 0, 0, 0
+        except NonexistentTextSection:
+            msg_error("The chosen binary file doesn't have a properly named text section.")
+            return [], 0, 0, 0
         except Exception as e:
             raise e
+            msg_error("An uncatalogued exception occured.")
+            return [], 0, 0, 0
 
     def hide_in_compiled_binaries(
         self: Capierre,
@@ -209,14 +300,18 @@ class Capierre:
         @param filepath: `str` - The path to the binary file.
         @param sentence_to_hide: `bytes` - The sentence to hide.
         """
-        instruction_list, text_section = self.load_angr_project(filepath)
+        instruction_list, text_section_offset, text_section_size, text_section_addr = self.load_angr_project(filepath)
+
+        if instruction_list == []:
+            msg_error("FATAL: Instruction list is empty.")
+            return
 
         with open(filepath, 'r+b') as file:
             read_bin = file.read()
             text_block = bytearray(
                 read_bin[
-                    text_section.offset:text_section.offset +
-                    text_section.memsize
+                    text_section_offset:text_section_offset +
+                    text_section_size
                 ]
             )
 
@@ -241,14 +336,14 @@ class Capierre:
 
             for instruction in instructions:
                 text_block[
-                    instruction[0] - text_section.vaddr:
-                    instruction[0] - text_section.vaddr +
+                    instruction[0] - text_section_addr:
+                    instruction[0] - text_section_addr +
                         len(instruction[1])
                 ] = instruction[1]
             read_bin = (
-                read_bin[:text_section.offset] +
-                text_block +
-                read_bin[text_section.offset + text_section.memsize:]
+                read_bin[:text_section_offset] +
+               text_block +
+                read_bin[text_section_offset + text_section_size:]
             )
 
             file.seek(0)

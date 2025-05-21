@@ -32,6 +32,7 @@ class CapierreCipher:
                 value: str = inputBytes.decode()
                 if (len(value) % 4) != 0:
                     value += b'=' * (4 - (len(value) % 4))
+                print(value)
                 inputBytes = b64decode(value)
                 output: bytes = cipher.decrypt(inputBytes)[16:] # Remove padding
                 return output[:-output[-1] - 1]
