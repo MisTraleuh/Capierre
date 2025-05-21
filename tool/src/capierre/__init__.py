@@ -163,9 +163,9 @@ class Capierre:
 
         if isinstance(binary, lief.MachO.Binary):
             cpu_type = binary.header.cpu_type
-            if cpu_type == lief.MachO.CPU_TYPES.X86:
+            if cpu_type == lief.MachO.Header.CPU_TYPE.X86:
                 cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
-            elif cpu_type == lief.MachO.CPU_TYPES.X86_64:
+            elif cpu_type == lief.MachO.Header.CPU_TYPE.X86_64:
                 cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
             else:
                 raise ValueError(f"Unsupported Mach-O CPU type: {cpu_type}")
@@ -181,9 +181,9 @@ class Capierre:
 
         elif isinstance(binary, lief.PE.Binary):
             machine = binary.header.machine
-            if machine == lief.PE.MACHINE_TYPES.I386:
+            if machine == lief.PE.Header.MACHINE_TYPES.I386:
                 cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
-            elif machine == lief.PE.MACHINE_TYPES.AMD64:
+            elif machine == lief.PE.Header.MACHINE_TYPES.AMD64:
                 cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
             else:
                 raise ValueError(f"Unsupported PE machine type: {machine}")
@@ -243,8 +243,12 @@ class Capierre:
             
             text_section = None
 
+            # This is done instead of calling get_section() because some binaries we tested had improperly named sections.
             for section in project.sections:
                 if section.name.startswith(capierre_magic.SECTION_HIDE_TEXT):
+                    text_section = section
+                    break
+                elif section.name.startswith('__text'):
                     text_section = section
                     break
 
@@ -252,11 +256,12 @@ class Capierre:
                 raise NonexistentTextSection()
 
             end_text_section: int = text_section.virtual_address + text_section.size
-            valid_func_list: deque = deque(filter(lambda sym: sym.imported == False and sym.is_function == True and text_section.virtual_address <= sym.value < end_text_section and 0 < sym.size, project.symbols))
             instruction_list: list = []
             tmp_unduplicated: list = []
             instruction_list_unique: list = []
             len_sentence: int = len(self.sentence) * 8 + 32
+
+            valid_func_list: deque = deque(filter(lambda sym: text_section.virtual_address <= sym.value < end_text_section and 0 < sym.size, project.functions))
 
             while 0 < len(valid_func_list) and len(instruction_list) < len_sentence:
                 for func in list(valid_func_list):
@@ -268,7 +273,7 @@ class Capierre:
 
                 instruction_list = list(dict.fromkeys(instruction_list))
 
-            instruction_list_unique = [wrapped.ins for wrapped in instruction_list]
+            instruction_list_unique = [wrapped.ins for wrapped in instruction_list[0:len_sentence]]
 
             return instruction_list_unique, text_section.offset, text_section.size, text_section.virtual_address
 

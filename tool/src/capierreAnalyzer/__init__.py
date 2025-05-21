@@ -48,9 +48,9 @@ class CapierreAnalyzer:
 
         if isinstance(binary, lief.MachO.Binary):
             cpu_type = binary.header.cpu_type
-            if cpu_type == lief.MachO.CPU_TYPES.X86:
+            if cpu_type == lief.MachO.Header.CPU_TYPE.X86:
                 cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
-            elif cpu_type == lief.MachO.CPU_TYPES.X86_64:
+            elif cpu_type == lief.MachO.Header.CPU_TYPE.X86_64:
                 cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
             else:
                 raise ValueError(f"Unsupported Mach-O CPU type: {cpu_type}")
@@ -66,9 +66,9 @@ class CapierreAnalyzer:
 
         elif isinstance(binary, lief.PE.Binary):
             machine = binary.header.machine
-            if machine == lief.PE.MACHINE_TYPES.I386:
+            if machine == lief.PE.Header.MACHINE_TYPES.I386:
                 cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
-            elif machine == lief.PE.MACHINE_TYPES.AMD64:
+            elif machine == lief.PE.Header.MACHINE_TYPES.AMD64:
                 cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
             else:
                 raise ValueError(f"Unsupported PE machine type: {machine}")
@@ -130,7 +130,7 @@ class CapierreAnalyzer:
 
             #Time complexity is O(4n) + O(2m) + O(~32 * 4) which bothers me quite a bit.
             end_text_section: int = text_section.virtual_address + text_section.size
-            valid_func_list: deque = deque(filter(lambda sym: sym.imported == False and sym.is_function == True and text_section.virtual_address <= sym.value < end_text_section and 0 < sym.size, project.symbols))
+            valid_func_list: deque = deque(filter(lambda sym: text_section.virtual_address <= sym.value < end_text_section and 0 < sym.size, project.functions))
             instruction_list: list = []
             instruction_list_unique: list = []
             tmp_queue: deque = deque([])
@@ -164,7 +164,7 @@ class CapierreAnalyzer:
 
                 instruction_list = list(dict.fromkeys(instruction_list))
 
-            instruction_list_unique = [wrapped.ins for wrapped in instruction_list]
+            instruction_list_unique = [wrapped.ins for wrapped in instruction_list[0:size]]
 
             return instruction_list_unique, size - 32
 
