@@ -90,6 +90,14 @@ class MainWindow(QMainWindow):
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
 
+    def show_info_messagebox_retrieve_failure(self): 
+        msg = QtWidgets.QMessageBox() 
+        msg.setIcon(QtWidgets.QMessageBox.Information) 
+        msg.setText("FAILURE: An error occured.\nIt means that you haven't selected the correct retrieval or conceal method.\nYou may try again.")
+        msg.setWindowTitle("Information MessageBox") 
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()
+
     def show_info_failure(self): 
         msg = QtWidgets.QMessageBox() 
         msg.setIcon(QtWidgets.QMessageBox.Information) 
@@ -181,34 +189,37 @@ class MainWindow(QMainWindow):
 
     def retrieve_action(self):
 
-        box_value_file: str = self.ui.lineEdit_4.text()
-        box_value_password: str = self.ui.lineEdit_5.text()
-        value: str = self.detect_correct_type(box_value_file)
+        try:
+            box_value_file: str = self.ui.lineEdit_4.text()
+            box_value_password: str = self.ui.lineEdit_5.text()
+            value: str = self.detect_correct_type(box_value_file)
 
-        if value == "":
-            return
-        elif value != "png":
-            capierreObject = CapierreAnalyzer(
-                box_value_file,
-                "MESSAGE",
-                box_value_password,
-            )
-            if (self.ui.checkBox_mode.isChecked() == False):
-                capierreObject.retrieve_message_from_binary()
+            if value == "":
+                return
+            elif value != "png":
+                capierreObject = CapierreAnalyzer(
+                    box_value_file,
+                    "MESSAGE",
+                    box_value_password,
+                )
+                if (self.ui.checkBox_mode.isChecked() == False):
+                    capierreObject.retrieve_message_from_binary()
+                else:
+                    capierreObject.read_in_compiled_binaries()
             else:
-                capierreObject.read_in_compiled_binaries()
-        else:
-            image = Image.open(box_value_file)
-            capierreObject = CapierreImage(
-                image,
-                "MESSAGE",
-                42
-            )
-            capierreObject.extract()
-            image.close()
-        self.show_info_messagebox_retrieve()
-        self.ui.lineEdit_4.setText("")
-        self.ui.lineEdit_5.setText("")
+                image = Image.open(box_value_file)
+                capierreObject = CapierreImage(
+                    image,
+                    "MESSAGE",
+                    42
+                )
+                capierreObject.extract()
+                image.close()
+            self.show_info_messagebox_retrieve()
+            self.ui.lineEdit_4.setText("")
+            self.ui.lineEdit_5.setText("")
+        except Exception as e:
+            self.show_info_messagebox_retrieve_failure()
 
     def on_retrieve_btn_1_toggled(self):
         self.ui.stackedWidget.setCurrentIndex(1)  # Retrieve page is at index 1

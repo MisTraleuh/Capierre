@@ -1,4 +1,7 @@
 from __future__ import annotations
+import logging
+logging.getLogger("angr").setLevel("CRITICAL")
+logging.getLogger("cle").setLevel("CRITICAL")
 import sys
 import angr
 import cle
@@ -27,11 +30,14 @@ class CapierreAnalyzer:
         self.password = password
 
     def cipher_information(self: CapierreAnalyzer, *, retrieved_content: bytes, decrypt: bool) -> bytes:
-        if len(self.password) == 0:
-            return retrieved_content
-        return CapierreCipher.cipher(
-            retrieved_content, self.password, decrypt=decrypt
-        )
+        try:
+            if len(self.password) == 0:
+                return retrieved_content
+            return CapierreCipher.cipher(
+                retrieved_content, self.password, decrypt=decrypt
+            )
+        except Exception as e:
+            raise e
 
     def handle_decrypted(self: CapierreAnalyzer, message_retrieved: str | bytes):
 
@@ -196,7 +202,7 @@ class CapierreAnalyzer:
         return (ord(data[base]) >> shift) & 0x1
 
 
-    def read_in_compiled_binaries(self: CapierreAnalyzer) -> str:
+    def read_in_compiled_binaries(self: CapierreAnalyzer) -> None:
         """
         Reads the sentence into the already compiled binary.
 
@@ -274,6 +280,9 @@ class CapierreAnalyzer:
                     eh_frame_section = section
                     break
 
+            if eh_frame_section is None:
+                raise NonexistentTextSection()
+
             with open(self.filepath, "rb") as binary:
                 eh_frame_block: bytes = binary.read()[
                     eh_frame_section.offset : eh_frame_section.offset
@@ -309,12 +318,12 @@ class CapierreAnalyzer:
 
         except cle.errors.CLECompatibilityError as e:
             msg_error("The chosen file is incompatible")
-            sys.exit(1)
+            raise e
         except cle.errors.CLEUnknownFormatError as e:
             msg_error("The file format is incompatible")
-            sys.exit(1)
+            raise e
         except cle.errors.CLEInvalidBinaryError as e:
             msg_error("The chosen binary file is incompatible")
-            sys.exit(1)
+            raise e
         except Exception as e:
             raise e

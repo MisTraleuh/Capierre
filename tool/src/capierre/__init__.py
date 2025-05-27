@@ -1,6 +1,9 @@
 # pylint: disable=C0114,C0103
 
 from __future__ import annotations
+import logging
+logging.getLogger("angr").setLevel("CRITICAL")
+logging.getLogger("cle").setLevel("CRITICAL")
 from multiprocessing.pool import ThreadPool
 import sys
 import subprocess
