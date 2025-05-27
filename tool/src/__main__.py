@@ -12,51 +12,63 @@ from capierreAnalyzer.__init__ import CapierreAnalyzer
 from utils.messages import msg_error, msg_success, msg_warning
 
 def conceal_image(capierreParsing: CapierreParsing):
-    image = Image.open(capierreParsing.file)
-    if (capierreParsing.binary_file == ""):
-        capierreParsing.binary_file = "Modified Image." + capierreParsing.type_file
-    capierreObject = CapierreImage(
-        image,
-        capierreParsing.binary_file,
-        capierreParsing.seed
-    )
-    capierreObject.hide(capierreParsing.sentence)
-    image.close()
+    try:
+        image = Image.open(capierreParsing.file)
+        if (capierreParsing.binary_file == ""):
+            capierreParsing.binary_file = "Modified Image." + capierreParsing.type_file
+        capierreObject = CapierreImage(
+            image,
+            capierreParsing.binary_file,
+            capierreParsing.seed
+        )
+        capierreObject.hide(capierreParsing.sentence)
+        image.close()
+    except Exception as e:
+        msg_error("An error occured.")
 
 def retrieve_image(capierreParsing: CapierreParsing):
-    image = Image.open(capierreParsing.file)
-    capierreObject = CapierreImage(
-        image,
-        capierreParsing.output_file_retreive,
-        capierreParsing.seed
-    )
-    retrieved_bytes = capierreObject.extract()
-    if (capierreParsing.output_file_retreive == ""):
-        msg_success(f'Message: {retrieved_bytes.decode('utf-8')}')
-    else:
-        msg_success(f'File extracted successfully')
-    image.close()
+    try:
+        image = Image.open(capierreParsing.file)
+        capierreObject = CapierreImage(
+            image,
+            capierreParsing.output_file_retreive,
+            capierreParsing.seed
+        )
+        retrieved_bytes = capierreObject.extract()
+        if (capierreParsing.output_file_retreive == ""):
+            msg_success(f'Message: {retrieved_bytes.decode('utf-8')}')
+        else:
+            msg_success(f'File extracted successfully')
+        image.close()
+    except Exception as e:
+        msg_error("An error occured.")
 
 def conceal_binary(capierreParsing: CapierreParsing):
-    capierreObject = Capierre(
-        capierreParsing.file,
-        capierreParsing.type_file,
-        capierreParsing.sentence,
-        capierreParsing.password,
-        capierreParsing.binary_file,
-    )
-    capierreObject.hide_information()
+    try:
+        capierreObject = Capierre(
+            capierreParsing.file,
+            capierreParsing.type_file,
+            capierreParsing.sentence,
+            capierreParsing.password,
+            capierreParsing.binary_file,
+        )
+        capierreObject.hide_information()
+    except Exception as e:
+        msg_error("An error occured.")
 
 def retrieve_binary(capierreParsing: CapierreParsing):
-    capierreAnalyzer = CapierreAnalyzer(
-        capierreParsing.file,
-        capierreParsing.output_file_retreive,
-        capierreParsing.password,
-    )
-    if (capierreParsing.mode == False):
-        capierreAnalyzer.retrieve_message_from_binary()
-    else:
-        capierreAnalyzer.read_in_compiled_binaries()
+    try:
+        capierreAnalyzer = CapierreAnalyzer(
+            capierreParsing.file,
+            capierreParsing.output_file_retreive,
+            capierreParsing.password,
+        )
+        if (capierreParsing.mode == False):
+            capierreAnalyzer.retrieve_message_from_binary()
+        else:
+            capierreAnalyzer.read_in_compiled_binaries()
+    except Exception as e:
+        msg_error("An error occured.")
 
 
 def main():
