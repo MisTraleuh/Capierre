@@ -267,11 +267,9 @@ class CapierreAnalyzer:
 
         try:
 
-            project = angr.Project(
-                self.filepath, load_options={"auto_load_libs": False}
-            )
+            project = lief.parse(self.filepath)
 
-            for section in project.loader.main_object.sections:
+            for section in project.sections:
                 if section.name == section_target:
                     eh_frame_section = section
                     break
@@ -279,7 +277,7 @@ class CapierreAnalyzer:
             with open(self.filepath, "rb") as binary:
                 eh_frame_block: bytes = binary.read()[
                     eh_frame_section.offset : eh_frame_section.offset
-                    + eh_frame_section.memsize
+                    + eh_frame_section.size
                 ]
                 binary.close()
             index = eh_frame_block.find(capierre_magic.MAGIC_NUMBER_START)
