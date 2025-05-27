@@ -1,19 +1,24 @@
-# 🛠️ Fonctionnement du tool Capierre
+## 🧠 Gestion des différents types de fichiers
 
-Vu que le tool peut à la fois prendre en paramètre:
-- un fichier `.c`, donc un fichier source C, pas encore compilé,
-- un fichier `.cpp` donc un fichier source C++, pas encore compilé,
-- un fichier `.exe` déjà compilé, (c'est à dire compilé sur Windows) qui est un fichier binaire exécutable qui peut être exécuté sur Windows, 
-- un fichier `.out` déjà compilé, (c'est à dire compilé sur Ubuntu) qui est un fichier binaire exécutable qui peut être exécuté sur Ubuntu.
-- un fichier `.app` déjà compilé, (c'est à dire compilé sur macOS) qui est un fichier binaire exécutable qui peut être exécuté sur macOS.
+Le **tool Capierre** peut prendre en charge plusieurs formats de fichiers, et adapte son comportement en fonction de celui-ci :
 
-Nous allons voir comment le tool s'adaptera à ces cas de figure.
+- **`.c`** : Fichier source C (non compilé)  
+- **`.cpp`** : Fichier source C++ (non compilé)  
+- **`.exe`** : Binaire compilé pour **Windows**  
+- **`.out`** : Binaire compilé pour **Linux (Ubuntu)**  
+- **`.app`** : Binaire compilé pour **macOS**
 
-## 📂 Fichier source
+---
 
-Pour les fichiers `.c` et `.cpp`, le tool va compiler le fichier source en un fichier binaire exécutable `.exe` sur Windows, `.out` sur Ubuntu et `.app` sur macOS. Ensuite, il va intégrer les informations dans le binaire exécutable et le rendre fonctionnel.
+## 📂 Fichiers source : `.c` et `.cpp`
 
-Pour se faire nous avons cette partie là qui regarde si le fichier à une extension `.c` ou `.cpp`:
+Lorsque l'utilisateur fournit un fichier source, Capierre :
+
+1. Détecte le type de fichier.
+2. Compile le fichier source avec `gcc` ou `g++` selon l’extension.
+3. Intègre une phrase cachée dans le binaire via une section personnalisée.
+
+### 🔍 Détection de l’extension
 
 ```python
 extension_files = {
@@ -38,7 +43,9 @@ except Exception as e:
     return False
 ```
 
-Pour compiler le fichier source, nous avons cette partie là:
+### ⚙️ Compilation conditionnelle
+
+Selon l’extension détectée, le compilateur adéquat est sélectionné (`gcc` ou `g++`) :
 
 ```python
 def hide_information(self: object) -> None:
@@ -57,7 +64,20 @@ def hide_information(self: object) -> None:
         sys.exit(1)
 ```
 
-Ensuite, pour intégrer les informations dans le binaire exécutable, nous avons cette partie pour cacher les informations:
+---
+
+## 🛠 Injection des informations dans le binaire
+
+L’objectif de ces étapes est d’insérer discrètement **une phrase à cacher** dans le fichier binaire.
+
+### 🔧 Fonction `create_malicious_file`
+
+Cette fonction génère deux fichiers temporaires :
+
+1. Un fichier binaire contenant la phrase à dissimuler.
+
+2. Un fichier source `.c` contenant une directive assembleur pour inclure ce binaire via `.incbin` dans une section personnalisée.
+
 
 ```python
 def create_malicious_file(self: object, sentence_to_hide: str | bytes) -> tuple[str, str]:
@@ -96,7 +116,31 @@ def create_malicious_file(self: object, sentence_to_hide: str | bytes) -> tuple[
     malicious_code_fd.write(malicious_code.encode())
     malicious_code_fd.close()
     return (malicious_code_fd.name, sentence_to_hide_fd.name)
+```
 
+#### ⚠️ Pourquoi utiliser __asm et .incbin ?
+>En C (GCC), la directive `__asm` permet d’écrire du code assembleur inline.\
+>La directive `.incbin` permet d’inclure un fichier binaire directement dans un fichier source.\
+>La directive `.section` permet de choisir une section spécifique pour insérer le contenu.
+
+Plus d'informations sont disponibles [ici](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html).
+
+
+---
+
+### 🧪 Fonction `compile_code`
+
+Cette fonction réalise les étapes suivantes:
+
+1. Crée les fichiers temporaires avec `create_malicious_file`.
+
+2. Compile le fichier source + code injecté.
+
+3. Supprime les fichiers temporaires.
+
+4. Gère les erreurs de compilation.
+
+```python
 def compile_code(self: object, file_path: str, sentence_to_hide: str | bytes, compilator_name: str) -> None:
     """
     This function compiles the code with the hidden sentence.
@@ -123,72 +167,37 @@ def compile_code(self: object, file_path: str, sentence_to_hide: str | bytes, co
     msg_success('Code compiled successfully')
 ```
 
-Si on décompase les fonctions `create_malicious_file` et `compile_code`, on peut voir que la fonction `create_malicious_file` crée un fichier temporaire qui contient les informations à cacher et la fonction `compile_code` compile le fichier source avec les informations cachées.
-
-#### Que fais la fonction ``create_malicious_file`` ?
-
-Notre fonction ``create_malicious_file``:
-- Prend en paramètre une phrase à cacher
-- Elle va créer un ``fichier temporaire`` qui contient la phrase à cacher et la ``section`` où nous allons cacher la phrase
-- Elle va créer un nouveau ``fichier temporaire`` qui contient le code assembleur qui va inclure l'ancien ``fichier temporaire`` qui contient la phrase à cacher dans la section que nous avons créée.
-- Elle va retourner le chemin du fichier temporaire qui contient le code assembleur et le chemin du fichier temporaire qui contient la phrase à cacher.
-
-:::tip 📚 C'est quoi asm ?!
-
-En C et surtout dans le compilateur GCC, nous avons une directive qui s'appelle ``__asm``. Elle existe sous plusieurs variantes comme:
-- ``__asm__``
-- ``__asm``
-- ``asm``
-- ``asm__``
-
-Ce qui nous permet d'écrire directement du code assembleur dans un fichier source C ou C++.
-Et dans les instructions assembleur nous avons une directive qui s'appelle ``.incbin`` qui nous permet comme son nom l'indique d'inclure un fichier binaire dans le fichier source ``incbin -> inlcude binary``. Comme nous ne voullons pas que le fichier binaire soit visible, nous allons le cacher dans une section spécifique du binaire c'est pourquoi nous avons une autre directive qui s'appelle ``.section`` qui nous permet de créer une section dans le binaire.
-
-Vous pouvez avoir plus d'information sur cette directive [ici](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html).
-:::
-
-Maintenant nous allons parler de la fonction ``compile_code``.
-
-#### Que fais la fonction ``compile_code`` ?
-
-Notre fonction ``compile_code``:
-- Prend en paramètre le chemin du fichier source, la phrase à cacher et le compilateur à utiliser
-- Elle va appeler la fonction ``create_malicious_file`` pour créer les fichiers temporaires
-- Elle va compiler le fichier source avec les fichiers temporaires
-- Elle va supprimer les fichiers temporaires
-- Si la compilation échoue, elle va lever une exception
-
-Ce qui nous fais par exemple une commande comme celle-ci:
-
+**Lors de la compilation automatisée, un exemple de commande générée pourrait être:**
 ```bash
 $ gcc file.c /tmp/TMP_DIR123456789/tmp_file.c -o capierre_binary
 ```
 
-:::tip 🤓 Mais comment notre fichier temporaire tmp_file.c inclus notre malicious_file dans le binaire compilé ?
-A la compilation de notre fichier source, le compilateur va inclure le contenu de notre fichier temporaire dans le binaire compilé. C'est pourquoi nous avons créé une section spécifique pour cacher notre fichier temporaire. Et c'est pourquoi nous avons utilisé la directive ``.incbin`` pour inclure notre fichier temporaire dans le binaire compilé.
+---
 
-**L'instruction ``__asm`` est directement prise en compte quand le compilateur compile le fichier source.**
-:::
+## 📑 Choix de la section dans le binaire
+Au lieu d’utiliser `.rodata`, Capierre utilise la section `.eh_frame` ou équivalent selon l’OS.
 
-## 📑 Les sections dans un binaire
+### ❌ Pourquoi ne pas utiliser .rodata ?
+Utiliser .rodata peut causer des conflits : des constantes utilisateur contenant les mêmes magic numbers (comme vu précedemment [ici](#📑-les-sections-dans-un-binaire) 👀) que Capierre peuvent être interprétées à tort comme des messages cachés.
 
-Si vous avez lu jusqu'ici, vous avez compris que nous avons créé une section spécifique pour cacher notre fichier temporaire.
-:::danger 😧 Mais comment choisir une section d'un binaire qui n'aura jamais et aucun impact sur le fonctionnement du binaire ?
-:::
+Par exemple, le code problématique suivant introduit la valeur `CapierreMagic.MAGIC_NUMBER_START` au sein de cette section:
+```c
+const char *brokeCapierre = "\x43\x41\x50\x49\x45\x52\x52\x45";
+```
 
-Pour cela, nous avons créé une classe qui s'appelle ``CapierreMagic`` qui contient toutes les informations cruciales pour cacher les informations dans un binaire.
+Après plusieurs recherches sur les sections sur ce site [la](https://sysblog.informatique.univ-paris-diderot.fr/2024/04/01/le-format-elf-executable-and-linkable-format/). Nous avons choisi d'utiliser la section ``.eh_frame``.
+
+### ✅ Pourquoi utiliser .eh_frame ?
+Capierre utilise la section .eh_frame (ou équivalent) pour plusieurs raisons :
+
+1. Présente par défaut sur toutes les plateformes (Windows, Linux, macOS)
+
+2. Peu susceptible d’interférer avec les autres données du programme
+
+3. Permet une injection discrète et robuste
+
 
 ```python
-class CapierreMagic():
-    def __init__(self):
-        self.CIE_INFORMATION = b"\0\0\0\0\1\0\0\0\x10"
-        self.MAGIC_NUMBER_START = b"CAPIERRE"
-        self.MAGIC_NUMBER_END = self.MAGIC_NUMBER_START[::-1] + (b"\0" * 4)
-        self.MAGIC_NUMBER_START_LEN = len(self.MAGIC_NUMBER_START)
-        self.MAGIC_NUMBER_END_LEN = len(self.MAGIC_NUMBER_END)
-        self.SECTION_HIDE = self.choose_section_hide()
-        self.SECTION_RETRIEVE = self.choose_section_retrieve()
-
     """
     This function chooses the section to hide the information
     @return str - The section to hide the information | CAN BE None
@@ -224,30 +233,31 @@ class CapierreMagic():
         return section
 ```
 
-Pour être totalement transparent, au tout début de la création de l'outil, nous avons choisi une section nommée ``.rodata`` pour cacher les informations. Mais après plusieurs tests, nous avons remarqué que cette section est utilisée par le compilateur pour stocker les constantes du programme. 
+### 🧬 Classe CapierreMagic
 
-:::warning 🚨 Pourquoi ne pas utiliser la section <code>.rodata</code> ?
-Si nous utilisons la section ``.rodata`` pour cacher les informations, nous allons avoir certains problèmes majeurs comme:
+Cette classe centralise:
 
-- Vu que pour retrouver le message nous utilisons des magics number (comme vous l'avez vu avant [ici](#📑-les-sections-dans-un-binaire) 👀), si des personnes mettent des constantes tel comme ça:
-```c
-const char *brokeCapierre = "\x43\x41\x50\x49\x45\x52\x52\x45";
+- Les magic numbers pour repérer les données cachées
+
+- Les sections utilisées pour dissimuler ou retrouver les messages
+
+
+
+```python
+class CapierreMagic():
+    def __init__(self):
+        self.CIE_INFORMATION = b"\0\0\0\0\1\0\0\0\x10"
+        self.MAGIC_NUMBER_START = b"CAPIERRE"
+        self.MAGIC_NUMBER_END = self.MAGIC_NUMBER_START[::-1] + (b"\0" * 4)
+        self.MAGIC_NUMBER_START_LEN = len(self.MAGIC_NUMBER_START)
+        self.MAGIC_NUMBER_END_LEN = len(self.MAGIC_NUMBER_END)
+        self.SECTION_HIDE = self.choose_section_hide()
+        self.SECTION_RETRIEVE = self.choose_section_retrieve()
 ```
-Le compilateur va alors mettre cette constante dans ``.rodata``. Et alors la valeur de cette variable va être le début de notre ``Magic Number`` soit ``CapierreMagic.MAGIC_NUMBER_START``. Ce qui va faire que notre tool, va alors pensé que c'est le début d'un message caché. Alors que ce n'est pas le cas.
 
-:::
+---
 
-Après plusieurs recherches sur les sections sur ce site [la](https://sysblog.informatique.univ-paris-diderot.fr/2024/04/01/le-format-elf-executable-and-linkable-format/). Nous avons choisi d'utiliser la section ``.eh_frame``.
+## 📌 Conclusion
 
-:::tip 🤓 Pourquoi la section <code>.eh_frame</code> ?
-La section ``.eh_frame`` est une section qui est utilisée pour stocker les informations sur les exceptions. Voici les raisons pour lequelles nous avons choisi cette section:
-- Vu qu'uniquement les exeptions sont stocker, nous empêchons des possibles recidive avec l'utilisateur comme vu dans l'exemple précedent. Le binaire final ne sera impacté par les informations cachées.
-- Cette section est toujours présente dans un binaire, peu importe la plateforme utilisée. Ce qui n'est pas forcément le cas pour la section ``.note`` et/ou ``.comment``.
-- Elle a très peu d'impace sur le binaire final.
-:::
-
-Avec toutes ces informations, la section ``.eh_frame`` est la section parfaite pour cacher les informations dans un binaire.
-
-## 📦 Fichier binaire exécutable
-
-[...]
+Grâce à un système intelligent d’analyse, de compilation et d’injection, Capierre permet de cacher des données dans des fichiers binaires compilés, sans altérer leur fonctionnement.\
+Le choix précis de la section .eh_frame assure la fiabilité de l’opération sur toutes les plateformes.

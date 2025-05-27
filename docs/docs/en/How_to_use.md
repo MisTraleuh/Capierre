@@ -2,6 +2,25 @@
 
 ## 📦 Installation
 
+## 🚀 Quick Start (Binary Download)
+
+If you don't want to build the project manually, you can **simply download the pre-packaged binary** from the [Releases section](https://github.com/MisTraleuh/Capierre/releases) of the repository.
+
+Once downloaded, make it executable and optionally move it to a directory in your `PATH`:
+
+```bash
+chmod +x capierre
+sudo mv capierre /usr/local/bin
+```
+
+You can now run the CLI with:
+
+```bash
+capierre --help
+```
+
+---
+
 ### 🌀  Clone the Project
 
 ```bash
