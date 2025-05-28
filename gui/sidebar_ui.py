@@ -9,6 +9,7 @@
 
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtGui import QFont
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -256,22 +257,22 @@ class Ui_MainWindow(object):
         welcome_layout.setContentsMargins(60, 60, 60, 60)
         welcome_layout.setSpacing(20)
 
-        welcome_title = QtWidgets.QLabel("👋 Welcome to PyCapierre")
+        welcome_title = QtWidgets.QLabel("Welcome to PyCapierre")
         welcome_title.setStyleSheet("font-size: 28px; font-weight: bold; color: white;")
         welcome_title.setAlignment(QtCore.Qt.AlignCenter)
         welcome_layout.addWidget(welcome_title)
 
         welcome_text = QtWidgets.QLabel(
-        "🧪 <b>What is Steganography?</b><br><br>"
+        "<b>What is Steganography?</b><br><br>"
         "Steganography is the art of hiding messages within other non-secret files or data – like images or binary executables – "
         "so that only the sender and receiver know it's there. Unlike encryption, which makes data unreadable, steganography hides its very existence.<br><br>"
 
-        "👨‍💻 <b>What this app does:</b><br><br>"
-        "🔹 <b>Hide</b>: Embed a secret message into an image or binary file using a password and encryption.<br>"
-        "🔹 <b>Retrieve</b>: Extract the hidden message from a file if you know the correct password.<br>"
-        "🔹 <b>Challenges</b>: Practice your stego skills! Whether you're a beginner or advanced, solve guided challenges to improve your understanding.<br><br>"
+        "<b>What this app does:</b><br><br>"
+        "* <b>Hide</b>: Embed a secret message into an image or binary file using a password and encryption.<br>"
+        "* <b>Retrieve</b>: Extract the hidden message from a file if you know the correct password.<br>"
+        "* <b>Challenges</b>: Practice your stego skills! Whether you're a beginner or advanced, solve guided challenges to improve your understanding.<br><br>"
 
-        "💡 Whether you're learning or testing advanced techniques, <b>PyCapierre</b> helps make stéganographie accessible to everyone.")
+        "Whether you're learning or testing advanced techniques, <b>PyCapierre</b> helps make stéganographie accessible to everyone.")
         welcome_text.setWordWrap(True)
         welcome_text.setStyleSheet("font-size: 18px; color: #bbb; line-height: 1.4;")
         welcome_text.setAlignment(QtCore.Qt.AlignTop)
@@ -300,11 +301,22 @@ class Ui_MainWindow(object):
         self.title_retrieve.setObjectName("title_retrieve")
         self.verticalLayout.addWidget(self.title_retrieve)
         self.verticalLayout.insertWidget(1, self.retrieve_intro)
-        self.checkBox_mode = QtWidgets.QCheckBox(text="Binary Mode")
+        self.checkBox_mode = QtWidgets.QCheckBox(text="Compiled Mode")
         self.checkBox_mode.setStyleSheet("""
             color: #aaa;
         """)
         self.verticalLayout.addWidget(self.checkBox_mode)
+        self.retrieve_compiled = QtWidgets.QLabel(self.widget_6)
+        self.retrieve_compiled.setText("If you hid a message inside a .c/.cpp file or an image, leave this box unticked to retrieve it.")
+        self.retrieve_compiled.setWordWrap(True)
+        self.retrieve_compiled.setStyleSheet("""
+            color: #aaa;
+            font-size: 16px;
+            margin-top: 5px;
+            padding-left: 5px;
+        """)
+        self.retrieve_compiled.setObjectName("title_retrieve_compiled")
+        self.verticalLayout.addWidget(self.retrieve_compiled)
         self.widget_7 = QtWidgets.QWidget(self.widget_6)
         self.widget_7.setObjectName("widget_7")
         self.horizontalLayout_11 = QtWidgets.QHBoxLayout(self.widget_7)
@@ -403,6 +415,11 @@ class Ui_MainWindow(object):
             color: #aaa;
         """)
         self.verticalLayout_8.addWidget(self.checkBox_file)
+        self.file_mode_label = QtWidgets.QLabel(self.widget_10)
+        self.file_mode_label.setText("In File Mode, one may hide an entire file instead of a sentence.")
+        self.file_mode_label.setStyleSheet("color: #888; font-size: 16px;")
+        self.file_mode_label.setWordWrap(True)
+        self.verticalLayout_8.addWidget(self.file_mode_label)
         self.widget_4 = QtWidgets.QWidget(self.widget_10)
         self.widget_4.setObjectName("widget_4")
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.widget_4)
