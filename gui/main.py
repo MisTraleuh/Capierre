@@ -408,7 +408,7 @@ class ChallengeWidget(QWidget):
 
         expected_output_path = os.path.join(base_path, "expected_output")
 
-        expected_file_path = os.path.join(expected_output_path, self.challenge.get('file'))
+        expected_file_path = os.path.join(expected_output_path, self.challenge.get('expected_file'))
 
         # Vérifie l'égalité (contenu binaire) ou appelle ta fonction de comparaison
         try:

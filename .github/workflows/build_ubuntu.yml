@@ -55,17 +55,17 @@ jobs:
       - name: Build gui
         working-directory: ./gui
         run: |
-          python -m PyInstaller `
-            --collect-all z3        `
-            --collect-all pyvex        `
-            --collect-all angr        `
-            --collect-all unicorn        `
-            --collect-all cle        `
-            --paths=../tool/src        `
-            --add-data "style.qss:."        `
-            --add-data "./challenges:./challenges"        `
-            --add-data "./challenge_files:./challenge_files"        `
-            --add-data "./expected_output:./expected_output"        `
+          python -m PyInstaller                               \
+            --collect-all z3                                  \
+            --collect-all pyvex                               \
+            --collect-all angr                                \
+            --collect-all unicorn                             \
+            --collect-all cle                                 \
+            --paths=../tool/src                               \
+            --add-data "style.qss:."                          \
+            --add-data "./challenges:./challenges"            \
+            --add-data "./challenge_files:./challenge_files"  \
+            --add-data "./expected_output:./expected_output"  \
             --onefile --name capierre_gui main.py
 
       - name: Upload gui artifact

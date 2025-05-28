@@ -1,8 +1,9 @@
 {
     "id": 2,
-    "title": "Binary Extraction",
-    "description": "Find the hidden message in this binary file.",
-    "hint": "Try using the extract feature with default settings.",
-    "file": "PsychEngine",
-    "flag": "stego_is_fun_assembly_is_not"
+    "title": "Binary Extraction (compile mode)",
+    "description": "A song is hidden within this binary.\nTo extract it, use the password 'Drones'\n",
+    "hint": "Try using the retrieve feature with default settings",
+    "file": "nothing_to_see_here_im_hello_world",
+    "expected_file": "piano.mp3",
+    "upload_check": true
 }

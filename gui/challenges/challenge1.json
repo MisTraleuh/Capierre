@@ -1,8 +1,7 @@
 {
     "id": 1,
-    "title": "Image Extraction",
-    "description": "Find the hidden message in this image.",
-    "hint": "Try using the extract feature with default settings.",
-    "file": "challenge1.png",
-    "flag": "stego_is_fun"
+    "title": "Final Message insertion",
+    "description": "Make your very own Hello World Program by hiding the message:\n'I learnt something today.'\nYou HAVE TO add the password 'CAPIERRE'.",
+    "hint": "Make use of the hide feature",
+    "file": "main.cpp"
 }
