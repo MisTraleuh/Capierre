@@ -38,28 +38,60 @@ jobs:
           gcc --version
           g++ --version
 
-      - name: Install dependencies & Build binary
-        working-directory: ./tool
+      - name: Build gui
+        working-directory: ./gui
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r ../tool/requirements.txt
           python -m PyInstaller `
-            --collect-all z3        `
-            --collect-all pyvex     `
-            --collect-all angr      `
-            --collect-all unicorn   `
-            --collect-all cle       `
-            --onefile --name capierre_binary src/__main__.py
+            --collect-all z3                                    `
+            --collect-all pyvex                                 `
+            --collect-all angr                                  `
+            --collect-all unicorn                               `
+            --collect-all cle                                   `
+            --paths=../tool/src                                 `
+            --add-data "style.qss;."                            `
+            --add-data "./challenges;./challenges"              `
+            --add-data "./challenge_files;./challenge_files"    `
+            --add-data "./expected_output;./expected_output"    `
+            --onefile --name capierre_gui main.py
 
-      - name: Binary Test
-        working-directory: ./tool
-        run: |
-          ./dist/capierre_binary.exe --help
-          ./dist/capierre_binary.exe --version
-          ./dist/capierre_binary.exe --conceal --file ./tests/src/main.c --file-to-hide ./tests/src/HIDDEN_FILE --password "password"
-          ./dist/capierre_binary.exe -r --file ./capierre_binary.exe --password "password"
+      - name: Upload gui artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-gui
+          path: dist/capierre_gui*
 
-      - name: Tests Fonctionnels
-        working-directory: ./tool
-        run: |
-          ./launch_tests.bat "fonctionnel"
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-cmd
+          path: dist/capierre_cmd*
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          files: artifacts/**/gui*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          files: artifacts/**/cmd*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -20,10 +20,10 @@ Let’s take a concrete example.
 
 You are a **journalist**, and you absolutely need to send a document to one of your colleagues for reason X or Y. This document contains sensitive information that you don’t want just anyone to read. At this moment, you have several options:
 
-- You could encrypt the document, but this might raise suspicions. Encryption is often associated with illegal or suspicious activities. Additionally, if someone intercepts the encrypted document, they might attempt to decrypt it. Since encryption is a well-known technique, it is possible to break it with the right tools and skills.
-- You could send the document through a simple means, like email or WhatsApp, but it could be intercepted by malicious parties. If data is retrieved, it could be used against you or your source.
-- You could print the document and send it by mail, but this would take time and could be intercepted along the way.
+- You could encrypt the document, but this might raise suspicions. Encryption is often associated with illegal or suspicious activities. Additionally, if someone intercepts the encrypted document, they might attempt to decrypt it.
+- You could send the document through simple means, like email or WhatsApp, but it could be intercepted by malicious parties. If data is retrieved, it could be used against you or your source.
+- You could print the document and send it by mail, but this could be intercepted along the way.
 
 There is a quote I read once that says "The best hiding place is the one that is not looked for." This is exactly what steganography offers.
 
-With steganography, you can hide the document in an innocuous image, like a vacation photo. No one would suspect that the document is hidden in the image. And for a binary file, even fewer people would suspect that the document is concealed within a binary file. You can then send this binary file via email or WhatsApp without raising suspicions. Only the recipient will know the technique to extract the hidden document.
+With steganography, you can hide the document in an innocuous image, like a vacation photo. No one would suspect that the document is hidden in the image. And for a binary file, even fewer people would suspect that the document is concealed within a binary file. Only the recipient would know the technique to extract the hidden document.

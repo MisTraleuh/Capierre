@@ -12,6 +12,7 @@ class CapierreMagic:
         self.SECTION_HIDE = self.choose_section_hide()
         self.SECTION_RETRIEVE = self.choose_section_retrieve()
         self.SECTION_HIDE_TEXT = self.choose_section_hide_text()
+        self.SECTION_PLATFORM = self.fetch_platform()
         self.COMPILE_GCC = (
             "gcc",
             "-nostartfiles",
@@ -21,6 +22,9 @@ class CapierreMagic:
             "-Wl,--oformat=binary,--entry=0",
             "-o",
         )
+
+    def fetch_platform(self) -> str:
+        return platform.system()
 
     def choose_section_hide_text(self: CapierreMagic) -> str | None:
         """

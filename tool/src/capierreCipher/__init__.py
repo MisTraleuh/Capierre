@@ -10,7 +10,7 @@ class CapierreCipher:
     """
 
     @staticmethod
-    def cipher(inputBytes: bytes, password: str, *, decrypt: bool) -> str:
+    def cipher(inputBytes: bytes, password: str, *, decrypt: bool) -> bytes:
         """
         This method encrypt or decrypt the content of the `inputBytes` and returns the ciphered message.
         If `decrypt` is True, then the cipher will attempt to decrypt `inputBytes`.
@@ -22,22 +22,22 @@ class CapierreCipher:
 
         @return Returns the encrypted/decrypted message (encrypted message encoded in base64).
         """
-        password_hash = sha256(bytes(password, "utf-8")).digest()
+        password_hash = sha256(bytes(password, 'utf-8')).digest()
 
         try:
             cipher = AES.new(password_hash, mode=AES.MODE_CBC)
 
             if decrypt:
                 # https://stackoverflow.com/questions/40729276/base64-incorrect-padding-error-using-python
-                value: bytes = inputBytes
+                value: str = inputBytes.decode()
                 if (len(value) % 4) != 0:
                     value += b'=' * (4 - (len(value) % 4))
                 inputBytes = b64decode(value)
                 output: bytes = cipher.decrypt(inputBytes)[16:] # Remove padding
-                return str(output[:-output[-1] - 1], "utf-8")
+                return output[:-output[-1] - 1]
             padding: int = 16 - len(inputBytes) % 16
             inputBytes = b'\x00' * 16 + inputBytes + b''.join([i.to_bytes(1, 'big') for i in range(padding)])
-            return str(b64encode(cipher.encrypt(inputBytes)), 'ascii')
+            return b64encode(cipher.encrypt(inputBytes))
         except Exception as e:
             msg_error(f"Cipher error: {e}")
             raise e

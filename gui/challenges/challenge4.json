@@ -1,0 +1,8 @@
+{
+    "id": 4,
+    "title": "Binary Extraction (Compiled Mode)",
+    "description": "Find the hidden message in this binary file (NO PASSWORD)",
+    "hint": "Try using the extract feature with default settings (Binary Mode CHECKED).",
+    "file": "Hello_World",
+    "flag": "stego_is_fun_assembly_is_not"
+}

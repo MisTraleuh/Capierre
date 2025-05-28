@@ -9,9 +9,7 @@
 
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
-sys.path.append('../tool/src/')
-from capierre import Capierre
-from capierreAnalyzer import CapierreAnalyzer
+from PyQt5.QtGui import QFont
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -23,6 +21,8 @@ class Ui_MainWindow(object):
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setSpacing(0)
         self.gridLayout.setObjectName("gridLayout")
+
+
         self.sidebar_full = QtWidgets.QWidget(self.centralwidget)
         self.sidebar_full.setObjectName("sidebar_full")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.sidebar_full)
@@ -60,6 +60,16 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.setContentsMargins(-1, 0, 9, 0)
         self.verticalLayout_4.setSpacing(0)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.home_btn = QtWidgets.QPushButton(self.icon_sidebar_full)
+        self.home_btn.setMinimumSize(QtCore.QSize(50, 50))
+        home_icon = QtGui.QIcon()
+        home_icon.addPixmap(QtGui.QPixmap(":/icon/icon/cil-star.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.home_btn.setIcon(home_icon)
+        self.home_btn.setIconSize(QtCore.QSize(25, 25))
+        self.home_btn.setCheckable(True)
+        self.home_btn.setAutoExclusive(True)
+        self.home_btn.setObjectName("home_btn")
+        self.verticalLayout_4.addWidget(self.home_btn) 
         self.retrieve_btn_3 = QtWidgets.QPushButton(self.icon_sidebar_full)
         self.retrieve_btn_3.setMinimumSize(QtCore.QSize(50, 50))
         icon = QtGui.QIcon()
@@ -85,7 +95,7 @@ class Ui_MainWindow(object):
         self.challenges_btn_2 = QtWidgets.QPushButton(self.icon_sidebar_full)
         self.challenges_btn_2.setMinimumSize(QtCore.QSize(0, 50))
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(":/icon/icon/cil-star.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap(":/icon/icon/cil-folder-open.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.challenges_btn_2.setIcon(icon2)
         self.challenges_btn_2.setIconSize(QtCore.QSize(25, 25))
         self.challenges_btn_2.setCheckable(True)
@@ -138,6 +148,15 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.setContentsMargins(-1, 0, 9, 0)
         self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.home_btn_2 = QtWidgets.QPushButton(self.icon_sidebar_min)
+        self.home_btn_2.setMinimumSize(QtCore.QSize(50, 50))
+        self.home_btn_2.setText("")
+        self.home_btn_2.setIcon(home_icon)
+        self.home_btn_2.setIconSize(QtCore.QSize(25, 25))
+        self.home_btn_2.setCheckable(True)
+        self.home_btn_2.setAutoExclusive(True)
+        self.home_btn_2.setObjectName("home_btn_2")
+        self.verticalLayout_3.addWidget(self.home_btn_2)
         self.retrieve_btn_2 = QtWidgets.QPushButton(self.icon_sidebar_min)
         self.retrieve_btn_2.setMinimumSize(QtCore.QSize(50, 50))
         self.retrieve_btn_2.setText("")
@@ -230,6 +249,37 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.addWidget(self.header_bar)
         self.stackedWidget = QtWidgets.QStackedWidget(self.widget)
         self.stackedWidget.setObjectName("stackedWidget")
+
+          # --- Welcome Page ---
+        self.welcome_page = QtWidgets.QWidget()
+        self.welcome_page.setObjectName("welcome_page")
+        welcome_layout = QtWidgets.QVBoxLayout(self.welcome_page)
+        welcome_layout.setContentsMargins(60, 60, 60, 60)
+        welcome_layout.setSpacing(20)
+
+        welcome_title = QtWidgets.QLabel("Welcome to PyCapierre")
+        welcome_title.setStyleSheet("font-size: 28px; font-weight: bold; color: white;")
+        welcome_title.setAlignment(QtCore.Qt.AlignCenter)
+        welcome_layout.addWidget(welcome_title)
+
+        welcome_text = QtWidgets.QLabel(
+        "<b>What is Steganography?</b><br><br>"
+        "Steganography is the art of hiding messages within other non-secret files or data – like images or binary executables – "
+        "so that only the sender and receiver know it's there. Unlike encryption, which makes data unreadable, steganography hides its very existence.<br><br>"
+
+        "<b>What this app does:</b><br><br>"
+        "* <b>Hide</b>: Embed a secret message into an image or binary file using a password and encryption.<br>"
+        "* <b>Retrieve</b>: Extract the hidden message from a file if you know the correct password.<br>"
+        "* <b>Challenges</b>: Practice your stego skills! Whether you're a beginner or advanced, solve guided challenges to improve your understanding.<br><br>"
+
+        "Whether you're learning or testing advanced techniques, <b>PyCapierre</b> helps make stéganographie accessible to everyone.")
+        welcome_text.setWordWrap(True)
+        welcome_text.setStyleSheet("font-size: 18px; color: #bbb; line-height: 1.4;")
+        welcome_text.setAlignment(QtCore.Qt.AlignTop)
+        welcome_layout.addWidget(welcome_text)
+        self.stackedWidget.addWidget(self.welcome_page)
+
+        # --- Retrieve Page ---
         self.retrieve_page = QtWidgets.QWidget()
         self.retrieve_page.setObjectName("retrieve_page")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.retrieve_page)
@@ -239,10 +289,34 @@ class Ui_MainWindow(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.widget_6)
         self.verticalLayout.setObjectName("verticalLayout")
         self.title_retrieve = QtWidgets.QLabel(self.widget_6)
+        self.retrieve_intro = QtWidgets.QLabel(self.widget_6)
+        self.retrieve_intro.setText("Use this form to extract a hidden message from a file. You may need to provide a password.")
+        self.retrieve_intro.setWordWrap(True)
+        self.retrieve_intro.setStyleSheet("""
+            color: #ccc;
+            font-size: 15px;
+            font-weight: 500;
+            padding-bottom: 15px;
+        """)
         self.title_retrieve.setObjectName("title_retrieve")
         self.verticalLayout.addWidget(self.title_retrieve)
-        self.checkBox_mode = QtWidgets.QCheckBox(text="Binary Mode")
+        self.verticalLayout.insertWidget(1, self.retrieve_intro)
+        self.checkBox_mode = QtWidgets.QCheckBox(text="Compiled Mode")
+        self.checkBox_mode.setStyleSheet("""
+            color: #aaa;
+        """)
         self.verticalLayout.addWidget(self.checkBox_mode)
+        self.retrieve_compiled = QtWidgets.QLabel(self.widget_6)
+        self.retrieve_compiled.setText("If you hid a message inside a .c/.cpp file or an image, leave this box unticked to retrieve it.")
+        self.retrieve_compiled.setWordWrap(True)
+        self.retrieve_compiled.setStyleSheet("""
+            color: #aaa;
+            font-size: 16px;
+            margin-top: 5px;
+            padding-left: 5px;
+        """)
+        self.retrieve_compiled.setObjectName("title_retrieve_compiled")
+        self.verticalLayout.addWidget(self.retrieve_compiled)
         self.widget_7 = QtWidgets.QWidget(self.widget_6)
         self.widget_7.setObjectName("widget_7")
         self.horizontalLayout_11 = QtWidgets.QHBoxLayout(self.widget_7)
@@ -262,6 +336,16 @@ class Ui_MainWindow(object):
         self.open_button_2.setObjectName("open_button_2")
         self.horizontalLayout_11.addWidget(self.open_button_2)
         self.verticalLayout.addWidget(self.widget_7)
+        self.filepath_info = QtWidgets.QLabel(self.widget_6)
+        self.filepath_info.setText("Select the file (image or binary) that contains the hidden message.")
+        self.filepath_info.setStyleSheet("""
+            color: #aaa;
+            font-size: 16px;
+            margin-top: 5px;
+            padding-left: 5px;
+        """)
+        self.filepath_info.setWordWrap(True)
+        self.verticalLayout.insertWidget(self.verticalLayout.indexOf(self.widget_7) + 1, self.filepath_info)
         self.widget_8 = QtWidgets.QWidget(self.widget_6)
         self.widget_8.setObjectName("widget_8")
         self.horizontalLayout_12 = QtWidgets.QHBoxLayout(self.widget_8)
@@ -274,6 +358,16 @@ class Ui_MainWindow(object):
         self.lineEdit_5.setObjectName("lineEdit_5")
         self.horizontalLayout_12.addWidget(self.lineEdit_5)
         self.verticalLayout.addWidget(self.widget_8)
+        self.password_info = QtWidgets.QLabel(self.widget_6)
+        self.password_info.setText("If the message was encrypted, enter the password to decrypt it.")
+        self.password_info.setStyleSheet("""
+            color: #aaa;
+            font-size: 16px;
+            margin-top: 5px;
+            padding-left: 5px;
+        """)
+        self.password_info.setWordWrap(True)
+        self.verticalLayout.insertWidget(self.verticalLayout.indexOf(self.widget_8) + 1, self.password_info)
         self.widget_9 = QtWidgets.QWidget(self.widget_6)
         self.widget_9.setObjectName("widget_9")
         self.horizontalLayout_10 = QtWidgets.QHBoxLayout(self.widget_9)
@@ -299,10 +393,33 @@ class Ui_MainWindow(object):
         self.widget_10.setObjectName("widget_10")
         self.verticalLayout_8 = QtWidgets.QVBoxLayout(self.widget_10)
         self.verticalLayout_8.setObjectName("verticalLayout_8")
+
+        # --- Hide Page ---
         self.title_hide = QtWidgets.QLabel(self.widget_10)
         self.title_hide.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.title_hide.setObjectName("title_hide")
         self.verticalLayout_8.addWidget(self.title_hide)
+        self.intro_label = QtWidgets.QLabel(self.widget_10)
+        self.intro_label.setText("Use this form to hide a secret message inside a file. Provide a password for encryption.")
+        self.intro_label.setWordWrap(True)
+        self.intro_label.setStyleSheet("""
+            color: #ccc;
+            font-size: 16px;
+            font-weight: 500;
+            padding-bottom: 15px;
+        """)
+        self.intro_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        self.verticalLayout_8.addWidget(self.intro_label)
+        self.checkBox_file = QtWidgets.QCheckBox(text="File Mode")
+        self.checkBox_file.setStyleSheet("""
+            color: #aaa;
+        """)
+        self.verticalLayout_8.addWidget(self.checkBox_file)
+        self.file_mode_label = QtWidgets.QLabel(self.widget_10)
+        self.file_mode_label.setText("In File Mode, one may hide an entire file instead of a sentence.")
+        self.file_mode_label.setStyleSheet("color: #888; font-size: 16px;")
+        self.file_mode_label.setWordWrap(True)
+        self.verticalLayout_8.addWidget(self.file_mode_label)
         self.widget_4 = QtWidgets.QWidget(self.widget_10)
         self.widget_4.setObjectName("widget_4")
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.widget_4)
@@ -322,6 +439,11 @@ class Ui_MainWindow(object):
         self.label_4 = QtWidgets.QLabel(self.widget_2)
         self.label_4.setObjectName("label_4")
         self.horizontalLayout_4.addWidget(self.label_4)
+        self.password_help = QtWidgets.QLabel(self.widget_10)
+        self.password_help.setText("This password will be used to encrypt your message.")
+        self.password_help.setStyleSheet("color: #888; font-size: 16px;")
+        self.password_help.setWordWrap(True)
+        self.verticalLayout_8.insertWidget(self.verticalLayout_8.indexOf(self.widget_4) + 1, self.password_help)
         self.lineEdit = QtWidgets.QLineEdit(self.widget_2)
         self.lineEdit.setMinimumSize(QtCore.QSize(0, 30))
         self.lineEdit.setObjectName("lineEdit")
@@ -358,6 +480,11 @@ class Ui_MainWindow(object):
         self.horizontalLayout_7.addItem(spacerItem4)
         self.verticalLayout_8.addWidget(self.widget_5)
         self.gridLayout_3.addWidget(self.widget_10, 0, 0, 1, 1)
+        self.sentence_help = QtWidgets.QLabel(self.widget_10)
+        self.sentence_help.setText("Enter the secret message you want to embed into the selected file.")
+        self.sentence_help.setStyleSheet("color: #888; font-size: 16px;")
+        self.sentence_help.setWordWrap(True)
+        self.verticalLayout_8.insertWidget(self.verticalLayout_8.indexOf(self.widget_3) + 1, self.sentence_help)
         self.stackedWidget.addWidget(self.hide_page)
         self.challenges_page = QtWidgets.QWidget()
         self.challenges_page.setObjectName("challenges_page")
@@ -373,84 +500,44 @@ class Ui_MainWindow(object):
         self.label_8.setAlignment(QtCore.Qt.AlignCenter)
         self.label_8.setObjectName("label_8")
         self.gridLayout_2.addWidget(self.label_8, 0, 0, 1, 1)
+        self.filepath_help = QtWidgets.QLabel(self.widget_10)
+        self.filepath_help.setText("Choose the file (image or binary) where the message will be hidden.")
+        self.filepath_help.setStyleSheet("color: #888; font-size: 16px;")
+        self.filepath_help.setWordWrap(True)
+        self.verticalLayout_8.insertWidget(self.verticalLayout_8.indexOf(self.widget_2) + 1, self.filepath_help)
         self.stackedWidget.addWidget(self.challenges_page)
         self.verticalLayout_6.addWidget(self.stackedWidget)
         self.gridLayout.addWidget(self.widget, 0, 2, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
-        # Challenge List
+
+        # --- Challenge List ---
         self.challenge_list = QtWidgets.QListWidget(self.challenges_page)
         self.challenge_list.setObjectName("challenge_list")
         self.gridLayout_2.addWidget(self.challenge_list, 1, 0, 1, 1)
 
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(0)
-        self.hide_btn_1.toggled['bool'].connect(self.hide_btn_2.setChecked) # type: ignore
-        self.challenges_btn_2.toggled['bool'].connect(self.challenges_btn_1.setChecked) # type: ignore
-        self.hide_btn_2.toggled['bool'].connect(self.hide_btn_1.setChecked) # type: ignore
-        self.challenges_btn_1.toggled['bool'].connect(self.challenges_btn_2.setChecked) # type: ignore
         self.exit_btn_2.clicked.connect(MainWindow.close) # type: ignore
         self.show_btn_1.toggled['bool'].connect(self.sidebar_full.setVisible) # type: ignore
         self.show_btn_1.toggled['bool'].connect(self.sidebar_icon.setHidden) # type: ignore
         self.exit_btn_3.clicked.connect(MainWindow.close) # type: ignore
-        self.retrieve_btn_2.toggled['bool'].connect(self.retrieve_btn_3.setChecked) # type: ignore
-        self.retrieve_btn_3.toggled['bool'].connect(self.retrieve_btn_2.setChecked) # type: ignore
+
+        self.retrieve_btn_3.toggled['bool'].connect(self.retrieve_btn_2.setChecked)
+        self.home_btn.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(0) if checked else None)
+        self.home_btn_2.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(0) if checked else None)
+        self.retrieve_btn_3.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(1) if checked else None)
+        self.retrieve_btn_2.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(1) if checked else None)
+        self.hide_btn_1.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(2) if checked else None)
+        self.hide_btn_2.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(2) if checked else None)
+        self.challenges_btn_1.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(3) if checked else None)
+        self.challenges_btn_2.toggled['bool'].connect(lambda checked: self.stackedWidget.setCurrentIndex(3) if checked else None) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-    def show_info_messagebox(self): 
-        msg = QtWidgets.QMessageBox() 
-        msg.setIcon(QtWidgets.QMessageBox.Information) 
-        msg.setText("SUCCESS: Binary compiled successfully.")
-        msg.setWindowTitle("Information MessageBox") 
-        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        msg.exec_()
-
-    def show_info_messagebox_retrieve(self): 
-        msg = QtWidgets.QMessageBox() 
-        msg.setIcon(QtWidgets.QMessageBox.Information) 
-        msg.setText("SUCCESS: Content extracted successfully.")
-        msg.setWindowTitle("Information MessageBox") 
-        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        msg.exec_()
-
-    def hide_action(self):
-        box_value_file = self.lineEdit.text()
-        box_value_sentence = self.lineEdit_2.text()
-        box_value_password = self.lineEdit_3.text()
-        value: str = "c" if (box_value_file[-1] == 'c') else "cpp" if (box_value_file[-3:0] == "cpp") else "bin"
-
-        capierreObject = Capierre(
-            box_value_file,
-            value,
-            box_value_sentence,
-            box_value_password,
-            "result_binary.bin",
-        )
-        capierreObject.hide_information()
-        self.show_info_messagebox()
-        self.lineEdit.setText("")
-        self.lineEdit_2.setText("")
-        self.lineEdit_3.setText("")
-
-    def retrieve_action(self):
-        box_value_file = self.lineEdit_4.text()
-        box_value_password = self.lineEdit_5.text()
-
-        capierreObject = CapierreAnalyzer(
-            box_value_file,
-            "MESSAGE",
-            box_value_password,
-        )
-        if (self.checkBox_mode.isChecked() == False):
-            capierreObject.retrieve_message_from_binary()
-        else:
-            capierreObject.read_in_compiled_binaries()
-        self.show_info_messagebox_retrieve()
-        self.lineEdit_4.setText("")
-        self.lineEdit_5.setText("")
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
+        self.stackedWidget.setCurrentWidget(self.welcome_page)
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.home_btn.setText(_translate("MainWindow", "Home"))
         self.title_top.setText(_translate("MainWindow", "PyCapierre"))
         self.description_2.setText(_translate("MainWindow", "Modern GUI / Flat Style "))
         self.retrieve_btn_3.setText(_translate("MainWindow", "Retrieve"))
@@ -470,6 +557,4 @@ class Ui_MainWindow(object):
         self.label_7.setText(_translate("MainWindow", "Sentence"))
         self.confirm_btn.setText(_translate("MainWindow", "Confirm"))
         self.label_8.setText(_translate("MainWindow", "Challenges Page"))
-        self.confirm_btn.clicked.connect(self.hide_action)
-        self.confirm_btn_2.clicked.connect(self.retrieve_action)
 import resource_rc
