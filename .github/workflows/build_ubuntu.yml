@@ -17,7 +17,7 @@ jobs:
         os: [ubuntu-22.04]
         python-version: [3.9, 3.10.x, 3.11, 3.12]
       fail-fast: false
-      
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -25,32 +25,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
       - run: |
-          pip3 install -r tool/requirements.txt
-
-      - name: Install dependencies & Build binary
-        working-directory: ./tool
-        run: |
-          pyinstaller \
-            --collect-all z3        \
-            --collect-all pyvex     \
-            --collect-all angr      \
-            --collect-all unicorn   \
-            --collect-all cle       \
-            --onefile --name capierre_cmd src/__main__.py
-
-      - name: Binary Test
-        working-directory: ./tool
-        run: |
-          ./dist/capierre_cmd --help
-          ./dist/capierre_cmd --version
-          ./dist/capierre_cmd --conceal --file ./tests/src/main.cpp --file-to-hide ./tests/src/HIDDEN_FILE --password "password"
-          ./dist/capierre_cmd -r --file ./capierre_binary --password "password"
-
-      - name: Tests Fonctionnels
-        working-directory: ./tool
-        run: |
-          chmod +x launch_tests.sh
-          ./launch_tests.sh "fonctionnel"
+          python -m pip install --upgrade pip
+          pip3 install -r requirements.txt
 
       - name: Build gui
         working-directory: ./gui

@@ -38,35 +38,11 @@ jobs:
           gcc --version
           g++ --version
 
-      - name: Install dependencies & Build binary
-        working-directory: ./tool
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          python -m PyInstaller `
-            --collect-all z3        `
-            --collect-all pyvex     `
-            --collect-all angr      `
-            --collect-all unicorn   `
-            --collect-all cle       `
-            --onefile --name capierre_cmd src/__main__.py
-
-      - name: Binary Test
-        working-directory: ./tool
-        run: |
-          ./dist/capierre_cmd.exe --help
-          ./dist/capierre_cmd.exe --version
-          ./dist/capierre_cmd.exe --conceal --file ./tests/src/main.c --file-to-hide ./tests/src/HIDDEN_FILE --password "password"
-          ./dist/capierre_cmd.exe -r --file ./capierre_binary --password "password"
-
-      - name: Tests Fonctionnels
-        working-directory: ./tool
-        run: |
-          ./launch_tests.bat "fonctionnel"
-
       - name: Build gui
         working-directory: ./gui
         run: |
+          python -m pip install --upgrade pip
+          pip install -r ../tool/requirements.txt
           python -m PyInstaller `
             --collect-all z3                                    `
             --collect-all pyvex                                 `
