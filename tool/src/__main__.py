@@ -36,7 +36,7 @@ def retrieve_image(capierreParsing: CapierreParsing):
         )
         retrieved_bytes = capierreObject.extract()
         if (capierreParsing.output_file_retreive == ""):
-            msg_success(f'Message: {retrieved_bytes.decode('utf-8')}')
+            msg_success(f"Message: {retrieved_bytes.decode('utf-8')}")
         else:
             msg_success(f'File extracted successfully')
         image.close()
