@@ -6,7 +6,8 @@ from PIL import Image
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem, QWidget, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QLineEdit, QPushButton, QMessageBox, QGridLayout
 from sidebar_ui import Ui_MainWindow
-sys.path.append('../tool/src/')
+from importlib import resources
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../tool/src/')))
 from capierre import Capierre
 from capierreAnalyzer import CapierreAnalyzer
 from capierreImage import CapierreImage
@@ -244,14 +245,21 @@ class MainWindow(QMainWindow):
     def load_challenges(self, folder_path='./challenges'):
         self.ui.challenge_list.clear()
 
-        if not os.path.exists(folder_path):
-            print(f"Challenge folder {folder_path} not found.")
+        if hasattr(sys, "_MEIPASS"):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+
+        challenges_path = os.path.join(base_path, folder_path)
+
+        if not os.path.exists(challenges_path):
+            print(f"Challenge folder {challenges_path} not found.")
             return
 
-        for filename in os.listdir(folder_path):
+        for filename in os.listdir(challenges_path):
             if filename.endswith('.json'):
                 try:
-                    with open(os.path.join(folder_path, filename), 'r', encoding='utf-8') as f:
+                    with open(os.path.join(challenges_path, filename), 'r', encoding='utf-8') as f:
                         challenge = json.load(f)
                         item_widget = ChallengeWidget(challenge)
 
@@ -371,7 +379,14 @@ class ChallengeWidget(QWidget):
             QMessageBox.warning(self, "No file", "No file specified.")
             return
 
-        source_path = os.path.join('./challenge_files', file_name)
+        if hasattr(sys, "_MEIPASS"):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+
+        challenge_path = os.path.join(base_path, "challenge_files")
+
+        source_path = os.path.join(challenge_path, file_name)
         if not os.path.exists(source_path):
             QMessageBox.warning(self, "File not found", f"{file_name} not found.")
             return
@@ -386,7 +401,14 @@ class ChallengeWidget(QWidget):
         if not submitted_file:
             return
 
-        expected_file_path = os.path.join('./expected_output', self.challenge.get('file'))
+        if hasattr(sys, "_MEIPASS"):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+
+        expected_output_path = os.path.join(base_path, "./expected_output")
+
+        expected_file_path = os.path.join(expected_output_path, self.challenge.get('file'))
 
         # Vérifie l'égalité (contenu binaire) ou appelle ta fonction de comparaison
         try:
@@ -434,8 +456,15 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     try:
-        with open('style.qss', 'r') as style_files:
-            style_str = style_files.read()
+        if hasattr(sys, "_MEIPASS"):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+
+        qss_path = os.path.join(base_path, "style.qss")
+
+        with open(qss_path, "r") as f:
+            style_str = f.read()
         app.setStyleSheet(style_str)
     except FileNotFoundError:
         print("Style file not found. Proceeding without stylesheet.")
