@@ -78,7 +78,15 @@ class MainWindow(QMainWindow):
     def show_info_messagebox(self): 
         msg = QtWidgets.QMessageBox() 
         msg.setIcon(QtWidgets.QMessageBox.Information) 
-        msg.setText("SUCCESS: Binary compiled successfully.")
+        msg.setText("SUCCESS: Binary compiled successfully.\nIf you used a .c/.cpp file, the output is a file called result_binary.bin")
+        msg.setWindowTitle("Information MessageBox") 
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()
+
+    def show_info_messagebox_pic(self): 
+        msg = QtWidgets.QMessageBox() 
+        msg.setIcon(QtWidgets.QMessageBox.Information) 
+        msg.setText("SUCCESS: Content hidden successfully inside 'Modified Image.png'.")
         msg.setWindowTitle("Information MessageBox") 
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
@@ -86,7 +94,7 @@ class MainWindow(QMainWindow):
     def show_info_messagebox_retrieve(self): 
         msg = QtWidgets.QMessageBox() 
         msg.setIcon(QtWidgets.QMessageBox.Information) 
-        msg.setText("SUCCESS: Content extracted successfully.")
+        msg.setText("SUCCESS: Content extracted successfully inside the MESSAGE file.")
         msg.setWindowTitle("Information MessageBox") 
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
@@ -94,7 +102,7 @@ class MainWindow(QMainWindow):
     def show_info_messagebox_retrieve_failure(self): 
         msg = QtWidgets.QMessageBox() 
         msg.setIcon(QtWidgets.QMessageBox.Information) 
-        msg.setText("FAILURE: An error occured.\nIt means that you haven't selected the correct retrieval or conceal method.\nYou may try again.")
+        msg.setText("FAILURE: An error occured.\nYou haven't selected the correct retrieval or conceal method.\nYou may try again.")
         msg.setWindowTitle("Information MessageBox") 
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
@@ -174,16 +182,17 @@ class MainWindow(QMainWindow):
                 "result_binary.bin",
             )
             capierreObject.hide_information()
+            self.show_info_messagebox()
         else:
             image = Image.open(box_value_file)
             capierreObject = CapierreImage(
                 image,
-                "Modified Picture.png",
+                "Modified Image.png",
                 42
             )
             capierreObject.hide(box_value_bytes)
             image.close()
-        self.show_info_messagebox()
+            self.show_info_messagebox_pic()
         self.ui.lineEdit.setText("")
         self.ui.lineEdit_2.setText("")
         self.ui.lineEdit_3.setText("")
