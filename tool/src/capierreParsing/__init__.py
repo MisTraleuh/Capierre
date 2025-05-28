@@ -15,12 +15,14 @@ class CapierreParsing:
         self.version = "1.0.0"
         self.file = str()
         self.type_file = str()
-        self.sentence = str()
+        self.sentence = bytes()
+        self.seed = 42
         self.password = str()
-        self.binary_file = "capierre_binary"
+        self.binary_file = str()
         self.output_file_retreive = str()
         self.conceal = False
         self.retrieve = False
+        self.image = False
         self.mode = False
 
     def print_help(self: CapierreParsing) -> None:
@@ -33,11 +35,13 @@ class CapierreParsing:
         print(f"  -v, --version  Show version of the tool")
         print(f"  -c, --conceal  Hide a message")
         print(f"  -r, --retrieve Retrieve a message")
+        print(f"  -i, --image Switch to Image Mode. Default: Normal Mode")
         print(f"  -fth, --file-to-hide <file>  File to hide")
         print(f"  -s, --sentence <sentence>  Sentence to hide")
         print(f"  -p, --password <password>  Password for encryption")
-        print(f"  -f, --file <file>  File to compile or to retrieve")
+        print(f"  -f, --file <file>  Input file to compile or to retrieve")
         print(f"  -o, --output <file>  Output file")
+        print(f"  -sd, --seed <number>  Optional: Seed used by the image algorithm")
         print(f"  -m, --mode Changes the retrieval process into Compiled mode. Default is Compilation mode")
 
     def check_file(self: CapierreParsing) -> bool:
@@ -52,11 +56,14 @@ class CapierreParsing:
             "elf": bytes([0x7F, 0x45, 0x4C, 0x46]),
             "mach-o": bytes([0xCF, 0xFA, 0xED, 0xFE]),
             "macho-o-universal": bytes([0xCA, 0xFE, 0xBA, 0xBE]),
+            "pe": bytes([0x4D, 0x5A])
         }
+
         extension_files = {
             "c": ".c",
             "cpp": ".cpp",
         }
+
         try:
             if self.file is None:
                 raise FileNotFoundError()
@@ -110,6 +117,23 @@ class CapierreParsing:
             ]
         return str()
 
+    def argv_to_seed(self: CapierreParsing, argv: list[str]) -> str:
+        """
+        This function gets the seed from the arguments
+        @param args - The arguments
+        @return int - The seed
+        """
+        try:
+            if any(arg in argv for arg in ["--seed", "-sd"]):
+                return int(argv[
+                    (argv.index("--seed") if "--seed" in argv else argv.index("-sd"))
+                    + 1
+                ])
+            return 42
+        except:
+            msg_error("The chosen seed isn't a valid integer.")
+            return -1
+
     def argv_to_sentence(self: CapierreParsing, argv: list[str]) -> str:
         """
         This function gets the sentence from the arguments
@@ -121,13 +145,13 @@ class CapierreParsing:
             return argv[
                 (argv.index("--sentence") if "--sentence" in argv else argv.index("-s"))
                 + 1
-            ]
+            ].encode('utf-8')
         if any(arg in argv for arg in ["--file-to-hide", "-fth"]):
-            file_index = self.get_args(("--file-to-hide", "-fth"))
+            file_index = self.get_args(("str()--file-to-hide", "-fth"))
             if os.path.exists(file_index) == False:
                 msg_error(f"File not found: {file_index}")
                 exit(1)
-            with open(file_index, "r") as file:
+            with open(file_index, "rb") as file:
                 return file.read()
         return str()
 
@@ -135,20 +159,21 @@ class CapierreParsing:
         if len(sys.argv) < 5:
             msg_error(f"Not good number of args\nUsage: {self.name} -h")
             return (False, 1)
-        if not any(
-            arg in sys.argv for arg in ["--sentence", "-s", "--file-to-hide", "-fth"]
-        ):
-            msg_error(
-                f'"--sentence", "-s", "--file-to-hide or "-fth" not found\nUsage: {self.name} -h'
-            )
+        if not any(arg in sys.argv for arg in ["--sentence", "-s", "--file-to-hide", "-fth"]):
+            msg_error(f'"--sentence", "-s", "--file-to-hide or "-fth" not found\nUsage: {self.name} -h')
             return (False, 1)
 
         self.file = self.get_args(("--file", "-f"))
+        self.seed = self.argv_to_seed(sys.argv)
         self.sentence = self.argv_to_sentence(sys.argv)
         self.password = self.argv_to_password(sys.argv)
 
+        if (self.seed < 0):
+            return (False, 1)
         if any(arg in sys.argv for arg in ["--output", "-o"]):
             self.binary_file = self.get_args(("--output", "-o"))
+        if (self.binary_file == "" and self.image == False):
+            self.binary_file = "capierre_binary"
         if (platform.system() == 'Windows' and self.binary_file.split('.')[-1] != 'exe'):
             self.binary_file = f"{self.binary_file}.exe"
         if os.path.exists(self.file) == False:
@@ -174,13 +199,16 @@ class CapierreParsing:
         ALL_ARGS = {
             "help": ("--help", "-h"),
             "version": ("--version", "-v"),
+            "conceal": ("--conceal", "-c"),
+            "retrieve": ("--retrieve", "-r"),
+            "image": ("--image", "-i"),
             "file_to_hide": ("--file-to-hide", "-fth"),
             "sentence": ("--sentence", "-s"),
             "password": ("--password", "-p"),
             "file": ("--file", "-f"),
-            "retrieve": ("--retrieve", "-r"),
-            "conceal": ("--conceal", "-c"),
-            "mode": ("--mode", "-m")
+            "output": ("--ouput", "-o"),
+            "seed": ("--seed", "-sd"),
+            "mode": ("--mode", "-m"),
         }
 
         if any(arg in sys.argv for arg in ALL_ARGS["help"]):
@@ -202,6 +230,8 @@ class CapierreParsing:
         if not any(arg in sys.argv for arg in ["--file", "-f"]):
             msg_error(f'"--file", "-f" not found\nUsage: {self.name} -h')
             return (False, 1)
+        if any(arg in sys.argv for arg in ALL_ARGS["image"]):
+            self.image = True
         if any(arg in sys.argv for arg in ALL_ARGS["mode"]):
             self.mode = True
         if self.conceal == True:

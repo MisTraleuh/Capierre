@@ -1,19 +1,26 @@
-# 🛠️ Fonctionnement du tool Capierre
+# 🧠 Documentation des algorithmes du CAPIERRE
 
-Vu que le tool peut à la fois prendre en paramètre:
-- un fichier `.c`, donc un fichier source C, pas encore compilé,
-- un fichier `.cpp` donc un fichier source C++, pas encore compilé,
-- un fichier `.exe` déjà compilé, (c'est à dire compilé sur Windows) qui est un fichier binaire exécutable qui peut être exécuté sur Windows, 
-- un fichier `.out` déjà compilé, (c'est à dire compilé sur Ubuntu) qui est un fichier binaire exécutable qui peut être exécuté sur Ubuntu.
-- un fichier `.app` déjà compilé, (c'est à dire compilé sur macOS) qui est un fichier binaire exécutable qui peut être exécuté sur macOS.
+## 🔧 Gestion des différents types de fichiers
 
-Nous allons voir comment le tool s'adaptera à ces cas de figure.
+L'**outil Capierre** peut prendre en charge plusieurs formats de fichiers, et adapte son comportement en fonction de celui-ci :
 
-## 📂 Fichier source
+- **`.c`** : Fichier source C (non compilé)  
+- **`.cpp`** : Fichier source C++ (non compilé)  
+- **`.exe`** : Binaire compilé pour **Windows**  
+- **`.out`** : Binaire compilé pour **Linux (Ubuntu)**  
+- **`.app`** : Binaire compilé pour **macOS**
 
-Pour les fichiers `.c` et `.cpp`, le tool va compiler le fichier source en un fichier binaire exécutable `.exe` sur Windows, `.out` sur Ubuntu et `.app` sur macOS. Ensuite, il va intégrer les informations dans le binaire exécutable et le rendre fonctionnel.
+---
 
-Pour se faire nous avons cette partie là qui regarde si le fichier à une extension `.c` ou `.cpp`:
+## 📂 Fichiers source : `.c` et `.cpp`
+
+Lorsque l'utilisateur fournit un fichier source, Capierre :
+
+1. Détecte le type de fichier.
+2. Compile le fichier source avec `gcc` ou `g++` selon l’extension.
+3. Intègre une phrase cachée dans le binaire via une section personnalisée.
+
+### 🔍 Détection de l’extension
 
 ```python
 extension_files = {
@@ -38,7 +45,9 @@ except Exception as e:
     return False
 ```
 
-Pour compiler le fichier source, nous avons cette partie là:
+### ⚙️ Compilation conditionnelle
+
+Selon l’extension détectée, le compilateur adéquat est sélectionné (`gcc` ou `g++`) :
 
 ```python
 def hide_information(self: object) -> None:
@@ -57,7 +66,20 @@ def hide_information(self: object) -> None:
         sys.exit(1)
 ```
 
-Ensuite, pour intégrer les informations dans le binaire exécutable, nous avons cette partie pour cacher les informations:
+---
+
+## 🛠 Injection des informations dans le binaire
+
+L’objectif de ces étapes est d’insérer discrètement **une phrase à cacher** dans le fichier binaire.
+
+### 🧪 Fonction `create_malicious_file`
+
+Cette fonction génère deux fichiers temporaires :
+
+1. Un fichier binaire contenant la phrase à dissimuler.
+
+2. Un fichier source `.c` contenant une directive assembleur pour inclure ce binaire via `.incbin` dans une section personnalisée.
+
 
 ```python
 def create_malicious_file(self: object, sentence_to_hide: str | bytes) -> tuple[str, str]:
@@ -96,7 +118,31 @@ def create_malicious_file(self: object, sentence_to_hide: str | bytes) -> tuple[
     malicious_code_fd.write(malicious_code.encode())
     malicious_code_fd.close()
     return (malicious_code_fd.name, sentence_to_hide_fd.name)
+```
 
+#### ⚠️ Pourquoi utiliser __asm et .incbin ?
+>En C (GCC), la directive `__asm` permet d’écrire du code assembleur inline.\
+>La directive `.incbin` permet d’inclure un fichier binaire directement dans un fichier source.\
+>La directive `.section` permet de choisir une section spécifique pour insérer le contenu.
+
+Plus d'informations sont disponibles [ici](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html).
+
+
+---
+
+### 🧪 Fonction `compile_code`
+
+Cette fonction réalise les étapes suivantes:
+
+1. Crée les fichiers temporaires avec `create_malicious_file`.
+
+2. Compile le fichier source + code injecté.
+
+3. Supprime les fichiers temporaires.
+
+4. Gère les erreurs de compilation.
+
+```python
 def compile_code(self: object, file_path: str, sentence_to_hide: str | bytes, compilator_name: str) -> None:
     """
     This function compiles the code with the hidden sentence.
@@ -123,72 +169,37 @@ def compile_code(self: object, file_path: str, sentence_to_hide: str | bytes, co
     msg_success('Code compiled successfully')
 ```
 
-Si on décompase les fonctions `create_malicious_file` et `compile_code`, on peut voir que la fonction `create_malicious_file` crée un fichier temporaire qui contient les informations à cacher et la fonction `compile_code` compile le fichier source avec les informations cachées.
-
-#### Que fais la fonction ``create_malicious_file`` ?
-
-Notre fonction ``create_malicious_file``:
-- Prend en paramètre une phrase à cacher
-- Elle va créer un ``fichier temporaire`` qui contient la phrase à cacher et la ``section`` où nous allons cacher la phrase
-- Elle va créer un nouveau ``fichier temporaire`` qui contient le code assembleur qui va inclure l'ancien ``fichier temporaire`` qui contient la phrase à cacher dans la section que nous avons créée.
-- Elle va retourner le chemin du fichier temporaire qui contient le code assembleur et le chemin du fichier temporaire qui contient la phrase à cacher.
-
-:::tip 📚 C'est quoi asm ?!
-
-En C et surtout dans le compilateur GCC, nous avons une directive qui s'appelle ``__asm``. Elle existe sous plusieurs variantes comme:
-- ``__asm__``
-- ``__asm``
-- ``asm``
-- ``asm__``
-
-Ce qui nous permet d'écrire directement du code assembleur dans un fichier source C ou C++.
-Et dans les instructions assembleur nous avons une directive qui s'appelle ``.incbin`` qui nous permet comme son nom l'indique d'inclure un fichier binaire dans le fichier source ``incbin -> inlcude binary``. Comme nous ne voullons pas que le fichier binaire soit visible, nous allons le cacher dans une section spécifique du binaire c'est pourquoi nous avons une autre directive qui s'appelle ``.section`` qui nous permet de créer une section dans le binaire.
-
-Vous pouvez avoir plus d'information sur cette directive [ici](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html).
-:::
-
-Maintenant nous allons parler de la fonction ``compile_code``.
-
-#### Que fais la fonction ``compile_code`` ?
-
-Notre fonction ``compile_code``:
-- Prend en paramètre le chemin du fichier source, la phrase à cacher et le compilateur à utiliser
-- Elle va appeler la fonction ``create_malicious_file`` pour créer les fichiers temporaires
-- Elle va compiler le fichier source avec les fichiers temporaires
-- Elle va supprimer les fichiers temporaires
-- Si la compilation échoue, elle va lever une exception
-
-Ce qui nous fais par exemple une commande comme celle-ci:
-
+**Lors de la compilation automatisée, un exemple de commande générée pourrait être:**
 ```bash
 $ gcc file.c /tmp/TMP_DIR123456789/tmp_file.c -o capierre_binary
 ```
 
-:::tip 🤓 Mais comment notre fichier temporaire tmp_file.c inclus notre malicious_file dans le binaire compilé ?
-A la compilation de notre fichier source, le compilateur va inclure le contenu de notre fichier temporaire dans le binaire compilé. C'est pourquoi nous avons créé une section spécifique pour cacher notre fichier temporaire. Et c'est pourquoi nous avons utilisé la directive ``.incbin`` pour inclure notre fichier temporaire dans le binaire compilé.
+---
 
-**L'instruction ``__asm`` est directement prise en compte quand le compilateur compile le fichier source.**
-:::
+## 📑 Choix de la section dans le binaire
+Au lieu d’utiliser `.rodata`, Capierre utilise la section `.eh_frame` ou équivalent selon l’OS.
 
-## 📑 Les sections dans un binaire
+### ❌ Pourquoi ne pas utiliser .rodata ?
+Utiliser .rodata peut causer des conflits : des constantes utilisateur contenant les mêmes magic numbers (comme vu précedemment [ici](#📑-les-sections-dans-un-binaire) 👀) que Capierre peuvent être interprétées à tort comme des messages cachés.
 
-Si vous avez lu jusqu'ici, vous avez compris que nous avons créé une section spécifique pour cacher notre fichier temporaire.
-:::danger 😧 Mais comment choisir une section d'un binaire qui n'aura jamais et aucun impact sur le fonctionnement du binaire ?
-:::
+Par exemple, le code problématique suivant introduit la valeur `CapierreMagic.MAGIC_NUMBER_START` au sein de cette section:
+```c
+const char *brokeCapierre = "\x43\x41\x50\x49\x45\x52\x52\x45";
+```
 
-Pour cela, nous avons créé une classe qui s'appelle ``CapierreMagic`` qui contient toutes les informations cruciales pour cacher les informations dans un binaire.
+Après plusieurs recherches sur les sections sur ce site [la](https://sysblog.informatique.univ-paris-diderot.fr/2024/04/01/le-format-elf-executable-and-linkable-format/). Nous avons choisi d'utiliser la section ``.eh_frame``.
+
+### ✅ Pourquoi utiliser .eh_frame ?
+Capierre utilise la section .eh_frame (ou équivalent) pour plusieurs raisons :
+
+1. Présente par défaut sur toutes les plateformes (Windows, Linux, macOS)
+
+2. Peu susceptible d’interférer avec les autres données du programme
+
+3. Permet une injection discrète et robuste
+
 
 ```python
-class CapierreMagic():
-    def __init__(self):
-        self.CIE_INFORMATION = b"\0\0\0\0\1\0\0\0\x10"
-        self.MAGIC_NUMBER_START = b"CAPIERRE"
-        self.MAGIC_NUMBER_END = self.MAGIC_NUMBER_START[::-1] + (b"\0" * 4)
-        self.MAGIC_NUMBER_START_LEN = len(self.MAGIC_NUMBER_START)
-        self.MAGIC_NUMBER_END_LEN = len(self.MAGIC_NUMBER_END)
-        self.SECTION_HIDE = self.choose_section_hide()
-        self.SECTION_RETRIEVE = self.choose_section_retrieve()
-
     """
     This function chooses the section to hide the information
     @return str - The section to hide the information | CAN BE None
@@ -224,30 +235,293 @@ class CapierreMagic():
         return section
 ```
 
-Pour être totalement transparent, au tout début de la création de l'outil, nous avons choisi une section nommée ``.rodata`` pour cacher les informations. Mais après plusieurs tests, nous avons remarqué que cette section est utilisée par le compilateur pour stocker les constantes du programme. 
+### 🧬 Classe CapierreMagic
 
-:::warning 🚨 Pourquoi ne pas utiliser la section <code>.rodata</code> ?
-Si nous utilisons la section ``.rodata`` pour cacher les informations, nous allons avoir certains problèmes majeurs comme:
+Cette classe centralise:
 
-- Vu que pour retrouver le message nous utilisons des magics number (comme vous l'avez vu avant [ici](#📑-les-sections-dans-un-binaire) 👀), si des personnes mettent des constantes tel comme ça:
-```c
-const char *brokeCapierre = "\x43\x41\x50\x49\x45\x52\x52\x45";
+- Les magic numbers pour repérer les données cachées
+
+- Les sections utilisées pour dissimuler ou retrouver les messages
+
+
+```python
+class CapierreMagic():
+    def __init__(self):
+        self.CIE_INFORMATION = b"\0\0\0\0\1\0\0\0\x10"
+        self.MAGIC_NUMBER_START = b"CAPIERRE"
+        self.MAGIC_NUMBER_END = self.MAGIC_NUMBER_START[::-1] + (b"\0" * 4)
+        self.MAGIC_NUMBER_START_LEN = len(self.MAGIC_NUMBER_START)
+        self.MAGIC_NUMBER_END_LEN = len(self.MAGIC_NUMBER_END)
+        self.SECTION_HIDE = self.choose_section_hide()
+        self.SECTION_RETRIEVE = self.choose_section_retrieve()
 ```
-Le compilateur va alors mettre cette constante dans ``.rodata``. Et alors la valeur de cette variable va être le début de notre ``Magic Number`` soit ``CapierreMagic.MAGIC_NUMBER_START``. Ce qui va faire que notre tool, va alors pensé que c'est le début d'un message caché. Alors que ce n'est pas le cas.
 
-:::
+### 🧪 Fonction `load_angr_project`
 
-Après plusieurs recherches sur les sections sur ce site [la](https://sysblog.informatique.univ-paris-diderot.fr/2024/04/01/le-format-elf-executable-and-linkable-format/). Nous avons choisi d'utiliser la section ``.eh_frame``.
+Objet :
+Charge le binaire dans un projet angr, analyse la section .text et extrait les instructions arithmétiques (add/sub) adaptées à l'encodage stéganographique.
 
-:::tip 🤓 Pourquoi la section <code>.eh_frame</code> ?
-La section ``.eh_frame`` est une section qui est utilisée pour stocker les informations sur les exceptions. Voici les raisons pour lequelles nous avons choisi cette section:
-- Vu qu'uniquement les exeptions sont stocker, nous empêchons des possibles recidive avec l'utilisateur comme vu dans l'exemple précedent. Le binaire final ne sera impacté par les informations cachées.
-- Cette section est toujours présente dans un binaire, peu importe la plateforme utilisée. Ce qui n'est pas forcément le cas pour la section ``.note`` et/ou ``.comment``.
-- Elle a très peu d'impace sur le binaire final.
-:::
+Étapes :
 
-Avec toutes ces informations, la section ``.eh_frame`` est la section parfaite pour cacher les informations dans un binaire.
+- Utilisation de LIEF pour identifier la section .text de manière heuristique.
+- Démonte le code à l'aide de Capstone.
+- Filtre les instructions arithmétiques avec des valeurs immédiates.
+- Traite à la fois les binaires standard (PE et ELF) et les binaires Mach-O, qui n'ont pas de dimensionnement correct des symboles.
 
-## 📦 Fichier binaire exécutable
+Retourne :
 
-[...]
+- Une liste d'objets Instruction utilisables.
+- Les valeurs de l'offset, de la taille et de l'adresse virtuelle de la section .text.
+
+```python
+def load_angr_project(self: Capierre, filepath: str):
+        try:
+            capierre_magic = CapierreMagic()
+            capstoneProjModule, project, supported = self.get_correct_architecture(filepath)
+
+            # WARN: Pylint doesn't recognise the angr library's definitions.
+            # pylint: disable=E1101
+
+            #if supported == False:
+            #    return self.load_mac_binaries(filepath)
+
+            text_section = None
+            # This is done instead of calling get_section() because some binaries we tested had improperly named sections.
+            for section in project.sections:
+                if section.name.startswith(capierre_magic.SECTION_HIDE_TEXT):
+                    text_section = section
+                    break
+                elif section.name.startswith('__text'):
+                    text_section = section
+                    break
+
+            if text_section is None:
+                raise NonexistentTextSection()
+
+            end_text_section: int = text_section.virtual_address + text_section.size
+            instruction_list: list = []
+            tmp_unduplicated: list = []
+            instruction_list_unique: list = []
+            len_sentence: int = len(self.sentence) * 8 + 32
+            valid_func_list: deque = deque()
+
+            if supported == True:
+                valid_func_list = deque(filter(lambda sym: text_section.virtual_address <= sym.value < end_text_section and 0 < sym.size, project.functions))
+
+                while 0 < len(valid_func_list) and len(instruction_list) < len_sentence:
+                    for func in list(valid_func_list):
+                        if len_sentence <= len(instruction_list):
+                            break
+                        code = project.get_content_from_virtual_address(func.value, func.size)
+                        instruction_list += list(map(InstructionSetWrapper, filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, func.value))))
+                        valid_func_list.popleft()
+
+                    instruction_list = list(dict.fromkeys(instruction_list))
+
+            else:
+                # Mach-O binaries are strange in that, while they will provide symbols... somewhat, non of them have an explicit size.
+                # The obvious logical thing to do is reorder the symbols by value and calculate the difference between their respective addresses.
+                # Due to alignment however, the next address might begin after padding data which might be 0s or NOP instructions.
+                # In very rare cases, there is a non zero chance that padding data might be garbage.
+                # We'll assume for this release that it might be negligible enough.
+                valid_func_list = deque(sorted(filter(lambda sym: sym.type == lief.MachO.Symbol.TYPE.SECTION and text_section.virtual_address <= sym.value < end_text_section, project.symbols), key=lambda sym: sym.value))
+                print(len(valid_func_list))
+                while 1 < len(valid_func_list) and len(instruction_list) < len_sentence:
+                    #The final value will be ignored, that's okay for now.
+                    for sym1, sym2 in zip(list(valid_func_list), list(valid_func_list)[1:]):
+                        if len_sentence <= len(instruction_list):
+                            break
+                        code = project.get_content_from_virtual_address(sym1.value, sym2.value - sym1.value)
+                        instruction_list += list(map(InstructionSetWrapper, filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, sym1.value))))
+                        valid_func_list.popleft()
+
+                    instruction_list = list(dict.fromkeys(instruction_list))
+
+            instruction_list_unique = [wrapped.ins for wrapped in instruction_list[0:len_sentence]]
+            return instruction_list_unique, text_section.offset, text_section.size, text_section.virtual_address
+
+        except cle.errors.CLECompatibilityError:
+            msg_error("The chosen file is incompatible")
+            return [], 0, 0, 0
+        except cle.errors.CLEUnknownFormatError:
+            msg_error("The file format is incompatible")
+            return [], 0, 0, 0
+        except cle.errors.CLEInvalidBinaryError:
+            msg_error("The chosen binary file is incompatible")
+            return [], 0, 0, 0
+        except NonexistentTextSection:
+            msg_error("The chosen binary file doesn't have a properly named text section.")
+            return [], 0, 0, 0
+        except Exception as e:
+            raise e
+            msg_error("An uncatalogued exception occured.")
+            return [], 0, 0, 0
+```
+
+### 🧪 Fonction `compile_asm`
+
+Compile une instruction d'assemblage (add ou sub) en fonction du bit d'entrée. Si le bit est à 1, l'instruction est inversée (par exemple, sub devient add) et vice versa, ce qui permet de coder efficacement le bit.
+
+Traitement :
+- Convertit l'instruction en syntaxe Intel.
+- Compile l'instruction à l'aide de GCC via un sous-processus.
+- Supprime les sections inutiles (par exemple, .note.gnu.property).
+
+Valeur de retour:
+
+Tuple contenant l'adresse de l'instruction et les octets compilés, ou None si aucune modification n'est nécessaire.
+
+```python
+    def compile_asm(
+        self: Capierre,
+        bit: int,
+        instruction: Instruction
+    ) -> None | tuple[int, bytes]:
+        """
+        This function is used with external programs to convert assembly op
+        codes.
+
+        @param bit: `int` - The bit for the conversion.
+        @param instruction: `Instruction` - The instruction object.
+        """
+        capierre_magic = CapierreMagic()
+
+        if (
+            (bit and instruction.mnemonic == 'add') or
+            (not bit and instruction.mnemonic == 'sub')
+        ):
+            return None
+        if (
+            (bit and instruction.mnemonic == 'sub') or
+            (not bit and instruction.mnemonic == 'add')
+        ):
+            args = instruction.op_str.split(', ')
+            immediate = -int(args[1], 16)
+
+            if instruction.mnemonic == 'sub':
+                asm = f".intel_syntax noprefix\nadd {args[0]}, {immediate}\n"
+            else:
+                asm = f".intel_syntax noprefix\nsub {args[0]}, {immediate}\n"
+            with tempfile.NamedTemporaryFile() as tmpfile:
+                # TODO: Check the GNU C Compiler to be above 14.
+                subprocess.run(
+                    capierre_magic.COMPILE_GCC + (tmpfile.name, '-'),
+                    input=bytes(asm, "ascii"),
+                    check=False
+                )
+
+                binary = tmpfile.read()
+                # Filter out the .note.gnu.property section that is forcibly added by ld in gcc versions > 11.
+                if len(binary) > 4096:
+                    binary = binary[4096:]
+
+            return (instruction.address, list(binary))
+        msg_error('[!] Invalid operand.')
+        return None
+```
+
+### 🧪 Fonction `hide_in_compiled_binaries`
+
+Incorporer un message dans la section du code exécutable d'un binaire en modifiant les instructions de la machine pour coder les bits (0 ou 1) en fonction du choix de l'instruction (add vs sub).
+
+Etapes :
+
+1. Extraction de la liste des instructions et des métadonnées de la section .text :
+
+    - Appelle load_angr_project(filepath) pour obtenir :
+        - Instructions à modifier.
+        - Offset/taille/adresse de la section .text.
+
+2. Préparation du message :
+
+    - Convertit le message (phrase_à_cacher) en un flux binaire.
+    - Préfixe le flux binaire avec 32 bits codant la longueur du message.
+
+3. Vérification de la capacité d'instruction :
+
+    - Vérifie que le système binaire contient suffisamment d'instructions modifiables pour stocker tous les bits.
+
+4. Remplacement des instructions via le multithreading :
+
+    - Utilise un ThreadPool pour remplacer les instructions en fonction des valeurs des bits :
+
+        - bit=1 : génère une instruction d'addition.
+        - bit=0 : génère une instruction de soustraction.
+
+    - Le résultat est une séquence d'instructions binaires (octets) et leurs adresses correspondantes.
+
+5. Modification binaire :
+
+    - Modifie la section .text en remplaçant les instructions d'origine par des instructions générées.
+    - Écriture du binaire modifié sur le disque.
+
+```python
+    def hide_in_compiled_binaries(
+        self: Capierre,
+        filepath: str,
+        sentence_to_hide: bytes
+    ):
+        """
+        Hides the current sentence into the already compiled binary.
+
+        @param filepath: `str` - The path to the binary file.
+        @param sentence_to_hide: `bytes` - The sentence to hide.
+        """
+        instruction_list, text_section_offset, text_section_size, text_section_addr = self.load_angr_project(filepath)
+
+        if instruction_list == []:
+            msg_error("FATAL: Instruction list is empty.")
+            return
+
+        with open(filepath, 'r+b') as file:
+            read_bin = file.read()
+            text_block = bytearray(
+                read_bin[
+                    text_section_offset:text_section_offset +
+                    text_section_size
+                ]
+            )
+
+            bitstream: list[int] = [
+                self.access_bit(sentence_to_hide, i) for i in range(
+                    len(sentence_to_hide) * 8
+                )
+            ]
+            bitstream = [self.retrieve_int_byte(len(sentence_to_hide), i, 32) for i in range(0, 32)] + bitstream
+
+            if (len(instruction_list) < len(bitstream)):
+                msg_error(f"FATAL: Binary has {len(instruction_list)} bits available but at least {len(bitstream)} are required.")
+                return
+
+            threads = ThreadPool(os.cpu_count())
+            instructions: tuple[tuple[int, bytes]] = tuple(filter(
+                lambda ins: ins is not None,
+                threads.starmap(
+                    self.compile_asm, zip(bitstream, instruction_list)
+                )
+            ))  # type: ignore
+
+            for instruction in instructions:
+                text_block[
+                    instruction[0] - text_section_addr:
+                    instruction[0] - text_section_addr +
+                        len(instruction[1])
+                ] = instruction[1]
+            read_bin = (
+                read_bin[:text_section_offset] +
+               text_block +
+                read_bin[text_section_offset + text_section_size:]
+            )
+
+            file.seek(0)
+            file.truncate(0)
+            file.write(read_bin)
+            file.close()
+```
+
+---
+
+## 📌 Conclusion
+
+Grâce à un système intelligent d’analyse, de compilation et d’injection, Capierre permet de cacher des données dans des fichiers binaires compilés, sans altérer leur fonctionnement.\
+Le choix précis de la section .eh_frame assure la fiabilité de l’opération sur toutes les plateformes.

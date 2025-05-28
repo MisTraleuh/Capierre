@@ -66,3 +66,59 @@ jobs:
         run: |
           chmod +x launch_tests.sh
           ./launch_tests.sh "fonctionnel"
+
+      - name: Build gui
+        working-directory: ./gui
+        run: |
+          arch -x86_64 pyinstaller                                \
+            --collect-all z3                                      \
+            --collect-all pyvex                                   \
+            --collect-all angr                                    \
+            --collect-all unicorn                                 \
+            --collect-all cle                                     \
+            --paths=../tool/src                                   \
+            --add-data "style.qss:."                              \
+            --add-data "./challenges:./challenges"                \
+            --add-data "./challenge_files:./challenge_files"      \
+            --add-data "./expected_output:./expected_output"      \
+            --onefile --name capierre_gui main.py
+
+      - name: Upload gui artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-gui
+          path: dist/capierre_gui*
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-cmd
+          path: dist/capierre_cmd*
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          files: artifacts/**/gui*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          files: artifacts/**/cmd*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

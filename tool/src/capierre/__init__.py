@@ -1,6 +1,9 @@
 # pylint: disable=C0114,C0103
 
 from __future__ import annotations
+import logging
+logging.getLogger("angr").setLevel("CRITICAL")
+logging.getLogger("cle").setLevel("CRITICAL")
 from multiprocessing.pool import ThreadPool
 import sys
 import subprocess
@@ -12,13 +15,17 @@ import itertools
 import functools
 import random
 import angr
+import capstone
 import cle
+import lief
+from PIL import Image
+from collections import deque
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
+from capierreImage import CapierreImage
 from capierreInterface import *
 from capierreError import *
 from utils.messages import msg_success, msg_error, msg_info, msg_warning
-
 
 class Capierre:
     """
@@ -35,7 +42,7 @@ class Capierre:
         self: Capierre,
         file: str,
         type_file: str,
-        sentence: str,
+        sentence: bytes,
         password: str,
         binary_file: str = "capierre_binary",
     ) -> None:
@@ -53,10 +60,9 @@ class Capierre:
         encrypt.
         """
         if len(self.password) == 0:
-            msg_error("You must supply a password.")
             return
         self.sentence = CapierreCipher.cipher(
-            self.sentence.encode('ascii'), self.password, decrypt=decrypt
+            self.sentence, self.password, decrypt=decrypt
         )
 
     def hide_information(self: Capierre) -> None:
@@ -64,21 +70,22 @@ class Capierre:
         This function hides the information in the file
         @return None
         """
-        extension_files = {
+        extension_files_compile = {
             "c": "gcc",
             "cpp": "g++",
         }
 
-        if self.type_file in extension_files:
-            self.compile_code(
-                self.file,
-                self.sentence,
-                extension_files[self.type_file]
-            )
+        extension_files_image = [
+            "png",
+        ]
+
+        self.cipher_information(decrypt=False)
+        if self.type_file in extension_files_compile:
+            self.compile_code(self.file, self.sentence, extension_files_compile[self.type_file])
+        elif self.type_file in extension_files_image:
+            msg_error("FATAL: To conceal within a picture, add the '-i' flag.")
         else:
             self.hide_in_compiled_binaries(self.file, self.sentence)
-#            msg_error("File not supported")
-#            sys.exit(1)
 
     def retrieve_int_byte(self: Capierre, data: int, shift: int, size: int):
         """
@@ -88,21 +95,21 @@ class Capierre:
         @param num: `int` - number.
         @return `int`
         """
-        return (data >> size - shift - 1) & 0x1
+        return (data >> (size - shift - 1)) & 0x1
 
 
-    def access_bit(self: Capierre, data: str, num: int):
+    def access_bit(self: Capierre, data: bytes, num: int):
         """
         Useful function to access a particular bit.
 
-        @param data: `str` - data.
+        @param data: `bytes` - data.
         @param num: `int` - number.
         @return `int`
         """
         base = int(num // 8)
         shift = 7 - int(num % 8)
 
-        return (ord(data[base]) >> shift) & 0x1
+        return (data[base] >> shift) & 0x1
 
     def compile_asm(
         self: Capierre,
@@ -128,7 +135,7 @@ class Capierre:
             (not bit and instruction.mnemonic == 'add')
         ):
             args = instruction.op_str.split(', ')
-            immediate = -int(args[1])
+            immediate = -int(args[1], 16)
 
             if instruction.mnemonic == 'sub':
                 asm = f".intel_syntax noprefix\nadd {args[0]}, {immediate}\n"
@@ -147,115 +154,191 @@ class Capierre:
                 if len(binary) > 4096:
                     binary = binary[4096:]
 
-            return (instruction.address, binary)
+            return (instruction.address, list(binary))
         msg_error('[!] Invalid operand.')
         return None
+
+
+    def get_correct_architecture(self, file_path: str):
+        binary = lief.parse(file_path)
+        cs_arch = None
+        cs_mode = None
+        supported = True
+
+        if isinstance(binary, lief.MachO.Binary):
+            cpu_type = binary.header.cpu_type
+            if cpu_type == lief.MachO.Header.CPU_TYPE.X86:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
+            elif cpu_type == lief.MachO.Header.CPU_TYPE.X86_64:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
+            else:
+                raise ValueError(f"Unsupported Mach-O CPU type: {cpu_type}")
+            supported = False
+
+        elif isinstance(binary, lief.ELF.Binary):
+            machine = binary.header.machine_type
+            if machine == lief.ELF.ARCH.I386:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
+            elif machine == lief.ELF.ARCH.X86_64:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
+            else:
+                raise ValueError(f"Unsupported ELF machine type: {machine}")
+
+        elif isinstance(binary, lief.PE.Binary):
+            machine = binary.header.machine
+            if machine == lief.PE.Header.MACHINE_TYPES.I386:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
+            elif machine == lief.PE.Header.MACHINE_TYPES.AMD64:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
+            else:
+                raise ValueError(f"Unsupported PE machine type: {machine}")
+
+        else:
+            raise TypeError("Unsupported binary format")
+
+        md = capstone.Cs(cs_arch, cs_mode)
+        md.detail = True
+
+        return md, binary, supported
 
     def load_angr_project(self: Capierre, filepath: str):
         try:
             capierre_magic = CapierreMagic()
-            project = angr.Project(
-                filepath,
-                load_options={'auto_load_libs': False}
-            )
+            capstoneProjModule, project, supported = self.get_correct_architecture(filepath)
 
             # WARN: Pylint doesn't recognise the angr library's definitions.
             # pylint: disable=E1101
-            cfg = NodeView(project.analyses.CFGFast().graph.nodes()) # type: ignore
-            text_section = None
 
-            for section in project.loader.main_object.sections:
-                if section.name == capierre_magic.SECTION_HIDE_TEXT or section.name == "__text":
+            #if supported == False:
+            #    return self.load_mac_binaries(filepath)
+
+            text_section = None
+            # This is done instead of calling get_section() because some binaries we tested had improperly named sections.
+            for section in project.sections:
+                if section.name.startswith(capierre_magic.SECTION_HIDE_TEXT):
                     text_section = section
                     break
+                elif section.name.startswith('__text'):
+                    text_section = section
+                    break
+
             if text_section is None:
                 raise NonexistentTextSection()
-            return cfg, text_section
+
+            end_text_section: int = text_section.virtual_address + text_section.size
+            instruction_list: list = []
+            tmp_unduplicated: list = []
+            instruction_list_unique: list = []
+            len_sentence: int = len(self.sentence) * 8 + 32
+            valid_func_list: deque = deque()
+
+            if supported == True:
+                valid_func_list = deque(filter(lambda sym: text_section.virtual_address <= sym.value < end_text_section and 0 < sym.size, project.functions))
+
+                while 0 < len(valid_func_list) and len(instruction_list) < len_sentence:
+                    for func in list(valid_func_list):
+                        if len_sentence <= len(instruction_list):
+                            break
+                        code = project.get_content_from_virtual_address(func.value, func.size)
+                        instruction_list += list(map(InstructionSetWrapper, filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, func.value))))
+                        valid_func_list.popleft()
+
+                    instruction_list = list(dict.fromkeys(instruction_list))
+
+            else:
+                # Mach-O binaries are strange in that, while they will provide symbols... somewhat, non of them have an explicit size.
+                # The obvious logical thing to do is reorder the symbols by value and calculate the difference between their respective addresses.
+                # Due to alignment however, the next address might begin after padding data which might be 0s or NOP instructions.
+                # In very rare cases, there is a non zero chance that padding data might be garbage.
+                # We'll assume for this release that it might be negligible enough.
+                valid_func_list = deque(sorted(filter(lambda sym: sym.type == lief.MachO.Symbol.TYPE.SECTION and text_section.virtual_address <= sym.value < end_text_section, project.symbols), key=lambda sym: sym.value))
+                print(len(valid_func_list))
+                while 1 < len(valid_func_list) and len(instruction_list) < len_sentence:
+                    #The final value will be ignored, that's okay for now.
+                    for sym1, sym2 in zip(list(valid_func_list), list(valid_func_list)[1:]):
+                        if len_sentence <= len(instruction_list):
+                            break
+                        code = project.get_content_from_virtual_address(sym1.value, sym2.value - sym1.value)
+                        instruction_list += list(map(InstructionSetWrapper, filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, sym1.value))))
+                        valid_func_list.popleft()
+
+                    instruction_list = list(dict.fromkeys(instruction_list))
+
+            instruction_list_unique = [wrapped.ins for wrapped in instruction_list[0:len_sentence]]
+            return instruction_list_unique, text_section.offset, text_section.size, text_section.virtual_address
+
         except cle.errors.CLECompatibilityError:
             msg_error("The chosen file is incompatible")
-            sys.exit(1)
+            return [], 0, 0, 0
         except cle.errors.CLEUnknownFormatError:
             msg_error("The file format is incompatible")
-            sys.exit(1)
+            return [], 0, 0, 0
         except cle.errors.CLEInvalidBinaryError:
             msg_error("The chosen binary file is incompatible")
-            sys.exit(1)
+            return [], 0, 0, 0
+        except NonexistentTextSection:
+            msg_error("The chosen binary file doesn't have a properly named text section.")
+            return [], 0, 0, 0
         except Exception as e:
             raise e
-
-    def read_instructions(self: CapierreAnalyzer, node: Node):
-        """
-        This is a helper function for reading and filtering helpful
-        instructions. 
-
-        @param node: `list[NodeView]` - The list of nodes to filter.
-        @return `filter()`
-        """
-        return filter(
-            lambda ins: ins.mnemonic in ('add', 'sub'),
-            (ins for ins in node.block.capstone.insns)  # type: ignore
-        )
-
-    def remove_incorrect_instructions(self: CapierreAnalyzer, instruction: Instruction):
-        args = instruction.op_str.split(', ')
-        try:
-            int(args[1])
-        except ValueError:
-            return None
-        return instruction
+            msg_error("An uncatalogued exception occured.")
+            return [], 0, 0, 0
 
     def hide_in_compiled_binaries(
         self: Capierre,
         filepath: str,
-        sentence_to_hide: str
+        sentence_to_hide: bytes
     ):
         """
         Hides the current sentence into the already compiled binary.
 
         @param filepath: `str` - The path to the binary file.
-        @param sentence_to_hide: `str` - The sentence to hide.
+        @param sentence_to_hide: `bytes` - The sentence to hide.
         """
-        cfg, text_section = self.load_angr_project(filepath)
+        instruction_list, text_section_offset, text_section_size, text_section_addr = self.load_angr_project(filepath)
+
+        if instruction_list == []:
+            msg_error("FATAL: Instruction list is empty.")
+            return
 
         with open(filepath, 'r+b') as file:
             read_bin = file.read()
             text_block = bytearray(
                 read_bin[
-                    text_section.offset:text_section.offset +
-                    text_section.memsize
+                    text_section_offset:text_section_offset +
+                    text_section_size
                 ]
             )
+
             bitstream: list[int] = [
                 self.access_bit(sentence_to_hide, i) for i in range(
                     len(sentence_to_hide) * 8
                 )
             ]
             bitstream = [self.retrieve_int_byte(len(sentence_to_hide), i, 32) for i in range(0, 32)] + bitstream
+
+            if (len(instruction_list) < len(bitstream)):
+                msg_error(f"FATAL: Binary has {len(instruction_list)} bits available but at least {len(bitstream)} are required.")
+                return
+
             threads = ThreadPool(os.cpu_count())
-            nodes = filter(lambda node: node.block is not None, cfg)
-            instruction_list = tuple(itertools.chain(
-                *map(self.read_instructions, nodes)
-            ))
-            # Some instructions that this project supports may come from sections other than the .text section.
-            # As we didn't yet find a way to filter out nodes by sections, this temporary fix is added here.
-            instruction_list = tuple(filter(lambda ins: self.remove_incorrect_instructions(ins) is not None and ins.address - text_section.vaddr <= text_section.memsize and ins.address - text_section.vaddr >= 0, instruction_list))
-            instruction_list = tuple(dict([(str(ins.address), ins) for ins in instruction_list]).values())
             instructions: tuple[tuple[int, bytes]] = tuple(filter(
                 lambda ins: ins is not None,
                 threads.starmap(
                     self.compile_asm, zip(bitstream, instruction_list)
                 )
             ))  # type: ignore
+
             for instruction in instructions:
                 text_block[
-                    instruction[0] - text_section.vaddr:
-                    instruction[0] - text_section.vaddr +
+                    instruction[0] - text_section_addr:
+                    instruction[0] - text_section_addr +
                         len(instruction[1])
                 ] = instruction[1]
             read_bin = (
-                read_bin[:text_section.offset] +
-                text_block +
-                read_bin[text_section.offset + text_section.memsize:]
+                read_bin[:text_section_offset] +
+               text_block +
+                read_bin[text_section_offset + text_section_size:]
             )
 
             file.seek(0)
@@ -265,17 +348,17 @@ class Capierre:
 
     def create_malicious_file(
         self: Capierre,
-        sentence_to_hide: str
+        sentence_to_hide: bytes
     ) -> tuple[str, str, bytes]:
         """
         This function creates a malicious file with the sentence to hide.
 
-        @param sentence_to_hide: `str | bytes` - The sentence to hide.
+        @param sentence_to_hide: `bytes` - The sentence to hide.
         @return `Tuple[str, str]` - The path of the malicious file and the path
         of the sentence to hide.
         """
         capierre_magic = CapierreMagic()
-        data = sentence_to_hide
+        data = bytearray(sentence_to_hide)
         section = capierre_magic.SECTION_HIDE
 
         information_to_hide = b""
@@ -288,7 +371,6 @@ class Capierre:
 
         # https://stackoverflow.com/a/8577226/23570806
         sentence_to_hide_fd = tempfile.NamedTemporaryFile(delete=False)
-        data = bytearray(data.encode())
         rand_step: int = random.randint(1, 16)
         i: int = 0
 
@@ -526,7 +608,7 @@ class Capierre:
     def compile_code(
         self: Capierre,
         file_path: str,
-        sentence_to_hide: str,
+        sentence_to_hide: bytes,
         compilator_name: str
     ) -> None:
         """
@@ -537,10 +619,8 @@ class Capierre:
         @param type_file: `str` - The type of file to compile.
         @return None
         """
-        msg_info(f"Hidden sentence: {sentence_to_hide}")
-        self.cipher_information(decrypt=False)
         (malicious_code_file_path, sentece_to_hide_file_path, encoded_message) = (
-            self.create_malicious_file(self.sentence)
+            self.create_malicious_file(sentence_to_hide)
         )
         compilation_result = subprocess.run(
             [

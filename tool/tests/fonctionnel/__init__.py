@@ -2,7 +2,7 @@ from __future__ import annotations
 import os
 import subprocess
 
-BINARY_PATH = f"{os.getcwd()}/dist/capierre_binary"
+BINARY_PATH = f"{os.getcwd()}/dist/capierre_cmd"
 TEST_PATH = f"{os.getcwd()}/tests/src"
 BINARY_FILE_NAME = f"{os.getcwd()}/capierre_binary" + (".exe" if os.name == 'nt' else "")
 MAGIC_NUMBER_START = "CAPIERRE"

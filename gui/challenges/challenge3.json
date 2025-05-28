@@ -1,0 +1,9 @@
+{
+    "id": 3,
+    "title": "Image Insertion",
+    "description": "This zip file contains an image and a secret.\nHide the file secret_message.txt inside of the provided picture.",
+    "hint": "Try using the hide feature with file mode turned ON.",
+    "file": "Rickroll.zip",
+    "expected_file": "Rickroll.png",
+    "upload_check": true
+}

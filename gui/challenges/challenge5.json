@@ -1,0 +1,8 @@
+{
+    "id": 5,
+    "title": "Image Extraction",
+    "description": "Find the hidden message in this image (NO PASSWORD)",
+    "hint": "Try using the extract feature with default settings.",
+    "file": "challenge1.png",
+    "flag": "stego_is_fun"
+}

@@ -1,14 +1,21 @@
 from __future__ import annotations
+import logging
+logging.getLogger("angr").setLevel("CRITICAL")
+logging.getLogger("cle").setLevel("CRITICAL")
 import sys
 import angr
 import cle
 import itertools
 import functools
+import capstone
+import lief
+from collections import deque
 from utils.messages import msg_success, msg_error, msg_warning
 from capierreMagic import CapierreMagic
 from capierreCipher import CapierreCipher
+from capierreImage import CapierreImage
 from capierreInterface import *
-
+from capierreError import *
 
 class CapierreAnalyzer:
     """
@@ -22,45 +29,164 @@ class CapierreAnalyzer:
         self.output_file_retreive = output_file_retreive
         self.password = password
 
-    def cipher_information(self: CapierreAnalyzer, *, retrieved_content: bytes, decrypt: bool) -> str:
-        if len(self.password) == 0:
-            msg_error("You must supply a password.")
-            return
-        return CapierreCipher.cipher(
-            retrieved_content, self.password, decrypt=decrypt
-        )
+    def cipher_information(self: CapierreAnalyzer, *, retrieved_content: bytes, decrypt: bool) -> bytes:
+        try:
+            if len(self.password) == 0:
+                return retrieved_content
+            return CapierreCipher.cipher(
+                retrieved_content, self.password, decrypt=decrypt
+            )
+        except Exception as e:
+            raise e
+
+    def handle_decrypted(self: CapierreAnalyzer, message_retrieved: str | bytes):
+
+        if self.output_file_retreive != '':
+            with open(self.output_file_retreive, "wb") as file:
+                file.write(message_retrieved)
+        else:
+            msg_success(f"Message: {message_retrieved}")
+
+    def get_correct_architecture(self, file_path: str):
+        binary = lief.parse(file_path)
+        cs_arch = None
+        cs_mode = None
+        supported = True
+
+        if isinstance(binary, lief.MachO.Binary):
+            cpu_type = binary.header.cpu_type
+            if cpu_type == lief.MachO.Header.CPU_TYPE.X86:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
+            elif cpu_type == lief.MachO.Header.CPU_TYPE.X86_64:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
+            else:
+                raise ValueError(f"Unsupported Mach-O CPU type: {cpu_type}")
+            supported = False
+
+        elif isinstance(binary, lief.ELF.Binary):
+            machine = binary.header.machine_type
+            if machine == lief.ELF.ARCH.I386:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
+            elif machine == lief.ELF.ARCH.X86_64:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
+            else:
+                raise ValueError(f"Unsupported ELF machine type: {machine}")
+
+        elif isinstance(binary, lief.PE.Binary):
+            machine = binary.header.machine
+            if machine == lief.PE.Header.MACHINE_TYPES.I386:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_32
+            elif machine == lief.PE.Header.MACHINE_TYPES.AMD64:
+                cs_arch, cs_mode = capstone.CS_ARCH_X86, capstone.CS_MODE_64
+            else:
+                raise ValueError(f"Unsupported PE machine type: {machine}")
+
+        else:
+            raise TypeError("Unsupported binary format")
+
+        md = capstone.Cs(cs_arch, cs_mode)
+        md.detail = True
+
+        return md, binary, supported
 
     def load_angr_project(self: Capierre, filepath: str):
         try:
             capierre_magic = CapierreMagic()
-            project = angr.Project(
-                filepath,
-                load_options={'auto_load_libs': False}
-            )
-
-            # WARN: Pylint doesn't recognise the angr library's definitions.
-            # pylint: disable=E1101
-            cfg = NodeView(project.analyses.CFGFast().graph.nodes()) # type: ignore
+            capstoneProjModule, project, supported = self.get_correct_architecture(filepath)
             text_section = None
 
-            for section in project.loader.main_object.sections:
-                if section.name == capierre_magic.SECTION_HIDE_TEXT:
+            for section in project.sections:
+                if section.name.startswith(capierre_magic.SECTION_HIDE_TEXT):
                     text_section = section
                     break
+                elif section.name.startswith('__text'):
+                    text_section = section
+                    break
+
             if text_section is None:
                 raise NonexistentTextSection()
-            return cfg, text_section
+
+            #Time complexity is O(4n) + O(2m) + O(~32 * 4) which bothers me quite a bit.
+            end_text_section: int = text_section.virtual_address + text_section.size
+            valid_func_list: deque = deque()
+            instruction_list: list = []
+            instruction_list_unique: list = []
+            tmp_queue: deque = deque([])
+
+            if supported == True:
+                valid_func_list = deque(filter(lambda sym: text_section.virtual_address <= sym.value < end_text_section and 0 < sym.size, project.functions))
+                while 0 < len(valid_func_list) and len(instruction_list) < 32:
+                    for func in list(valid_func_list):
+                        if 32 <= len(instruction_list):
+                            break
+                        code = project.get_content_from_virtual_address(func.value, func.size)
+                        instruction_list += list(map(InstructionSetWrapper, filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, func.value))))
+                        tmp_queue.appendleft(valid_func_list.popleft())
+
+                    instruction_list = list(dict.fromkeys(instruction_list))
+            else:
+                valid_func_list = deque(sorted(filter(lambda sym: sym.type == lief.MachO.Symbol.TYPE.SECTION and text_section.virtual_address <= sym.value < end_text_section, project.symbols), key=lambda sym: sym.value))
+                while 1 < len(valid_func_list) and len(instruction_list) < 32:
+                    #The final value will be ignored, that's okay for now.
+                    for sym1, sym2 in zip(list(valid_func_list), list(valid_func_list)[1:]):
+                        if 32 <= len(instruction_list):
+                            break
+                        code = project.get_content_from_virtual_address(sym1.value, sym2.value - sym1.value)
+                        instruction_list += list(map(InstructionSetWrapper, filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, sym1.value))))
+                        tmp_queue.appendleft(valid_func_list.popleft())
+
+                    instruction_list = list(dict.fromkeys(instruction_list))
+
+            instruction_list_unique = [wrapped.ins for wrapped in instruction_list]
+
+            valid_func_list.extendleft(tmp_queue)
+            bits = functools.reduce(lambda s, ins: s + '1' if ins.mnemonic == 'add' else s + '0', instruction_list_unique, '')
+            size = int.from_bytes(''.join([chr(int(bits[i:i+8], 2)) for i in range(0, 32, 8)]).encode('latin-1'), 'big') * 8 + 32
+
+            instruction_list = []
+            instruction_list_unique = []
+
+            if supported == True:
+                while 0 < len(valid_func_list) and len(instruction_list) < size:
+                    for func in list(valid_func_list):
+                        if size <= len(instruction_list):
+                            break
+                        code = project.get_content_from_virtual_address(func.value, func.size)
+                        instruction_list += list(map(InstructionSetWrapper, filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, func.value))))
+                        valid_func_list.popleft()
+
+                    instruction_list = list(dict.fromkeys(instruction_list))
+            else:
+                while 1 < len(valid_func_list) and len(instruction_list) < size:
+                    #The final value will be ignored, that's okay for now.
+                    for sym1, sym2 in zip(list(valid_func_list), list(valid_func_list)[1:]):
+                        if size <= len(instruction_list):
+                            break
+                        code = project.get_content_from_virtual_address(sym1.value, sym2.value - sym1.value)
+                        instruction_list += list(map(InstructionSetWrapper, filter(lambda ins: ins.mnemonic in ("add", "sub") and len(ins.operands) == 2 and ins.operands[1].type == capstone.CS_OP_IMM, capstoneProjModule.disasm(code, sym1.value))))
+                        valid_func_list.popleft()
+
+                    instruction_list = list(dict.fromkeys(instruction_list))
+
+            instruction_list_unique = [wrapped.ins for wrapped in instruction_list[0:size]]
+            return instruction_list_unique, size - 32
+
         except cle.errors.CLECompatibilityError:
             msg_error("The chosen file is incompatible")
-            sys.exit(1)
+            return []
         except cle.errors.CLEUnknownFormatError:
             msg_error("The file format is incompatible")
-            sys.exit(1)
+            return []
         except cle.errors.CLEInvalidBinaryError:
             msg_error("The chosen binary file is incompatible")
-            sys.exit(1)
+            return []
+        except NonexistentTextSection:
+            msg_error("The chosen binary file doesn't have a properly named text section.")
+            return []
         except Exception as e:
             raise e
+            msg_error("An uncatalogued exception occured.")
+            return []
 
     def access_bit(self: Capierre, data: str, num: int):
         """
@@ -75,59 +201,59 @@ class CapierreAnalyzer:
 
         return (ord(data[base]) >> shift) & 0x1
 
-    def read_instructions(self: CapierreAnalyzer, node: Node):
-        """
-        This is a helper function for reading and filtering helpful
-        instructions. 
 
-        @param node: `list[NodeView]` - The list of nodes to filter.
-        @return `filter()`
-        """
-        return filter(
-            lambda ins: ins.mnemonic in ('add', 'sub'),
-            (ins for ins in node.block.capstone.insns)  # type: ignore
-        )
-
-    def remove_incorrect_instructions(self: CapierreAnalyzer, instruction: Instruction):
-        args = instruction.op_str.split(', ')
-        try:
-            int(args[1])
-        except ValueError:
-            return None
-        return instruction
-
-    def read_in_compiled_binaries(self: CapierreAnalyzer) -> str:
+    def read_in_compiled_binaries(self: CapierreAnalyzer) -> None:
         """
         Reads the sentence into the already compiled binary.
 
         @param filepath: `str` - The path to the binary file.
         @return `str` - The sentence.
         """
-        size: int = 0
-        cfg, text_section = self.load_angr_project(self.filepath)
 
-        nodes = filter(lambda node: node.block is not None, cfg)
-        instruction_list = tuple(itertools.chain(
-            *map(self.read_instructions, nodes)
-        ))
-        instruction_list = tuple(filter(lambda ins: self.remove_incorrect_instructions(ins) is not None and ins.address - text_section.vaddr <= text_section.memsize and ins.address - text_section.vaddr >= 0, instruction_list))
-        instruction_list = tuple(dict([(str(ins.address), ins) for ins in instruction_list]).values())
-        bits = functools.reduce(lambda s, ins: s + '1' if ins.mnemonic ==
-            'add' else s + '0', instruction_list, '')
-        size = int.from_bytes(''.join(
-            [chr(int(bits[i:i+8], 2)) for i in range(0, 32, 8)]
-        ).encode(), 'big')
-        message_retrieved = ''.join(
-            [chr(int(bits[i:i+8], 2)) for i in range(32, len(bits), 8)]
-        )
-        if self.output_file_retreive != '':
-            with open(self.output_file_retreive, "wb") as file:
-                file.write(message_retrieved[0:size].encode('utf-8'))
-                file.close()
-            msg_success(
-                f"Message retrieved and saved in {self.output_file_retreive}"
-            )
+        try:
+            size: int = 0
+            instruction_list, size = self.load_angr_project(self.filepath)
+
+            if instruction_list == []:
+                msg_error("FATAL: Instruction list is empty.")
+                return
+
+            bits = functools.reduce(lambda s, ins: s + '1' if ins.mnemonic ==
+                'add' else s + '0', instruction_list, '')
+
+            message_retrieved = ''.join(
+                [chr(int(bits[i:i+8], 2)) for i in range(32, len(bits), 8)]
+            )[0:size].encode()
+
+            decrypted_message: bytes = self.cipher_information(retrieved_content=message_retrieved, decrypt=True)
+
+            if self.output_file_retreive != '':
+                with open(self.output_file_retreive, "wb") as file:
+                    file.write(decrypted_message)
+                    file.close()
+                msg_success(
+                    f"Message retrieved and saved in {self.output_file_retreive}"
+                )
+            else:
+                msg_success(f"Message: {decrypted_message.decode('utf-8')}")
+        except Exception as e:
+            raise e
+
+    def image_support(self: CapierreAnalyzer) -> None:
+        extract_object: object = CapierreImage(self.filepath, 654341)
+        encoded_message: bytes = extract_object.extract()
+
+        self.handle_decrypted(cipher_information(retrieved_content=encoded_message, decrypt=True))
+
+    def retrieve_information(self: CapierreAnalyzer) -> None:
+        extension_files_image = [
+            "png",
+        ]
+
+        if self.type_file in extension_files_image:
+            self.image_support()
         else:
+            self.retrieve_message_from_binary()
             msg_success(f"Message: {message_retrieved[0:size]}")
         return message_retrieved
 
@@ -147,25 +273,26 @@ class CapierreAnalyzer:
 
         try:
 
-            project = angr.Project(
-                self.filepath, load_options={"auto_load_libs": False}
-            )
+            project = lief.parse(self.filepath)
 
-            for section in project.loader.main_object.sections:
+            for section in project.sections:
                 if section.name == section_target:
                     eh_frame_section = section
                     break
 
+            if eh_frame_section is None:
+                raise NonexistentTextSection()
+
             with open(self.filepath, "rb") as binary:
                 eh_frame_block: bytes = binary.read()[
                     eh_frame_section.offset : eh_frame_section.offset
-                    + eh_frame_section.memsize
+                    + eh_frame_section.size
                 ]
                 binary.close()
             index = eh_frame_block.find(capierre_magic.MAGIC_NUMBER_START)
             if index == -1:
                 msg_warning("Message not found within the binary.")
-                sys.exit(1)
+                return
 
             alignment_padding: int = eh_frame_block[index - 1]
             index = index - (5 + len(capierre_magic.CIE_INFORMATION))
@@ -187,24 +314,16 @@ class CapierreAnalyzer:
 
             message_retrieved = self.cipher_information(retrieved_content=encoded_string, decrypt=True)
 
-            if self.output_file_retreive != '':
-                with open(self.output_file_retreive, "wb") as file:
-                    file.write(message_retrieved.encode('utf-8'))
-                    file.close()
-                msg_success(
-                    f"Message retrieved and saved in {self.output_file_retreive}"
-                )
-            else:
-                msg_success(f"Message: {message_retrieved}")
+            self.handle_decrypted(message_retrieved)
 
         except cle.errors.CLECompatibilityError as e:
             msg_error("The chosen file is incompatible")
-            sys.exit(1)
+            raise e
         except cle.errors.CLEUnknownFormatError as e:
             msg_error("The file format is incompatible")
-            sys.exit(1)
+            raise e
         except cle.errors.CLEInvalidBinaryError as e:
             msg_error("The chosen binary file is incompatible")
-            sys.exit(1)
+            raise e
         except Exception as e:
             raise e
