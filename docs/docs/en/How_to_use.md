@@ -109,10 +109,14 @@ Options:
   -v, --version  Show version of the tool
   -c, --conceal  Hide a message
   -r, --retrieve Retrieve a message
+  -i, --image Switch to Image Mode. Default: Normal Mode
   -fth, --file-to-hide <file>  File to hide
   -s, --sentence <sentence>  Sentence to hide
-  -f, --file <file>  File to compile or to retrieve
+  -p, --password <password>  Password for encryption
+  -f, --file <file>  Input file to compile or to retrieve
   -o, --output <file>  Output file
+  -sd, --seed <number>  Optional: Seed used by the image algorithm
+  -m, --mode Changes the retrieval process into Compiled mode. Default is Compilation mode
 ```
 
 ### 🖥 Capierre Gui
