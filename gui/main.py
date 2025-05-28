@@ -406,7 +406,7 @@ class ChallengeWidget(QWidget):
         else:
             base_path = os.path.abspath(".")
 
-        expected_output_path = os.path.join(base_path, "./expected_output")
+        expected_output_path = os.path.join(base_path, "expected_output")
 
         expected_file_path = os.path.join(expected_output_path, self.challenge.get('file'))
 

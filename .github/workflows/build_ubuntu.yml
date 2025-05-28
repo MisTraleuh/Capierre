@@ -36,18 +36,74 @@ jobs:
             --collect-all angr      \
             --collect-all unicorn   \
             --collect-all cle       \
-            --onefile --name capierre_binary src/__main__.py
+            --onefile --name capierre_cmd src/__main__.py
 
       - name: Binary Test
         working-directory: ./tool
         run: |
-          ./dist/capierre_binary --help
-          ./dist/capierre_binary --version
-          ./dist/capierre_binary --conceal --file ./tests/src/main.cpp --file-to-hide ./tests/src/HIDDEN_FILE --password "password"
-          ./dist/capierre_binary -r --file ./capierre_binary --password "password"
+          ./dist/capierre_cmd --help
+          ./dist/capierre_cmd --version
+          ./dist/capierre_cmd --conceal --file ./tests/src/main.cpp --file-to-hide ./tests/src/HIDDEN_FILE --password "password"
+          ./dist/capierre_cmd -r --file ./capierre_binary --password "password"
 
       - name: Tests Fonctionnels
         working-directory: ./tool
         run: |
           chmod +x launch_tests.sh
           ./launch_tests.sh "fonctionnel"
+
+      - name: Build gui
+        working-directory: ./gui
+        run: |
+          python -m PyInstaller `
+            --collect-all z3        `
+            --collect-all pyvex        `
+            --collect-all angr        `
+            --collect-all unicorn        `
+            --collect-all cle        `
+            --paths=../tool/src        `
+            --add-data "style.qss:."        `
+            --add-data "./challenges:./challenges"        `
+            --add-data "./challenge_files:./challenge_files"        `
+            --add-data "./expected_output:./expected_output"        `
+            --onefile --name capierre_gui main.py
+
+      - name: Upload gui artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-gui
+          path: dist/capierre_gui*
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-cmd
+          path: dist/capierre_cmd*
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          files: artifacts/**/gui*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          files: artifacts/**/cmd*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
